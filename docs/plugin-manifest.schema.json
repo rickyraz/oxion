@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://docs.oxion.io/schema/plugin-manifest.schema.json",
+  "title": "Oxion Plugin Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "version",
+    "api_version",
+    "runtime",
+    "type",
+    "entrypoint",
+    "hooks",
+    "permissions",
+    "tenant_scope"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$",
+      "minLength": 5,
+      "maxLength": 120
+    },
+    "name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 120
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+    },
+    "api_version": {
+      "type": "string",
+      "enum": ["v1"]
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["language"],
+      "properties": {
+        "language": {
+          "type": "string",
+          "enum": ["typescript", "python", "elixir"]
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 40
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "enum": ["flow", "policy", "billing", "ui", "integration"]
+    },
+    "entrypoint": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "hooks": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "before_step",
+          "after_step",
+          "on_error",
+          "on_compensate",
+          "pre_authorize",
+          "post_authorize",
+          "accounting_transform",
+          "invoice_enrich",
+          "payment_route",
+          "commission_rule",
+          "menu_extend",
+          "dashboard_widget",
+          "custom_page",
+          "outbound_event_handler",
+          "inbound_webhook_adapter"
+        ]
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "read:service",
+          "write:workflow",
+          "read:subscriber",
+          "write:subscriber",
+          "read:billing",
+          "write:billing",
+          "http:outbound",
+          "emit:event",
+          "read:config",
+          "write:plugin_state"
+        ]
+      }
+    },
+    "tenant_scope": {
+      "type": "string",
+      "enum": ["tenant", "reseller", "global"]
+    },
+    "config_schema": {
+      "type": "object"
+    }
+  }
+}

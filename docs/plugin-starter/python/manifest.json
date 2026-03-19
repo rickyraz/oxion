@@ -1,0 +1,23 @@
+{
+  "id": "com.oxion.plugin.starter-python",
+  "name": "Starter Python Plugin",
+  "version": "0.1.0",
+  "api_version": "v1",
+  "runtime": {
+    "language": "python",
+    "version": "3.12"
+  },
+  "type": "integration",
+  "entrypoint": "main",
+  "hooks": ["inbound_webhook_adapter"],
+  "permissions": ["emit:event", "read:config", "http:outbound"],
+  "tenant_scope": "tenant",
+  "config_schema": {
+    "type": "object",
+    "properties": {
+      "shared_secret": { "type": "string", "minLength": 16 },
+      "source_name": { "type": "string", "default": "custom_erp" }
+    },
+    "required": ["shared_secret"]
+  }
+}

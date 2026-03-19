@@ -1,0 +1,25 @@
+{
+  "id": "com.oxion.plugin.starter-elixir",
+  "name": "Starter Elixir Plugin",
+  "version": "0.1.0",
+  "api_version": "v1",
+  "runtime": {
+    "language": "elixir",
+    "version": "1.17"
+  },
+  "type": "policy",
+  "entrypoint": "Main",
+  "hooks": ["pre_authorize"],
+  "permissions": ["read:subscriber", "emit:event"],
+  "tenant_scope": "tenant",
+  "config_schema": {
+    "type": "object",
+    "properties": {
+      "allowed_hours_utc": {
+        "type": "array",
+        "items": { "type": "integer", "minimum": 0, "maximum": 23 }
+      }
+    },
+    "required": ["allowed_hours_utc"]
+  }
+}
