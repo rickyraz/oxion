@@ -65,6 +65,7 @@ Module besar yang terlibat pada flow ini:
 13. `oxion/radius/udp`
 14. `oxion/radius/radsec`
 15. `oxion/radius/protocol`
+16. `oxion/platform/audit`
 
 Submodule dan fungsinya saat ini:
 
@@ -85,6 +86,7 @@ Submodule dan fungsinya saat ini:
 | UDP | `src/oxion/radius/udp/*` | worker/socket reuse, socket handle lifecycle, outstanding request tracking | reuse socket adalah concern transport, bukan packet |
 | RadSec | `src/oxion/radius/radsec/*` | TLS transport future path | jangan campur UDP logic dengan TLS lifecycle |
 | Protocol | `src/oxion/radius/protocol/*` | tracking future protocol evolution | roadmap `RADIUS/1.1` tidak boleh mengotori path MVP |
+| Platform Audit | `src/oxion/platform/audit/*` | ubah runtime outcome menjadi audit envelope redacted + private context short-retention | kontrak audit platform tidak boleh bocor ke orchestration kecil atau packet path |
 
 ---
 
@@ -180,7 +182,12 @@ disconnect.response / coa.response
 disconnect.result / coa.result
         │
         v
-orchestration outcome / audit projection
+orchestration outcome / collection audit projection
+        │
+        v
+platform audit adapter
+  -> append-only redacted audit event
+  -> optional private context side record
 ```
 
 ### 4.3 Detail Boundary: Renderer ke Wire
