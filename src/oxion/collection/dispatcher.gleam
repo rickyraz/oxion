@@ -1,4 +1,3 @@
-import collection_idempotency
 import gleam/bool
 import gleam/float
 import gleam/int
@@ -6,8 +5,9 @@ import gleam/list
 import gleam/option
 import gleam/order
 import gleam/string
-import policy_evaluator
-import policy_types
+import oxion/collection/idempotency as collection_idempotency
+import oxion/policy/evaluator as policy_evaluator
+import oxion/policy/types as policy_types
 
 pub type DispatchedAction {
   DispatchedAction(
@@ -16,6 +16,7 @@ pub type DispatchedAction {
     action_identity: String,
     action_position: Int,
     fingerprint: String,
+    action: policy_types.Action,
   )
 }
 
@@ -126,6 +127,7 @@ fn dispatch_actions(
           action_identity: identity,
           action_position: action_position,
           fingerprint: fp,
+          action: action,
         )
 
       case collection_idempotency.should_execute(fingerprints, fp) {

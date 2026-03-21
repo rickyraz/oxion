@@ -1,8 +1,8 @@
 import gleam/option
-import policy_evaluator
-import policy_simulator
-import policy_types
-import policy_validator
+import oxion/policy/evaluator as policy_evaluator
+import oxion/policy/simulator as policy_simulator
+import oxion/policy/types as policy_types
+import oxion/policy/validator as policy_validator
 
 pub fn policy_validator_valid_policy_test() {
   let policy = sample_policy(0)

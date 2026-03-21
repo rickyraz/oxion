@@ -10,10 +10,10 @@ Referensi: `docs/oxion-mvp-fasttrack-plan.md`.
 
 ## Implemented Artifacts
 
-- `src/collection_idempotency.gleam`
-- `src/collection_dispatcher.gleam`
-- `src/collection_scheduler.gleam`
-- `test/policy_phase_c_test.gleam`
+- `src/oxion/collection/idempotency.gleam`
+- `src/oxion/collection/dispatcher.gleam`
+- `src/oxion/collection/scheduler.gleam`
+- `test/oxion/collection/phase_c_test.gleam`
 
 ---
 

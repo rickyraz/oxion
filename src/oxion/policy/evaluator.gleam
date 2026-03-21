@@ -2,7 +2,7 @@ import gleam/int
 import gleam/list
 import gleam/order
 import gleam/string
-import policy_types
+import oxion/policy/types as policy_types
 
 pub type EvaluationError {
   EvaluationError(code: String, stage_id: String, path: String, reason: String)

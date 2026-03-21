@@ -1,8 +1,8 @@
-import collection_dispatcher
 import gleam/list
 import gleam/option
-import policy_evaluator
-import policy_types
+import oxion/collection/dispatcher as collection_dispatcher
+import oxion/policy/evaluator as policy_evaluator
+import oxion/policy/types as policy_types
 
 pub type OverdueCandidate {
   OverdueCandidate(

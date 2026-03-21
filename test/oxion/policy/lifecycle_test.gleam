@@ -1,4 +1,4 @@
-import policy_lifecycle
+import oxion/policy/lifecycle as policy_lifecycle
 
 pub fn lifecycle_allowed_transitions_test() {
   assert policy_lifecycle.can_transition(

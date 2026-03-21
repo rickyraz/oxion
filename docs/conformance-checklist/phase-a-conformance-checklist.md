@@ -16,7 +16,7 @@ Referensi: `docs/oxion-mvp-fasttrack-plan.md`.
 - [x] Lifecycle transition rules terdokumentasi dan tidak ambigu
 - [x] Single active published policy per tenant terdokumentasi
 - [x] Determinism rule (`priority`, `stage.id`, `stop_on_match`) terdokumentasi
-- [x] Gleam lifecycle transition tests tersedia (`test/policy_lifecycle_test.gleam`)
+- [x] Gleam lifecycle transition tests tersedia (`test/oxion/policy/lifecycle_test.gleam`)
 
 ---
 
@@ -24,8 +24,8 @@ Referensi: `docs/oxion-mvp-fasttrack-plan.md`.
 
 Perubahan phase ini menambahkan:
 
-- `src/policy_lifecycle.gleam`
-- `test/policy_lifecycle_test.gleam`
+- `src/oxion/policy/lifecycle.gleam`
+- `test/oxion/policy/lifecycle_test.gleam`
 - coverage aktivasi `published-only`, conflict, dan archived immutability
 
 Command verifikasi wajib:

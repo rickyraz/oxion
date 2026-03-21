@@ -1,6 +1,6 @@
 import gleam/list
-import policy_evaluator
-import policy_types
+import oxion/policy/evaluator as policy_evaluator
+import oxion/policy/types as policy_types
 
 pub type SimulationMatch {
   SimulationMatch(

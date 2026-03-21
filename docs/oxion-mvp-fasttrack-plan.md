@@ -121,10 +121,10 @@ Exit criteria:
 
 Artefak phase:
 
-- `policy_types.gleam`
-- `policy_validator.gleam`
-- `policy_evaluator.gleam`
-- `policy_simulator.gleam`
+- `src/oxion/policy/types.gleam`
+- `src/oxion/policy/validator.gleam`
+- `src/oxion/policy/evaluator.gleam`
+- `src/oxion/policy/simulator.gleam`
 - `conformance-checklist/phase-b-conformance-checklist.md`
 
 ---
@@ -163,9 +163,9 @@ Exit criteria:
 
 Artefak phase:
 
-- `collection_idempotency.gleam`
-- `collection_dispatcher.gleam`
-- `collection_scheduler.gleam`
+- `src/oxion/collection/idempotency.gleam`
+- `src/oxion/collection/dispatcher.gleam`
+- `src/oxion/collection/scheduler.gleam`
 - `conformance-checklist/phase-c-conformance-checklist.md`
 
 ---
@@ -198,6 +198,37 @@ Exit criteria:
 - Throughput berubah sesuai policy via RADIUS path.
 - OLT tidak tersentuh pada overdue default flow.
 - CoA duplicate ter-skip dan tercatat.
+
+Companion breakdown:
+
+- `implementation/phase-d-production-breakdown.md`
+- `conformance-checklist/phase-d-conformance-checklist.md`
+
+Artefak phase:
+
+- `src/oxion/orchestration/collection/commands.gleam`
+- `src/oxion/orchestration/collection/orchestrator.gleam`
+- `src/oxion/orchestration/collection/outcome.gleam`
+- `src/oxion/orchestration/collection/audit.gleam`
+- `src/oxion/orchestration/collection/olt_guard.gleam`
+- `src/oxion/radius/packet.gleam`
+- `src/oxion/radius/profile/types.gleam`
+- `src/oxion/radius/profile/resolver.gleam`
+- `src/oxion/radius/profile/snapshot.gleam`
+- `src/oxion/radius/profile/normalizer.gleam`
+- `src/oxion/radius/profile/diff.gleam`
+- `src/oxion/radius/vendor/types.gleam`
+- `src/oxion/radius/vendor/cisco.gleam`
+- `src/oxion/radius/vendor/juniper.gleam`
+- `src/oxion/radius/vendor/vbng.gleam`
+- `src/oxion/radius/coa/request.gleam`
+- `src/oxion/radius/coa/response.gleam`
+- `src/oxion/radius/coa/result.gleam`
+- `src/oxion/radius/coa/retry.gleam`
+- `src/oxion/radius/coa/execution.gleam`
+- `src/oxion/radius/coa/transport.gleam`
+- `src/oxion_radius_transport_ffi.erl`
+- `conformance-checklist/phase-d-conformance-checklist.md`
 
 ---
 

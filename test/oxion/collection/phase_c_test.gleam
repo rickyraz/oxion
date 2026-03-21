@@ -1,10 +1,10 @@
-import collection_dispatcher
-import collection_idempotency
-import collection_scheduler
 import gleam/list
 import gleam/option
-import policy_evaluator
-import policy_types
+import oxion/collection/dispatcher as collection_dispatcher
+import oxion/collection/idempotency as collection_idempotency
+import oxion/collection/scheduler as collection_scheduler
+import oxion/policy/evaluator as policy_evaluator
+import oxion/policy/types as policy_types
 
 pub fn dispatcher_distinguishes_same_action_type_instances_test() {
   let matches = [
@@ -44,6 +44,7 @@ pub fn dispatcher_distinguishes_same_action_type_instances_test() {
         action_identity: _,
         action_position: _,
         fingerprint: first_fp,
+        action: _,
       ) = first
       let collection_dispatcher.DispatchedAction(
         stage_id: _,
@@ -51,6 +52,7 @@ pub fn dispatcher_distinguishes_same_action_type_instances_test() {
         action_identity: _,
         action_position: _,
         fingerprint: second_fp,
+        action: _,
       ) = second
       assert first_fp != second_fp
     }
