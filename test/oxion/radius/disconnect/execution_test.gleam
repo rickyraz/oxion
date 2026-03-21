@@ -1,5 +1,6 @@
 import gleam/option
 import oxion/orchestration/collection/commands
+import oxion/radius/coa/replay
 import oxion/radius/coa/retry
 import oxion/radius/coa/transport as shared_transport
 import oxion/radius/disconnect/execution
@@ -80,6 +81,60 @@ pub fn disconnect_execution_managed_runtime_ack_test() {
       1_710_000_000,
     )
     == result.Ack(retries: 0)
+}
+
+pub fn disconnect_execution_managed_runtime_replay_rejects_duplicate_test() {
+  let secret = "sharedsecret"
+  let port = case start_ack_server(secret) {
+    Ok(port) -> port
+    Error(_) -> panic
+  }
+  let replay_window = replay.ReplayWindow(max_age_seconds: 30, max_entries: 10)
+
+  let #(first_result, cache_after_first) =
+    execution.send_disconnect_live_managed_with_replay(
+      suspend_plan(),
+      vendor_types.Cisco,
+      session_types.SessionLookup(
+        tenant_id: "tenant_a",
+        service_id: "svc_1",
+        username: option.Some("cust_001"),
+        acct_session_id: option.None,
+        framed_ip: option.None,
+      ),
+      60,
+      [sample_endpoint(port)],
+      [sample_active_session()],
+      retry.RetryPolicy(max_attempts: 2, backoff_ms: [100, 250]),
+      replay.new(),
+      replay_window,
+      1_710_000_000,
+    )
+
+  assert first_result == result.Ack(retries: 0)
+
+  let #(second_result, cache_after_second) =
+    execution.send_disconnect_live_managed_with_replay(
+      suspend_plan(),
+      vendor_types.Cisco,
+      session_types.SessionLookup(
+        tenant_id: "tenant_a",
+        service_id: "svc_1",
+        username: option.Some("cust_001"),
+        acct_session_id: option.None,
+        framed_ip: option.None,
+      ),
+      60,
+      [sample_endpoint(port)],
+      [sample_active_session()],
+      retry.RetryPolicy(max_attempts: 2, backoff_ms: [100, 250]),
+      cache_after_first,
+      replay_window,
+      1_710_000_000,
+    )
+
+  assert second_result == result.ReplayRejected(reason: "duplicate_request")
+  assert cache_after_second == cache_after_first
 }
 
 fn disconnect_request() -> request.DisconnectRequest {

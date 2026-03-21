@@ -361,7 +361,7 @@ Statusnya lebih tepat seperti ini:
 | RFC 2865 base packet model | Mostly aligned | packet structure, identifier, authenticator, endpoint registry model sudah searah |
 | RFC 2866 accounting/session correlation | Partially aligned | `Acct-Session-Id` sudah jadi selector penting, tapi authoritativeness tetap bergantung pada read model runtime |
 | RFC 2869 `Message-Authenticator` / `Event-Timestamp` | Mostly aligned | support sudah ada, tapi enforcement bersama lintas semua family dan worker belum final |
-| RFC 5080 retransmission / duplicate handling | Partially aligned | retry dan replay model sudah mulai ada, tapi UDP worker/shared runtime enforcement belum final |
+| RFC 5080 retransmission / duplicate handling | Partially aligned | replay model sudah dipakai pada managed `CoA` dan `Disconnect`, tetapi UDP worker/shared runtime enforcement belum final |
 | RFC 5176 CoA / Disconnect separation | Mostly aligned | builder `CoA` dan `Disconnect` sudah terpisah, packet family juga terpisah |
 | RFC 5997 Status-Server | Not complete | baru scaffold ops path |
 | RFC 6613 / 6614 TCP/TLS / RadSec | Not complete | baru scaffold |
@@ -382,7 +382,7 @@ Hal berikut sudah benar kalau mengikuti file ini:
 
 Hal berikut belum boleh diklaim selesai penuh:
 
-1. replay protection shared runtime lintas `CoA` dan `Disconnect`,
+1. replay protection shared runtime lintas worker UDP dan family lain di luar managed boundary sekarang,
 2. UDP worker socket reuse dan outstanding request table,
 3. `Status-Server` live path,
 4. `RadSec` live path,
@@ -463,12 +463,11 @@ Dokumen ini adalah engineering guidance, bukan legal advice.
 
 Urutan yang paling sehat setelah mengikuti flow ini:
 
-1. selesaikan shared replay/runtime enforcement untuk `Disconnect`,
-2. kerjakan `UDP worker socket reuse`,
-3. teruskan `Status-Server` dan ops tooling,
-4. perluas dictionary/VSA registry,
-5. bangun `RadSec`,
-6. selesaikan audit privacy model dan DSR workflow di layer platform yang relevan.
+1. kerjakan `UDP worker socket reuse`,
+2. teruskan `Status-Server` dan ops tooling,
+3. perluas dictionary/VSA registry,
+4. bangun `RadSec`,
+5. selesaikan audit privacy model dan DSR workflow di layer platform yang relevan.
 
 Kalau dibalik, transport akan terlihat makin canggih tapi fondasi compliance dan runtime correctness tetap bolong.
 

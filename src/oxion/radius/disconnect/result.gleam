@@ -2,6 +2,7 @@ import gleam/int
 import gleam/option
 
 pub type DisconnectExecutionResult {
+  ReplayRejected(reason: String)
   Ack(retries: Int)
   Nak(code: String, message: String, retries: Int)
   Timeout(retries: Int)
@@ -12,6 +13,7 @@ pub type DisconnectExecutionResult {
 
 pub fn retry_count(result: DisconnectExecutionResult) -> Int {
   case result {
+    ReplayRejected(_) -> 0
     Ack(retries) -> retries
     Nak(_, _, retries) -> retries
     Timeout(retries) -> retries
@@ -23,6 +25,7 @@ pub fn retry_count(result: DisconnectExecutionResult) -> Int {
 
 pub fn reason(result: DisconnectExecutionResult) -> option.Option(String) {
   case result {
+    ReplayRejected(reason) -> option.Some(reason)
     Ack(_) -> option.None
     Nak(code, message, _) -> option.Some(code <> ":" <> message)
     Timeout(retries) ->

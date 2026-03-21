@@ -1,5 +1,7 @@
 import gleam/int
+import gleam/option
 import oxion/orchestration/collection/commands
+import oxion/radius/coa/replay
 import oxion/radius/coa/retry
 import oxion/radius/coa/transport as shared_transport
 import oxion/radius/disconnect/request
@@ -150,6 +152,169 @@ pub fn send_disconnect_live_managed(
   }
 }
 
+pub fn send_disconnect_live_managed_with_replay(
+  plan: commands.CommandPlan,
+  vendor: vendor_types.RadiusVendor,
+  session_lookup: session_types.SessionLookup,
+  session_max_age_seconds: Int,
+  endpoints: List(types.NasEndpoint),
+  sessions: List(session_types.ActiveSession),
+  retry_policy: retry.RetryPolicy,
+  replay_cache: replay.ReplayCache,
+  replay_window: replay.ReplayWindow,
+  now_seconds: Int,
+) -> #(result.DisconnectExecutionResult, replay.ReplayCache) {
+  let session_types.SessionLookup(
+    tenant_id: tenant_id,
+    service_id: _service_id,
+    username: _username,
+    acct_session_id: _acct_session_id,
+    framed_ip: _framed_ip,
+  ) = session_lookup
+
+  // Why: replay protection must apply to Disconnect with the same managed
+  // boundary semantics as CoA, otherwise duplicate hard-suspend packets can
+  // bypass the runtime guard simply by taking a different family path.
+  case
+    session_resolver.resolve_active_session(
+      sessions,
+      session_lookup,
+      session_max_age_seconds,
+      now_seconds,
+    )
+  {
+    Error(error) -> #(
+      result.SnapshotUnavailable(reason: session_error_reason(error)),
+      replay_cache,
+    )
+    Ok(active_session) ->
+      case
+        request.build_request(
+          plan,
+          session_resolver.to_snapshot(active_session).selector,
+        )
+      {
+        Error(error) -> #(
+          result.BuildRejected(reason: build_error_reason(error)),
+          replay_cache,
+        )
+        Ok(request_value) ->
+          case
+            registry_resolver.resolve_endpoint(
+              endpoints,
+              tenant_id,
+              vendor,
+              registry_resolver.from_active_session(active_session),
+            )
+          {
+            Error(error) -> #(
+              result.TransportFailed(
+                reason: "endpoint_resolution_failed:"
+                  <> registry_error_reason(error),
+                retries: 0,
+              ),
+              replay_cache,
+            )
+            Ok(endpoint) ->
+              case prepare(request_value, endpoint) {
+                Error(error) -> #(
+                  result.BuildRejected(reason: prepare_error_reason(error)),
+                  replay_cache,
+                )
+                Ok(disconnect_plan) ->
+                  case endpoint_secret(endpoint) {
+                    Error(reason) -> #(
+                      result.TransportFailed(reason: reason, retries: 0),
+                      replay_cache,
+                    )
+                    Ok(secret) -> {
+                      let transport_config =
+                        shared_transport.from_endpoint(
+                          endpoint,
+                          secret,
+                          now_seconds,
+                        )
+                      let DisconnectPlan(
+                        request: prepared_request,
+                        endpoint: prepared_endpoint,
+                      ) = disconnect_plan
+
+                      case
+                        transport.prepare_roundtrip(
+                          prepared_request,
+                          transport_config,
+                        )
+                      {
+                        Error(reason) -> #(
+                          result.TransportFailed(
+                            reason: "packet_prepare_failed:" <> reason,
+                            retries: 0,
+                          ),
+                          replay_cache,
+                        )
+                        Ok(prepared) -> {
+                          let types.NasEndpoint(
+                            tenant_id: _endpoint_tenant_id,
+                            endpoint_id: endpoint_id,
+                            vendor: _endpoint_vendor,
+                            transport: _endpoint_transport,
+                            coa_host: _endpoint_host,
+                            coa_port: _endpoint_port,
+                            secret_ref: _endpoint_secret_ref,
+                            timeout_ms: _endpoint_timeout_ms,
+                            retry_profile_id: _endpoint_retry_profile_id,
+                            nas_ip_address: _endpoint_nas_ip_address,
+                            nas_identifier: _endpoint_nas_identifier,
+                            capabilities: _endpoint_capabilities,
+                          ) = prepared_endpoint
+                          let transport.PreparedRoundtrip(
+                            identifier: identifier,
+                            request_authenticator: request_authenticator,
+                            event_timestamp: event_timestamp,
+                            payload: _payload,
+                          ) = prepared
+
+                          case
+                            replay.validate_and_store(
+                              replay_cache,
+                              replay.ReplayEntry(
+                                endpoint_id: endpoint_id,
+                                identifier: identifier,
+                                request_authenticator: request_authenticator,
+                                event_timestamp: replay_event_timestamp(
+                                  event_timestamp,
+                                ),
+                              ),
+                              replay_window,
+                              now_seconds,
+                            )
+                          {
+                            Error(error) -> #(
+                              result.ReplayRejected(reason: replay_error_reason(
+                                error,
+                              )),
+                              replay_cache,
+                            )
+                            Ok(next_cache) -> #(
+                              execute_live_prepared_attempts(
+                                prepared,
+                                transport_config,
+                                retry_policy,
+                                0,
+                              ),
+                              next_cache,
+                            )
+                          }
+                        }
+                      }
+                    }
+                  }
+              }
+          }
+      }
+  }
+}
+
 fn execute_live_attempts(
   request_value: request.DisconnectRequest,
   transport_config: shared_transport.CoaTransportConfig,
@@ -202,6 +367,58 @@ fn execute_live_attempts(
   }
 }
 
+fn execute_live_prepared_attempts(
+  prepared: transport.PreparedRoundtrip,
+  transport_config: shared_transport.CoaTransportConfig,
+  retry_policy: retry.RetryPolicy,
+  retries_used: Int,
+) -> result.DisconnectExecutionResult {
+  let retry.RetryPolicy(max_attempts: max_attempts, backoff_ms: _backoff_ms) =
+    retry_policy
+  let attempt = transport.roundtrip_prepared(prepared, transport_config)
+
+  case attempt {
+    response.Ack(_nas) -> result.Ack(retries: retries_used)
+    response.Nak(_nas, error_code, error_message) ->
+      result.Nak(
+        code: error_code,
+        message: error_message,
+        retries: retries_used,
+      )
+    response.Malformed(reason) ->
+      result.TransportFailed(
+        reason: "malformed_response:" <> reason,
+        retries: retries_used,
+      )
+    response.Timeout ->
+      case is_retryable(attempt) && retries_used + 1 < max_attempts {
+        True -> {
+          let _delay = retry.retry_delay(retry_policy, retries_used)
+          execute_live_prepared_attempts(
+            prepared,
+            transport_config,
+            retry_policy,
+            retries_used + 1,
+          )
+        }
+        False -> result.Timeout(retries: retries_used)
+      }
+    response.TransportError(reason) ->
+      case is_retryable(attempt) && retries_used + 1 < max_attempts {
+        True -> {
+          let _delay = retry.retry_delay(retry_policy, retries_used)
+          execute_live_prepared_attempts(
+            prepared,
+            transport_config,
+            retry_policy,
+            retries_used + 1,
+          )
+        }
+        False -> result.TransportFailed(reason: reason, retries: retries_used)
+      }
+  }
+}
+
 fn is_retryable(response_value: response.DisconnectResponse) -> Bool {
   case response_value {
     response.Timeout -> True
@@ -233,6 +450,22 @@ fn session_error_reason(error: session_types.SessionResolutionError) -> String {
     session_types.AmbiguousSession -> "ambiguous_active_session"
     session_types.StaleSession(max_age_seconds) ->
       "stale_session:max_age_seconds:" <> int.to_string(max_age_seconds)
+  }
+}
+
+fn replay_error_reason(error: replay.ReplayError) -> String {
+  case error {
+    replay.InvalidReplayWindow -> "invalid_replay_window"
+    replay.MissingEventTimestamp -> "missing_event_timestamp"
+    replay.StaleEventTimestamp -> "stale_event_timestamp"
+    replay.DuplicateRequest -> "duplicate_request"
+  }
+}
+
+fn replay_event_timestamp(event_timestamp: option.Option(Int)) -> Int {
+  case event_timestamp {
+    option.Some(value) -> value
+    option.None -> 0
   }
 }
 

@@ -69,14 +69,14 @@ Progress yang sudah benar-benar terhubung sesudah scaffold awal:
 - endpoint resolution pada managed path sekarang mempertahankan `nas_identifier`, bukan hanya `nas_ip_address`
 - replay cache sudah terhubung ke managed `CoA` runtime path sebagai state input/output yang eksplisit
 - `Disconnect` sekarang punya live transport dan managed execution path dengan prepared-request seam yang setara secara pola dengan `CoA`
+- replay cache sekarang juga terhubung ke managed `Disconnect` runtime path sehingga duplicate hard-suspend packet ditolak pada boundary yang sama dengan `CoA`
 - renderer vendor `Cisco` dan `Juniper` sekarang mengeluarkan logical name dictionary yang eksplisit, bukan prefix heuristik lama
 - packet layer masih menyimpan shim kompatibilitas sempit untuk snapshot lama yang masih membawa `cisco_avpair.*` atau `dynamic_profile.*`
 
 Yang masih belum selesai penuh:
 
 - `Message-Authenticator` belum diterapkan ke seluruh packet family di semua jalur transport
-- replay cache baru terhubung ke managed `CoA` path dan belum menjadi shared runtime enforcement lintas `Disconnect` atau worker UDP
-- `Disconnect` belum terhubung ke replay/runtime enforcement yang sama dengan `CoA`
+- replay cache belum menjadi shared runtime enforcement lintas worker UDP
 - vendor registry belum menggantikan seluruh legacy naming path karena `vBNG` live transport masih unsupported dan shim kompatibilitas snapshot lama masih sengaja dipertahankan
 - `Status-Server`, `UDP worker`, dan `RadSec` masih berupa baseline contract
 

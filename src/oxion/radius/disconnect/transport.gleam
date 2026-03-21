@@ -9,6 +9,7 @@ pub type PreparedRoundtrip {
   PreparedRoundtrip(
     identifier: Int,
     request_authenticator: BitArray,
+    event_timestamp: option.Option(Int),
     payload: BitArray,
   )
 }
@@ -33,6 +34,10 @@ pub fn prepare_roundtrip(
     request_security: request_security,
     require_message_authenticator_response: _require_message_authenticator_response,
   ) = config
+  let packet.PacketSecurityConfig(
+    message_authenticator: _message_authenticator,
+    event_timestamp: event_timestamp,
+  ) = request_security
 
   // Why: Disconnect needs the same prepared-request seam as CoA so replay,
   // auditing, and live execution can reason about one packet instance before
@@ -53,6 +58,7 @@ pub fn prepare_roundtrip(
       Ok(PreparedRoundtrip(
         identifier: identifier,
         request_authenticator: request_authenticator,
+        event_timestamp: event_timestamp,
         payload: payload,
       ))
   }
@@ -84,6 +90,7 @@ pub fn roundtrip_prepared(
   let PreparedRoundtrip(
     identifier: identifier,
     request_authenticator: request_authenticator,
+    event_timestamp: _event_timestamp,
     payload: payload,
   ) = prepared
 
