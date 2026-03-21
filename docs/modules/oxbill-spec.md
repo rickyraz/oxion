@@ -6,17 +6,17 @@
 
 ## 1. Dokumen Terkait
 
-- [Master Arsitektur & Deployment](./oxion-infra-deployment-spec.md)
-- [Platform Overview](./oxion-platform-overview.md)
-- [Platform Services Specification](./oxion-platform-services-spec.md)
-- [oxCore Spec](./oxcore-spec.md)
-- [oxRADIUS Spec](./oxradius-spec.md)
-- [oxOLT Spec](./oxolt-spec.md)
-- [oxNOC Spec](./oxnoc-spec.md)
-- [Brand Naming](./oxion-brand-naming.md)
-- [Collection Policy Schema](./collection-policy.schema.json)
-- [Collection Policy EBNF](./collection-policy-ebnf.md)
-- [Collection Policy Contract Matrix](./collection-policy-contract-matrix.md)
+- [Master Arsitektur & Deployment](../architecture/oxion-infra-deployment-spec.md)
+- [Platform Overview](../architecture/oxion-platform-overview.md)
+- [Platform Services Specification](../architecture/oxion-platform-services-spec.md)
+- [oxCore Spec](oxcore-spec.md)
+- [oxRADIUS Spec](oxradius-spec.md)
+- [oxOLT Spec](oxolt-spec.md)
+- [oxNOC Spec](oxnoc-spec.md)
+- [Brand Naming](../architecture/oxion-brand-naming.md)
+- [Collection Policy Schema](../policies/collection-policy.schema.json)
+- [Collection Policy EBNF](../policies/collection-policy-ebnf.md)
+- [Collection Policy Contract Matrix](../policies/collection-policy-contract-matrix.md)
 
 ---
 
@@ -152,7 +152,7 @@ pub type CollectionAction {
 
 Policy disusun dari UI builder dan disimpan sebagai JSON. Core tidak menanam angka hari atau speed secara hardcoded.
 
-Kontrak JSON policy builder ada di: `./collection-policy.schema.json`.
+Kontrak JSON policy builder ada di: `../policies/collection-policy.schema.json`.
 
 ```json
 {

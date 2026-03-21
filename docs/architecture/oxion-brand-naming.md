@@ -2,9 +2,9 @@
 
 ## 1. Dokumen Terkait
 
-- [Platform Overview](./oxion-platform-overview.md)
-- [Master Arsitektur & Deployment](./oxion-infra-deployment-spec.md)
-- [Platform Services Specification](./oxion-platform-services-spec.md)
+- [Platform Overview](oxion-platform-overview.md)
+- [Master Arsitektur & Deployment](oxion-infra-deployment-spec.md)
+- [Platform Services Specification](oxion-platform-services-spec.md)
 
 ---
 

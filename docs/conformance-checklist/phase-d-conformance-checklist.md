@@ -4,7 +4,7 @@
 
 Phase D = RADIUS Path (default `radius_only`).
 
-Referensi: `docs/oxion-mvp-fasttrack-plan.md`.
+Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 
 ---
 

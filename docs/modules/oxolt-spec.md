@@ -6,15 +6,15 @@
 
 ## 1. Dokumen Terkait
 
-- [Master Arsitektur & Deployment](./oxion-infra-deployment-spec.md)
-- [Platform Overview](./oxion-platform-overview.md)
-- [Platform Services Specification](./oxion-platform-services-spec.md)
-- [oxCore Spec](./oxcore-spec.md)
-- [oxRADIUS Spec](./oxradius-spec.md)
-- [oxBill Spec](./oxbill-spec.md)
-- [oxNOC Spec](./oxnoc-spec.md)
-- [Brand Naming](./oxion-brand-naming.md)
-- [Tier-1 Broadband Interop Profile](./oxion-tier1-broadband-interoperability-profile.md)
+- [Master Arsitektur & Deployment](../architecture/oxion-infra-deployment-spec.md)
+- [Platform Overview](../architecture/oxion-platform-overview.md)
+- [Platform Services Specification](../architecture/oxion-platform-services-spec.md)
+- [oxCore Spec](oxcore-spec.md)
+- [oxRADIUS Spec](oxradius-spec.md)
+- [oxBill Spec](oxbill-spec.md)
+- [oxNOC Spec](oxnoc-spec.md)
+- [Brand Naming](../architecture/oxion-brand-naming.md)
+- [Tier-1 Broadband Interop Profile](../interoperability/oxion-tier1-broadband-interoperability-profile.md)
 
 ---
 

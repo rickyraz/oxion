@@ -4,16 +4,16 @@
 
 ## 1. Dokumen Terkait
 
-- [Master Arsitektur & Deployment](./oxion-infra-deployment-spec.md)
-- [Platform Overview](./oxion-platform-overview.md)
-- [oxRADIUS Spec](./oxradius-spec.md)
-- [oxCore Spec](./oxcore-spec.md)
-- [oxOLT Spec](./oxolt-spec.md)
-- [oxBill Spec](./oxbill-spec.md)
-- [oxNOC Spec](./oxnoc-spec.md)
-- [Brand Naming](./oxion-brand-naming.md)
-- [Plugin Architecture](./oxion-plugin-architecture.md)
-- [Plugin Examples](./oxion-plugin-examples.md)
+- [Master Arsitektur & Deployment](oxion-infra-deployment-spec.md)
+- [Platform Overview](oxion-platform-overview.md)
+- [oxRADIUS Spec](../modules/oxradius-spec.md)
+- [oxCore Spec](../modules/oxcore-spec.md)
+- [oxOLT Spec](../modules/oxolt-spec.md)
+- [oxBill Spec](../modules/oxbill-spec.md)
+- [oxNOC Spec](../modules/oxnoc-spec.md)
+- [Brand Naming](oxion-brand-naming.md)
+- [Plugin Architecture](../plugins/oxion-plugin-architecture.md)
+- [Plugin Examples](../plugins/oxion-plugin-examples.md)
 
 ---
 
@@ -1059,4 +1059,4 @@ GET    /v1/plugins
 GET    /v1/plugins/:id/executions
 ```
 
-Detail lengkap ada di `./oxion-plugin-architecture.md`.
+Detail lengkap ada di `../plugins/oxion-plugin-architecture.md`.

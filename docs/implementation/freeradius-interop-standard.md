@@ -13,8 +13,8 @@ Dokumen ini bukan blueprint admin panel. Fokusnya adalah:
 
 Dokumen ini melengkapi:
 
-- `docs/implementation/phase-d-production-breakdown.md`
-- `docs/implementation/radius-hardening-roadmap.md`
+- `phase-d-production-breakdown.md`
+- `radius-hardening-roadmap.md`
 
 ---
 

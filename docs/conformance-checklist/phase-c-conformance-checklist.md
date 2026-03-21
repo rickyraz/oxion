@@ -4,7 +4,7 @@
 
 Phase C = Enforcement Runtime and Idempotency.
 
-Referensi: `docs/oxion-mvp-fasttrack-plan.md`.
+Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 
 ---
 

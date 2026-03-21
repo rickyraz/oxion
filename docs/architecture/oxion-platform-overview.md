@@ -4,15 +4,15 @@
 
 ## 1. Dokumen Terkait
 
-- [Master Arsitektur & Deployment](./oxion-infra-deployment-spec.md)
-- [Platform Services Specification](./oxion-platform-services-spec.md)
-- [oxRADIUS Spec](./oxradius-spec.md)
-- [oxCore Spec](./oxcore-spec.md)
-- [oxOLT Spec](./oxolt-spec.md)
-- [oxBill Spec](./oxbill-spec.md)
-- [oxNOC Spec](./oxnoc-spec.md)
-- [Brand Naming](./oxion-brand-naming.md)
-- [Plugin Architecture](./oxion-plugin-architecture.md)
+- [Master Arsitektur & Deployment](oxion-infra-deployment-spec.md)
+- [Platform Services Specification](oxion-platform-services-spec.md)
+- [oxRADIUS Spec](../modules/oxradius-spec.md)
+- [oxCore Spec](../modules/oxcore-spec.md)
+- [oxOLT Spec](../modules/oxolt-spec.md)
+- [oxBill Spec](../modules/oxbill-spec.md)
+- [oxNOC Spec](../modules/oxnoc-spec.md)
+- [Brand Naming](oxion-brand-naming.md)
+- [Plugin Architecture](../plugins/oxion-plugin-architecture.md)
 
 ---
 

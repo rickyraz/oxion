@@ -2,10 +2,10 @@
 
 ## 1. Dokumen Terkait
 
-- [Plugin Architecture](./oxion-plugin-architecture.md)
-- [Platform Services Specification](./oxion-platform-services-spec.md)
-- [Master Arsitektur & Deployment](./oxion-infra-deployment-spec.md)
-- [Plugin Manifest Schema](./plugin-manifest.schema.json)
+- [Plugin Architecture](oxion-plugin-architecture.md)
+- [Platform Services Specification](../architecture/oxion-platform-services-spec.md)
+- [Master Arsitektur & Deployment](../architecture/oxion-infra-deployment-spec.md)
+- [Plugin Manifest Schema](plugin-manifest.schema.json)
 
 ---
 
@@ -410,15 +410,16 @@ Catatan:
 
 Template siap pakai tersedia di folder:
 
-- `docs/plugin-starter/ts/manifest.json`
-- `docs/plugin-starter/ts/src/main.ts`
-- `docs/plugin-starter/ts/test/main.test.ts`
-- `docs/plugin-starter/python/manifest.json`
-- `docs/plugin-starter/python/src/main.py`
-- `docs/plugin-starter/python/test/test_main.py`
-- `docs/plugin-starter/elixir/manifest.json`
-- `docs/plugin-starter/elixir/lib/main.ex`
-- `docs/plugin-starter/elixir/test/main_test.exs`
+- `plugin-starter/README.md`
+- `plugin-starter/ts/manifest.json`
+- `plugin-starter/ts/src/main.ts`
+- `plugin-starter/ts/test/main.test.ts`
+- `plugin-starter/python/manifest.json`
+- `plugin-starter/python/src/main.py`
+- `plugin-starter/python/test/test_main.py`
+- `plugin-starter/elixir/manifest.json`
+- `plugin-starter/elixir/lib/main.ex`
+- `plugin-starter/elixir/test/main_test.exs`
 
 Template ini sengaja minimal agar tim bisa clone cepat untuk membuat plugin baru.
 

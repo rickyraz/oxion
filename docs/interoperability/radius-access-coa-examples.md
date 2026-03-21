@@ -2,9 +2,9 @@
 
 ## 1. Dokumen Terkait
 
-- [Tier-1 Broadband Interop Profile](./oxion-tier1-broadband-interoperability-profile.md)
-- [oxRADIUS Spec](./oxradius-spec.md)
-- [oxBill Spec](./oxbill-spec.md)
+- [Tier-1 Broadband Interop Profile](oxion-tier1-broadband-interoperability-profile.md)
+- [oxRADIUS Spec](../modules/oxradius-spec.md)
+- [oxBill Spec](../modules/oxbill-spec.md)
 
 ---
 

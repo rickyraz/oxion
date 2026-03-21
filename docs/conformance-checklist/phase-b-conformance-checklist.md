@@ -4,7 +4,7 @@
 
 Phase B = Policy Engine Core.
 
-Referensi: `docs/oxion-mvp-fasttrack-plan.md`.
+Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 
 ---
 

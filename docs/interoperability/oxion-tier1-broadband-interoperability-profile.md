@@ -2,14 +2,14 @@
 
 ## 1. Dokumen Terkait
 
-- [Master Arsitektur & Deployment](./oxion-infra-deployment-spec.md)
-- [oxCore Spec](./oxcore-spec.md)
-- [oxRADIUS Spec](./oxradius-spec.md)
-- [oxOLT Spec](./oxolt-spec.md)
-- [Platform Services Specification](./oxion-platform-services-spec.md)
-- [RADIUS Access-Accept and CoA Examples](./radius-access-coa-examples.md)
-- [NAS Vendor Mapping Template](./nas-vendor-mapping-template.md)
-- [Broadband Packet Validation Checklist](./broadband-packet-validation-checklist.md)
+- [Master Arsitektur & Deployment](../architecture/oxion-infra-deployment-spec.md)
+- [oxCore Spec](../modules/oxcore-spec.md)
+- [oxRADIUS Spec](../modules/oxradius-spec.md)
+- [oxOLT Spec](../modules/oxolt-spec.md)
+- [Platform Services Specification](../architecture/oxion-platform-services-spec.md)
+- [RADIUS Access-Accept and CoA Examples](radius-access-coa-examples.md)
+- [NAS Vendor Mapping Template](nas-vendor-mapping-template.md)
+- [Broadband Packet Validation Checklist](broadband-packet-validation-checklist.md)
 
 ---
 

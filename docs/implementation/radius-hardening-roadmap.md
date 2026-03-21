@@ -14,8 +14,9 @@ Dokumen ini fokus pada urutan kerja, artefak yang perlu dibuat, dan definisi sel
 
 Dokumen ini melengkapi:
 
-- `docs/implementation/phase-d-production-breakdown.md`
-- `docs/implementation/freeradius-interop-standard.md`
+- `phase-d-production-breakdown.md`
+- `freeradius-interop-standard.md`
+- `architecture-risk-review.md`
 
 ---
 
@@ -57,6 +58,21 @@ Catatan:
 - scaffold ini sengaja belum menyatakan workstream selesai,
 - yang ditanam sekarang adalah type contract, resolver dasar, helper packet awal, dan test baseline agar implementasi berikutnya tidak mulai dari nol.
 
+Progress yang sudah benar-benar terhubung sesudah scaffold awal:
+
+- packet layer sudah mengenal code family `Disconnect`
+- packet layer sudah punya helper `Message-Authenticator` dan `Event-Timestamp`
+- encoder dictionary sudah mulai dipakai oleh packet translation path
+- live `CoA` path sudah bisa dibangun dari `NAS registry + session read model` via managed execution path
+
+Yang masih belum selesai penuh:
+
+- `Message-Authenticator` belum diterapkan ke seluruh packet family di semua jalur transport
+- replay cache masih pure-domain dan belum menjadi runtime enforcement
+- `Disconnect` belum punya live transport/execution setara `CoA`
+- vendor registry belum menggantikan semua prefix mapping legacy
+- `Status-Server`, `UDP worker`, dan `RadSec` masih berupa baseline contract
+
 ---
 
 ## 3. Urutan Implementasi
@@ -76,6 +92,31 @@ Urutan yang direkomendasikan:
 Jangan dibalik.
 
 Kalau vendor registry dan session source belum ada, memperkeras transport saja hanya membuat adapter lebih cepat salah.
+
+---
+
+## 3.1 Penyesuaian Prioritas Berdasarkan Risk Review
+
+`architecture-risk-review.md` menambah satu koreksi penting terhadap urutan kerja yang kelihatannya murni teknis.
+
+Walau replay cache, disconnect live path, dan VSA registry tetap wajib, ada dua fondasi yang harus diperlakukan sebagai gating work sebelum hardening packet dilanjutkan terlalu jauh:
+
+1. `session read model` yang benar-benar authoritative,
+2. `NAS endpoint registry` yang menjadi runtime source of truth.
+
+Alasannya sederhana:
+
+- replay protection tanpa session source yang benar hanya membuat packet path lebih ketat, bukan lebih benar,
+- disconnect live path tanpa endpoint/session resolution yang tepercaya hanya memindahkan bug dari layer orchestration ke wire protocol,
+- VSA registry akan memberi payoff jauh lebih besar setelah target session dan NAS resolution sudah deterministic.
+
+Workstream lintas modul yang harus berjalan paralel:
+
+- `workflow saga / compensation` di `oxCore`,
+- `payment webhook idempotency` di `oxBill`,
+- `audit privacy model` dan `ONU admission gate` di spec/domain masing-masing.
+
+Dengan kata lain, backlog berikut tetap benar secara teknis, tetapi secara prioritas eksekusi harus dibaca bersama risk review.
 
 ---
 

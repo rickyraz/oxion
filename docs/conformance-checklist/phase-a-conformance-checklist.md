@@ -4,15 +4,15 @@
 
 Phase A = Contract and Determinism Baseline.
 
-Referensi: `docs/oxion-mvp-fasttrack-plan.md`.
+Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 
 ---
 
 ## Checklist
 
-- [x] Contract schema tersedia: `docs/collection-policy.schema.json`
-- [x] EBNF/semantic spec tersedia: `docs/collection-policy-ebnf.md`
-- [x] Contract matrix tersedia: `docs/collection-policy-contract-matrix.md`
+- [x] Contract schema tersedia: `../policies/collection-policy.schema.json`
+- [x] EBNF/semantic spec tersedia: `../policies/collection-policy-ebnf.md`
+- [x] Contract matrix tersedia: `../policies/collection-policy-contract-matrix.md`
 - [x] Lifecycle transition rules terdokumentasi dan tidak ambigu
 - [x] Single active published policy per tenant terdokumentasi
 - [x] Determinism rule (`priority`, `stage.id`, `stop_on_match`) terdokumentasi

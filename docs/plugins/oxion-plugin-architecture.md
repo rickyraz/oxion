@@ -2,12 +2,12 @@
 
 ## 1. Dokumen Terkait
 
-- [Master Arsitektur & Deployment](./oxion-infra-deployment-spec.md)
-- [Platform Services Specification](./oxion-platform-services-spec.md)
-- [oxCore Spec](./oxcore-spec.md)
-- [oxRADIUS Spec](./oxradius-spec.md)
-- [Oxion Docs Map](./README.md)
-- [Plugin Examples](./oxion-plugin-examples.md)
+- [Master Arsitektur & Deployment](../architecture/oxion-infra-deployment-spec.md)
+- [Platform Services Specification](../architecture/oxion-platform-services-spec.md)
+- [oxCore Spec](../modules/oxcore-spec.md)
+- [oxRADIUS Spec](../modules/oxradius-spec.md)
+- [Oxion Docs Map](../README.md)
+- [Plugin Examples](oxion-plugin-examples.md)
 
 ---
 
@@ -265,6 +265,6 @@ GET    /v1/plugins/:id/executions
 
 Contoh konkret manifest + hook plugin dengan komentar tersedia di:
 
-- `./oxion-plugin-examples.md`
-- `./plugin-manifest.schema.json`
-- `./plugin-starter/README.md`
+- `oxion-plugin-examples.md`
+- `plugin-manifest.schema.json`
+- `plugin-starter/README.md`

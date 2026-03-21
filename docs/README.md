@@ -1,55 +1,97 @@
 # Oxion Docs Map
 
-Dokumen master arsitektur ada di:
+Struktur `docs/` sekarang dipisah berdasarkan fungsi dokumen, bukan dibiarkan datar.
 
-- [oxion-infra-deployment-spec.md](./oxion-infra-deployment-spec.md)
+## Folder Structure
 
-Profil produk:
+```text
+docs/
+├── architecture/           # overview platform, infra, services, naming
+├── modules/                # spec bounded context utama: oxRADIUS, oxCore, oxOLT, oxBill, oxNOC
+├── policies/               # contract, schema, grammar, MVP plan policy/billing
+├── implementation/         # breakdown, roadmap, interop standard, risk review
+├── interoperability/       # profile broadband, example packet, vendor template, checklist packet
+├── plugins/                # plugin architecture, examples, schema, starter manifests
+├── operations/             # migration runbook, testing strategy
+├── conformance-checklist/  # evidence per phase
+└── README.md
+```
 
-- **Lite Mode**: panel FreeRADIUS-style untuk skenario kecil (deploy cepat, simple menu).
-- **Platform Mode**: kapabilitas Oxion penuh untuk multi-tenant dan enterprise.
+## Folder Guide
 
-Fokus runtime plugin v1:
+- `architecture/`
+  - dokumen platform level yang menjelaskan arah produk, deployment, dan service boundary.
+- `modules/`
+  - spec untuk big modules utama yang jadi bounded context runtime.
+- `policies/`
+  - schema, EBNF, contract matrix, dan plan MVP policy/collection.
+- `implementation/`
+  - catatan engineering yang lebih operasional: breakdown phase, hardening roadmap, findings, risk review.
+- `interoperability/`
+  - dokumen jaringan dan RADIUS yang sifatnya vendor-facing atau packet-facing.
+- `plugins/`
+  - arsitektur plugin, example, schema, dan starter manifest.
+- `operations/`
+  - runbook migrasi dan strategi verifikasi/testing.
+- `conformance-checklist/`
+  - bukti implementasi per phase.
 
-- **TypeScript**
-- **Python**
-- **Elixir**
+## Where To Start
+
+Kalau mau memahami platform dari atas ke bawah, baca urut ini:
+
+1. [Platform Overview](architecture/oxion-platform-overview.md)
+2. [Infrastructure, Deployment, and Roadmap](architecture/oxion-infra-deployment-spec.md)
+3. [Platform Services Specification](architecture/oxion-platform-services-spec.md)
+4. [oxRADIUS Spec](modules/oxradius-spec.md)
+5. [oxCore Spec](modules/oxcore-spec.md)
+6. [oxOLT Spec](modules/oxolt-spec.md)
+7. [oxBill Spec](modules/oxbill-spec.md)
+8. [oxNOC Spec](modules/oxnoc-spec.md)
+
+Kalau fokusnya implementation hardening yang sedang aktif:
+
+1. [MVP Fast-Track Plan](policies/oxion-mvp-fasttrack-plan.md)
+2. [Phase D Production Breakdown](implementation/phase-d-production-breakdown.md)
+3. [FreeRADIUS Interop Standard](implementation/freeradius-interop-standard.md)
+4. [Radius Hardening Roadmap](implementation/radius-hardening-roadmap.md)
+5. [Architecture Risk Review](implementation/architecture-risk-review.md)
+
+Kalau fokusnya contract dan conformance:
+
+1. [Collection Policy Schema](policies/collection-policy.schema.json)
+2. [Collection Policy EBNF](policies/collection-policy-ebnf.md)
+3. [Collection Policy Contract Matrix](policies/collection-policy-contract-matrix.md)
+4. [Phase A Checklist](conformance-checklist/phase-a-conformance-checklist.md)
+5. [Phase B Checklist](conformance-checklist/phase-b-conformance-checklist.md)
+6. [Phase C Checklist](conformance-checklist/phase-c-conformance-checklist.md)
+7. [Phase D Checklist](conformance-checklist/phase-d-conformance-checklist.md)
+
+## Reference Sets
+
+- Plugin:
+  - [Plugin Architecture](plugins/oxion-plugin-architecture.md)
+  - [Plugin Examples](plugins/oxion-plugin-examples.md)
+  - [Plugin Manifest Schema](plugins/plugin-manifest.schema.json)
+  - [Plugin Starter README](plugins/plugin-starter/README.md)
+- Interoperability:
+  - [Tier-1 Broadband Interoperability Profile](interoperability/oxion-tier1-broadband-interoperability-profile.md)
+  - [RADIUS Access-Accept and CoA Examples](interoperability/radius-access-coa-examples.md)
+  - [NAS Vendor Mapping Template](interoperability/nas-vendor-mapping-template.md)
+  - [Broadband Packet Validation Checklist](interoperability/broadband-packet-validation-checklist.md)
+- Operations:
+  - [daloRADIUS Migration Runbook](operations/oxion-dalo-migration-runbook.md)
+  - [Testing Strategy](operations/oxion-testing-strategy.md)
+
+## Product Modes
+
+- **Lite Mode**
+  - panel FreeRADIUS-style untuk skenario kecil, lab, atau single POP.
+- **Platform Mode**
+  - kapabilitas Oxion penuh untuk multi-tenant, orchestration, dan observability lengkap.
 
 Jalur adopsi yang disarankan:
 
 1. Mulai dari Lite Mode.
 2. Migrasi data daloRADIUS dari MySQL/MariaDB via migration wizard.
 3. Naik ke Platform Mode dan konsolidasi penuh di PostgreSQL 18.
-
-Urutan baca yang direkomendasikan:
-
-1. [oxion-platform-overview.md](./oxion-platform-overview.md)
-2. [oxion-infra-deployment-spec.md](./oxion-infra-deployment-spec.md)
-3. [oxion-platform-services-spec.md](./oxion-platform-services-spec.md)
-4. [oxradius-spec.md](./oxradius-spec.md)
-5. [oxcore-spec.md](./oxcore-spec.md)
-6. [oxolt-spec.md](./oxolt-spec.md)
-7. [oxbill-spec.md](./oxbill-spec.md)
-8. [oxnoc-spec.md](./oxnoc-spec.md)
-9. [oxion-brand-naming.md](./oxion-brand-naming.md)
-10. [oxion-plugin-architecture.md](./oxion-plugin-architecture.md)
-11. [oxion-plugin-examples.md](./oxion-plugin-examples.md)
-12. [plugin-manifest.schema.json](./plugin-manifest.schema.json)
-13. [collection-policy.schema.json](./collection-policy.schema.json)
-14. [collection-policy-ebnf.md](./collection-policy-ebnf.md)
-15. [collection-policy-contract-matrix.md](./collection-policy-contract-matrix.md)
-16. [conformance-checklist/phase-a-conformance-checklist.md](./conformance-checklist/phase-a-conformance-checklist.md)
-17. [conformance-checklist/phase-b-conformance-checklist.md](./conformance-checklist/phase-b-conformance-checklist.md)
-18. [conformance-checklist/phase-c-conformance-checklist.md](./conformance-checklist/phase-c-conformance-checklist.md)
-19. [conformance-checklist/phase-d-conformance-checklist.md](./conformance-checklist/phase-d-conformance-checklist.md)
-20. [oxion-mvp-fasttrack-plan.md](./oxion-mvp-fasttrack-plan.md)
-21. [implementation/phase-d-production-breakdown.md](./implementation/phase-d-production-breakdown.md)
-22. [implementation/freeradius-interop-standard.md](./implementation/freeradius-interop-standard.md)
-23. [implementation/radius-hardening-roadmap.md](./implementation/radius-hardening-roadmap.md)
-24. [oxion-tier1-broadband-interoperability-profile.md](./oxion-tier1-broadband-interoperability-profile.md)
-25. [radius-access-coa-examples.md](./radius-access-coa-examples.md)
-26. [nas-vendor-mapping-template.md](./nas-vendor-mapping-template.md)
-27. [broadband-packet-validation-checklist.md](./broadband-packet-validation-checklist.md)
-28. [oxion-testing-strategy.md](./oxion-testing-strategy.md)
-29. [plugin-starter/README.md](./plugin-starter/README.md)
-30. [oxion-dalo-migration-runbook.md](./oxion-dalo-migration-runbook.md)

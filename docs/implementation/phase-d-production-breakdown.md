@@ -6,8 +6,8 @@ Dokumen ini memecah **Phase D - RADIUS Path (`radius_only`)** menjadi unit imple
 
 Companion docs untuk hardening setelah baseline Phase D:
 
-- `docs/implementation/freeradius-interop-standard.md`
-- `docs/implementation/radius-hardening-roadmap.md`
+- `freeradius-interop-standard.md`
+- `radius-hardening-roadmap.md`
 
 Dokumen ini melanjutkan baseline yang sudah ada sebelum Phase D:
 
@@ -21,7 +21,7 @@ Phase D adalah titik ketika core policy berhenti menjadi pure function dan mulai
 
 ## 2. Scope Phase D
 
-Referensi utama: `docs/oxion-mvp-fasttrack-plan.md`.
+Referensi utama: `../policies/oxion-mvp-fasttrack-plan.md`.
 
 Scope resmi phase ini:
 

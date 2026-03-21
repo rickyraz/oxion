@@ -2,9 +2,9 @@
 
 ## 1. Dokumen Terkait
 
-- [Tier-1 Broadband Interop Profile](./oxion-tier1-broadband-interoperability-profile.md)
-- [RADIUS Access-Accept and CoA Examples](./radius-access-coa-examples.md)
-- [NAS Vendor Mapping Template](./nas-vendor-mapping-template.md)
+- [Tier-1 Broadband Interop Profile](oxion-tier1-broadband-interoperability-profile.md)
+- [RADIUS Access-Accept and CoA Examples](radius-access-coa-examples.md)
+- [NAS Vendor Mapping Template](nas-vendor-mapping-template.md)
 
 ---
 

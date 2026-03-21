@@ -6,19 +6,19 @@
 
 ## 1. Dokumen Terkait
 
-- [Master Arsitektur & Deployment](./oxion-infra-deployment-spec.md)
-- [Platform Overview](./oxion-platform-overview.md)
-- [Platform Services Specification](./oxion-platform-services-spec.md)
-- [oxCore Spec](./oxcore-spec.md)
-- [oxBill Spec](./oxbill-spec.md)
-- [oxOLT Spec](./oxolt-spec.md)
-- [oxNOC Spec](./oxnoc-spec.md)
-- [Brand Naming](./oxion-brand-naming.md)
-- [Plugin Architecture](./oxion-plugin-architecture.md)
-- [dalo Migration Runbook](./oxion-dalo-migration-runbook.md)
-- [Tier-1 Broadband Interop Profile](./oxion-tier1-broadband-interoperability-profile.md)
-- [RADIUS Access-Accept and CoA Examples](./radius-access-coa-examples.md)
-- [NAS Vendor Mapping Template](./nas-vendor-mapping-template.md)
+- [Master Arsitektur & Deployment](../architecture/oxion-infra-deployment-spec.md)
+- [Platform Overview](../architecture/oxion-platform-overview.md)
+- [Platform Services Specification](../architecture/oxion-platform-services-spec.md)
+- [oxCore Spec](oxcore-spec.md)
+- [oxBill Spec](oxbill-spec.md)
+- [oxOLT Spec](oxolt-spec.md)
+- [oxNOC Spec](oxnoc-spec.md)
+- [Brand Naming](../architecture/oxion-brand-naming.md)
+- [Plugin Architecture](../plugins/oxion-plugin-architecture.md)
+- [dalo Migration Runbook](../operations/oxion-dalo-migration-runbook.md)
+- [Tier-1 Broadband Interop Profile](../interoperability/oxion-tier1-broadband-interoperability-profile.md)
+- [RADIUS Access-Accept and CoA Examples](../interoperability/radius-access-coa-examples.md)
+- [NAS Vendor Mapping Template](../interoperability/nas-vendor-mapping-template.md)
 
 ---
 

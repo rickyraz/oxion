@@ -2,9 +2,9 @@
 
 ## 1. Dokumen Terkait
 
-- [Collection Policy Schema](./collection-policy.schema.json)
-- [oxBill Spec](./oxbill-spec.md)
-- [oxCore Spec](./oxcore-spec.md)
+- [Collection Policy Schema](collection-policy.schema.json)
+- [oxBill Spec](../modules/oxbill-spec.md)
+- [oxCore Spec](../modules/oxcore-spec.md)
 
 ---
 

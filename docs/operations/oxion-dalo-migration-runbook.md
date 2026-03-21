@@ -2,10 +2,10 @@
 
 ## 1. Dokumen Terkait
 
-- [Master Arsitektur & Deployment](./oxion-infra-deployment-spec.md)
-- [Platform Services Specification](./oxion-platform-services-spec.md)
-- [oxRADIUS Spec](./oxradius-spec.md)
-- [Oxion Docs Map](./README.md)
+- [Master Arsitektur & Deployment](../architecture/oxion-infra-deployment-spec.md)
+- [Platform Services Specification](../architecture/oxion-platform-services-spec.md)
+- [oxRADIUS Spec](../modules/oxradius-spec.md)
+- [Oxion Docs Map](../README.md)
 
 ---
 

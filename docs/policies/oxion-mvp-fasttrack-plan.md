@@ -86,7 +86,7 @@ Artefak phase:
 - `collection-policy.schema.json`
 - `collection-policy-ebnf.md`
 - `collection-policy-contract-matrix.md`
-- `conformance-checklist/phase-a-conformance-checklist.md`
+- `../conformance-checklist/phase-a-conformance-checklist.md`
 
 ---
 
@@ -125,7 +125,7 @@ Artefak phase:
 - `src/oxion/policy/validator.gleam`
 - `src/oxion/policy/evaluator.gleam`
 - `src/oxion/policy/simulator.gleam`
-- `conformance-checklist/phase-b-conformance-checklist.md`
+- `../conformance-checklist/phase-b-conformance-checklist.md`
 
 ---
 
@@ -166,7 +166,7 @@ Artefak phase:
 - `src/oxion/collection/idempotency.gleam`
 - `src/oxion/collection/dispatcher.gleam`
 - `src/oxion/collection/scheduler.gleam`
-- `conformance-checklist/phase-c-conformance-checklist.md`
+- `../conformance-checklist/phase-c-conformance-checklist.md`
 
 ---
 
@@ -201,8 +201,8 @@ Exit criteria:
 
 Companion breakdown:
 
-- `implementation/phase-d-production-breakdown.md`
-- `conformance-checklist/phase-d-conformance-checklist.md`
+- `../implementation/phase-d-production-breakdown.md`
+- `../conformance-checklist/phase-d-conformance-checklist.md`
 
 Artefak phase:
 
@@ -228,7 +228,7 @@ Artefak phase:
 - `src/oxion/radius/coa/execution.gleam`
 - `src/oxion/radius/coa/transport.gleam`
 - `src/oxion_radius_transport_ffi.erl`
-- `conformance-checklist/phase-d-conformance-checklist.md`
+- `../conformance-checklist/phase-d-conformance-checklist.md`
 
 ---
 
