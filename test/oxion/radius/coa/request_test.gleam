@@ -27,10 +27,7 @@ pub fn request_builds_suspend_packet_with_disconnect_hint_test() {
     )
   let target =
     types.ResolvedTarget(target_id: "suspend", attributes: [
-      vendor_types.RadiusAttribute(
-        name: "api.policy.access_action",
-        value: "suspend",
-      ),
+      vendor_types.RadiusAttribute(name: "vbng.access_action", value: "suspend"),
     ])
 
   assert request.build_request(plan, selector, target)
@@ -41,7 +38,7 @@ pub fn request_builds_suspend_packet_with_disconnect_hint_test() {
       session_selector: selector,
       attributes: [
         vendor_types.RadiusAttribute(
-          name: "api.policy.access_action",
+          name: "vbng.access_action",
           value: "suspend",
         ),
       ],

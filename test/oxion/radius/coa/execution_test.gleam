@@ -22,15 +22,12 @@ pub fn execution_returns_idempotent_skip_when_target_is_active_test() {
           name: "class",
           value: "throttled_due_overdue",
         ),
-        vendor_types.RadiusAttribute(name: "cisco_avpair.qos_up", value: "4096"),
+        vendor_types.RadiusAttribute(name: "cisco.qos_up", value: "4096"),
         vendor_types.RadiusAttribute(
-          name: "cisco_avpair.service_profile",
+          name: "cisco.service_profile",
           value: "bw_4mbps",
         ),
-        vendor_types.RadiusAttribute(
-          name: "cisco_avpair.qos_down",
-          value: "4096",
-        ),
+        vendor_types.RadiusAttribute(name: "cisco.qos_down", value: "4096"),
       ],
       session_active: True,
     ))
@@ -163,14 +160,11 @@ fn normal_snapshot(
     profile_id: option.Some("svc_home_100m"),
     attributes: [
       vendor_types.RadiusAttribute(
-        name: "cisco_avpair.service_profile",
+        name: "cisco.service_profile",
         value: "svc_home_100m",
       ),
-      vendor_types.RadiusAttribute(
-        name: "cisco_avpair.qos_down",
-        value: "102400",
-      ),
-      vendor_types.RadiusAttribute(name: "cisco_avpair.qos_up", value: "102400"),
+      vendor_types.RadiusAttribute(name: "cisco.qos_down", value: "102400"),
+      vendor_types.RadiusAttribute(name: "cisco.qos_up", value: "102400"),
       vendor_types.RadiusAttribute(name: "class", value: "normal"),
     ],
     session_active: True,

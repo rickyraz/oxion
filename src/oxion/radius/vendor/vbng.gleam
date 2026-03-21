@@ -21,15 +21,15 @@ pub fn render_profile(
         True ->
           Ok([
             types.RadiusAttribute(
-              name: "api.policy.profile_id",
+              name: "vbng.profile_id",
               value: service_profile_id,
             ),
             types.RadiusAttribute(
-              name: "api.policy.down_kbps",
+              name: "vbng.down_kbps",
               value: int.to_string(download_kbps),
             ),
             types.RadiusAttribute(
-              name: "api.policy.up_kbps",
+              name: "vbng.up_kbps",
               value: int.to_string(upload_kbps),
             ),
             types.RadiusAttribute(name: "policy_tag", value: target_state),
@@ -46,10 +46,7 @@ pub fn render_suspend(
     True -> Error(types.MissingRequiredField(field: "suspend_reason"))
     False ->
       Ok([
-        types.RadiusAttribute(
-          name: "api.policy.access_action",
-          value: "suspend",
-        ),
+        types.RadiusAttribute(name: "vbng.access_action", value: "suspend"),
         types.RadiusAttribute(name: "policy_tag", value: target_state),
         types.RadiusAttribute(name: "reason", value: reason),
       ])

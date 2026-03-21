@@ -621,29 +621,32 @@ fn named_attribute_to_radius(
       // vendor registry owns that semantic explicitly.
       dictionary_named_attribute_to_radius("reply_message", value)
 
+    "cisco.service_profile"
+    | "cisco.qos_down"
+    | "cisco.qos_up"
+    | "cisco.access_action"
+    | "juniper.profile_name"
+    | "juniper.policer_down"
+    | "juniper.policer_up"
+    | "juniper.access_action" ->
+      dictionary_named_attribute_to_radius(name, value)
+
     _ ->
-      case string.starts_with(name, "cisco_avpair.") {
-        True ->
+      case legacy_vendor_attribute(name, value) {
+        Ok(#(legacy_logical_name, legacy_value)) ->
           dictionary_named_attribute_to_radius(
-            "cisco.avpair",
-            strip_prefix(name, "cisco_avpair.") <> "=" <> value,
+            legacy_logical_name,
+            legacy_value,
           )
 
-        False ->
-          case string.starts_with(name, "dynamic_profile.") {
+        Error(Nil) ->
+          case
+            string.starts_with(name, "vbng.")
+            || string.starts_with(name, "api.policy.")
+          {
             True ->
-              dictionary_named_attribute_to_radius(
-                "juniper.avpair",
-                strip_prefix(name, "dynamic_profile.") <> "=" <> value,
-              )
-
-            False ->
-              case string.starts_with(name, "api.policy.") {
-                True ->
-                  Error(UnsupportedLiveVendor(vendor: vendor_to_string(vendor)))
-
-                False -> Error(UnsupportedLiveAttribute(name: name))
-              }
+              Error(UnsupportedLiveVendor(vendor: vendor_to_string(vendor)))
+            False -> Error(UnsupportedLiveAttribute(name: name))
           }
       }
   }
@@ -679,6 +682,32 @@ fn vendor_to_string(vendor: vendor_types.RadiusVendor) -> String {
     vendor_types.Cisco -> "cisco"
     vendor_types.Juniper -> "juniper"
     vendor_types.Vbng -> "vbng"
+  }
+}
+
+// Why: older fixtures and persisted snapshots may still carry historical
+// `cisco_avpair.*` or `dynamic_profile.*` names, so packet translation keeps a
+// narrow compatibility shim while new code emits explicit dictionary names.
+fn legacy_vendor_attribute(
+  name: String,
+  value: String,
+) -> Result(#(String, String), Nil) {
+  case string.starts_with(name, "cisco_avpair.") {
+    True -> Ok(#("cisco." <> strip_prefix(name, "cisco_avpair."), value))
+
+    False ->
+      case string.starts_with(name, "dynamic_profile.") {
+        True ->
+          case strip_prefix(name, "dynamic_profile.") {
+            "name" -> Ok(#("juniper.profile_name", value))
+            "policer_down" -> Ok(#("juniper.policer_down", value))
+            "policer_up" -> Ok(#("juniper.policer_up", value))
+            "access_action" -> Ok(#("juniper.access_action", value))
+            _ -> Error(Nil)
+          }
+
+        False -> Error(Nil)
+      }
   }
 }
 

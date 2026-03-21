@@ -31,17 +31,11 @@ pub fn resolver_maps_cisco_profile_definition_test() {
       assert attributes
         == [
           vendor_types.RadiusAttribute(
-            name: "cisco_avpair.service_profile",
+            name: "cisco.service_profile",
             value: "bw_4mbps",
           ),
-          vendor_types.RadiusAttribute(
-            name: "cisco_avpair.qos_down",
-            value: "4096",
-          ),
-          vendor_types.RadiusAttribute(
-            name: "cisco_avpair.qos_up",
-            value: "4096",
-          ),
+          vendor_types.RadiusAttribute(name: "cisco.qos_down", value: "4096"),
+          vendor_types.RadiusAttribute(name: "cisco.qos_up", value: "4096"),
           vendor_types.RadiusAttribute(
             name: "class",
             value: "throttled_due_overdue",

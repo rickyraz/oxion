@@ -21,15 +21,15 @@ pub fn render_profile(
         True ->
           Ok([
             types.RadiusAttribute(
-              name: "cisco_avpair.service_profile",
+              name: "cisco.service_profile",
               value: service_profile_id,
             ),
             types.RadiusAttribute(
-              name: "cisco_avpair.qos_down",
+              name: "cisco.qos_down",
               value: int.to_string(download_kbps),
             ),
             types.RadiusAttribute(
-              name: "cisco_avpair.qos_up",
+              name: "cisco.qos_up",
               value: int.to_string(upload_kbps),
             ),
             types.RadiusAttribute(name: "class", value: target_state),
@@ -46,10 +46,7 @@ pub fn render_suspend(
     True -> Error(types.MissingRequiredField(field: "suspend_reason"))
     False ->
       Ok([
-        types.RadiusAttribute(
-          name: "cisco_avpair.access_action",
-          value: "suspend",
-        ),
+        types.RadiusAttribute(name: "cisco.access_action", value: "suspend"),
         types.RadiusAttribute(name: "class", value: target_state),
         types.RadiusAttribute(name: "reason", value: reason),
       ])

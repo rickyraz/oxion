@@ -20,31 +20,28 @@ pub fn profile_diff_normalizes_order_and_duplicates_test() {
           name: "class",
           value: "throttled_due_overdue",
         ),
-        vendor_types.RadiusAttribute(name: "cisco_avpair.qos_up", value: "4096"),
+        vendor_types.RadiusAttribute(name: "cisco.qos_up", value: "4096"),
         vendor_types.RadiusAttribute(
-          name: "cisco_avpair.service_profile",
+          name: "cisco.service_profile",
           value: "bw_4mbps",
         ),
-        vendor_types.RadiusAttribute(name: "cisco_avpair.qos_up", value: "4096"),
-        vendor_types.RadiusAttribute(
-          name: "cisco_avpair.qos_down",
-          value: "4096",
-        ),
+        vendor_types.RadiusAttribute(name: "cisco.qos_up", value: "4096"),
+        vendor_types.RadiusAttribute(name: "cisco.qos_down", value: "4096"),
       ],
       session_active: True,
     )
   let target =
     types.ResolvedTarget(target_id: "bw_4mbps", attributes: [
-      vendor_types.RadiusAttribute(name: "cisco_avpair.qos_down", value: "4096"),
+      vendor_types.RadiusAttribute(name: "cisco.qos_down", value: "4096"),
       vendor_types.RadiusAttribute(
-        name: "cisco_avpair.service_profile",
+        name: "cisco.service_profile",
         value: "bw_4mbps",
       ),
       vendor_types.RadiusAttribute(
         name: "class",
         value: "throttled_due_overdue",
       ),
-      vendor_types.RadiusAttribute(name: "cisco_avpair.qos_up", value: "4096"),
+      vendor_types.RadiusAttribute(name: "cisco.qos_up", value: "4096"),
     ])
 
   assert diff.compare(current_snapshot, target) == diff.AlreadyApplied

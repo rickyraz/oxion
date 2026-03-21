@@ -21,15 +21,15 @@ pub fn render_profile(
         True ->
           Ok([
             types.RadiusAttribute(
-              name: "dynamic_profile.name",
+              name: "juniper.profile_name",
               value: service_profile_id,
             ),
             types.RadiusAttribute(
-              name: "dynamic_profile.policer_down",
+              name: "juniper.policer_down",
               value: int.to_string(download_kbps),
             ),
             types.RadiusAttribute(
-              name: "dynamic_profile.policer_up",
+              name: "juniper.policer_up",
               value: int.to_string(upload_kbps),
             ),
             types.RadiusAttribute(name: "class", value: target_state),
@@ -46,10 +46,7 @@ pub fn render_suspend(
     True -> Error(types.MissingRequiredField(field: "suspend_reason"))
     False ->
       Ok([
-        types.RadiusAttribute(
-          name: "dynamic_profile.access_action",
-          value: "suspend",
-        ),
+        types.RadiusAttribute(name: "juniper.access_action", value: "suspend"),
         types.RadiusAttribute(name: "class", value: target_state),
         types.RadiusAttribute(name: "reason", value: reason),
       ])

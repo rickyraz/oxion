@@ -39,6 +39,7 @@ pub fn encode(
   logical_name: String,
   value: String,
 ) -> Result(WireAttribute, EncodeError) {
+  let value = apply_value_prefix(spec, value)
   let encoded_value_result = case spec.data_type {
     types.Text -> Ok(bit_array.from_string(value))
     types.Integer -> encode_integer(logical_name, value)
@@ -70,6 +71,13 @@ pub fn encode(
             )),
           )
       }
+  }
+}
+
+fn apply_value_prefix(spec: types.RadiusAttributeSpec, value: String) -> String {
+  case spec.value_prefix {
+    option.Some(prefix) -> prefix <> value
+    option.None -> value
   }
 }
 

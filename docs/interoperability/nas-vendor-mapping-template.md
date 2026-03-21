@@ -73,6 +73,12 @@ observability:
 
 ## 4. Contoh Ringkas per Vendor
 
+Catatan:
+
+- gunakan logical name vendor yang eksplisit seperti `cisco.qos_down` atau `juniper.profile_name`,
+- jangan menambah mapping baru dengan prefix lama seperti `cisco_avpair.*` atau `dynamic_profile.*`,
+- shim prefix lama hanya dipertahankan untuk kompatibilitas snapshot lama di packet layer.
+
 ## Cisco BNG (Contoh)
 
 ```yaml
@@ -81,9 +87,9 @@ vendor: "cisco"
 model_family: "asr"
 software_version: "iosxr7.x"
 attribute_mapping:
-  service_profile_id: { target: "cisco_avpair.service_profile", required: true }
-  download_kbps: { target: "cisco_avpair.qos_down", required: true }
-  upload_kbps: { target: "cisco_avpair.qos_up", required: true }
+  service_profile_id: { target: "cisco.service_profile", required: true }
+  download_kbps: { target: "cisco.qos_down", required: true }
+  upload_kbps: { target: "cisco.qos_up", required: true }
   policy_tag: { target: "class", required: false }
 ```
 
@@ -95,9 +101,9 @@ vendor: "juniper"
 model_family: "mx"
 software_version: "junos23.x"
 attribute_mapping:
-  service_profile_id: { target: "dynamic_profile.name", required: true }
-  download_kbps: { target: "dynamic_profile.policer_down", required: true }
-  upload_kbps: { target: "dynamic_profile.policer_up", required: true }
+  service_profile_id: { target: "juniper.profile_name", required: true }
+  download_kbps: { target: "juniper.policer_down", required: true }
+  upload_kbps: { target: "juniper.policer_up", required: true }
   policy_tag: { target: "class", required: false }
 ```
 
@@ -109,10 +115,10 @@ vendor: "vbng"
 model_family: "whitebox"
 software_version: "api-v1"
 attribute_mapping:
-  service_profile_id: { target: "api.policy.profile_id", required: true }
-  download_kbps: { target: "api.policy.down_kbps", required: true }
-  upload_kbps: { target: "api.policy.up_kbps", required: true }
-  access_action: { target: "api.policy.access_action", required: false }
+  service_profile_id: { target: "vbng.profile_id", required: true }
+  download_kbps: { target: "vbng.down_kbps", required: true }
+  upload_kbps: { target: "vbng.up_kbps", required: true }
+  access_action: { target: "vbng.access_action", required: false }
 ```
 
 ---

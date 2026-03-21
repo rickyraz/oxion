@@ -100,3 +100,67 @@ pub fn packet_encodes_hardened_coa_request_test() {
     Error(_) -> panic
   }
 }
+
+pub fn packet_keeps_legacy_cisco_attribute_names_compatible_test() {
+  let request_value =
+    request.CoaRequest(
+      packet_type: "CoA-Request",
+      reason: "collection_soft_throttle",
+      action_fingerprint: "fp:packet:legacy-cisco",
+      session_selector: snapshot.SessionSelector(
+        username: option.Some("cust_001"),
+        framed_ip: option.None,
+        acct_session_id: option.None,
+        nas_ip_address: option.None,
+      ),
+      attributes: [
+        vendor_types.RadiusAttribute(
+          name: "cisco_avpair.service_profile",
+          value: "bw_4mbps",
+        ),
+      ],
+      disconnect_hint: False,
+    )
+
+  case
+    packet.encode_coa_request_with_security(
+      request_value,
+      vendor_types.Cisco,
+      "sharedsecret",
+      packet.default_security_config(),
+    )
+  {
+    Ok(_encoded_request) -> Nil
+    Error(_) -> panic
+  }
+}
+
+pub fn packet_rejects_vbng_live_attributes_test() {
+  let request_value =
+    request.CoaRequest(
+      packet_type: "CoA-Request",
+      reason: "collection_soft_throttle",
+      action_fingerprint: "fp:packet:vbng",
+      session_selector: snapshot.SessionSelector(
+        username: option.Some("cust_001"),
+        framed_ip: option.None,
+        acct_session_id: option.None,
+        nas_ip_address: option.None,
+      ),
+      attributes: [
+        vendor_types.RadiusAttribute(
+          name: "vbng.profile_id",
+          value: "gold-profile",
+        ),
+      ],
+      disconnect_hint: False,
+    )
+
+  assert packet.encode_coa_request_with_security(
+      request_value,
+      vendor_types.Vbng,
+      "sharedsecret",
+      packet.default_security_config(),
+    )
+    == Error(packet.UnsupportedLiveVendor(vendor: "vbng"))
+}

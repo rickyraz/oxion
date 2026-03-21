@@ -273,14 +273,11 @@ fn normal_snapshot(
     profile_id: option.Some("svc_home_100m"),
     attributes: [
       vendor_types.RadiusAttribute(
-        name: "cisco_avpair.service_profile",
+        name: "cisco.service_profile",
         value: "svc_home_100m",
       ),
-      vendor_types.RadiusAttribute(
-        name: "cisco_avpair.qos_down",
-        value: "102400",
-      ),
-      vendor_types.RadiusAttribute(name: "cisco_avpair.qos_up", value: "102400"),
+      vendor_types.RadiusAttribute(name: "cisco.qos_down", value: "102400"),
+      vendor_types.RadiusAttribute(name: "cisco.qos_up", value: "102400"),
       vendor_types.RadiusAttribute(name: "class", value: "normal"),
     ],
     session_active: True,
@@ -333,14 +330,11 @@ fn sample_active_session() -> session_types.ActiveSession {
     active_profile_id: option.Some("svc_home_100m"),
     attributes: [
       vendor_types.RadiusAttribute(
-        name: "cisco_avpair.service_profile",
+        name: "cisco.service_profile",
         value: "svc_home_100m",
       ),
-      vendor_types.RadiusAttribute(
-        name: "cisco_avpair.qos_down",
-        value: "102400",
-      ),
-      vendor_types.RadiusAttribute(name: "cisco_avpair.qos_up", value: "102400"),
+      vendor_types.RadiusAttribute(name: "cisco.qos_down", value: "102400"),
+      vendor_types.RadiusAttribute(name: "cisco.qos_up", value: "102400"),
       vendor_types.RadiusAttribute(name: "class", value: "normal"),
     ],
     last_accounting_epoch_seconds: 1_709_999_980,

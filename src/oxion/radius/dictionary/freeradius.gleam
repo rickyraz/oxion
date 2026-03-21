@@ -12,6 +12,7 @@ pub fn render_attribute(spec: types.RadiusAttributeSpec) -> String {
     data_type: data_type,
     allowed_in: _allowed_in,
     role: _role,
+    value_prefix: _value_prefix,
     freeradius_name: freeradius_name,
     source_ref: _source_ref,
   ) = spec

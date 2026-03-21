@@ -40,6 +40,7 @@ pub type RadiusAttributeSpec {
     data_type: RadiusDataType,
     allowed_in: List(PacketFamily),
     role: AttributeRole,
+    value_prefix: option.Option(String),
     freeradius_name: String,
     source_ref: String,
   )
