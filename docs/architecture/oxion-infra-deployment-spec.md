@@ -775,28 +775,41 @@ CREATE TABLE push_tokens (
 );
 
 -- ═══════════════════════════════════════════════
--- AUDIT LOG (append-only)
+-- AUDIT LOG (append-only, redacted, long-retention)
 -- ═══════════════════════════════════════════════
 
 CREATE TABLE audit_log (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id     UUID NOT NULL,
-  actor_id      UUID NOT NULL,
-  actor_role    TEXT NOT NULL,
-  action        TEXT NOT NULL,
-  resource_type TEXT NOT NULL,
-  resource_id   TEXT,
-  old_value     JSONB,
-  new_value     JSONB,
-  ip_address    INET,
-  user_agent    TEXT,
-  success       BOOLEAN NOT NULL,
-  error_msg     TEXT,
-  created_at    TIMESTAMPTZ DEFAULT now()
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id        UUID NOT NULL,
+  actor_id         UUID,
+  actor_role       TEXT NOT NULL,
+  action           TEXT NOT NULL,
+  resource_type    TEXT NOT NULL,
+  resource_ref     TEXT,
+  subject_ref      UUID,
+  subject_alias    TEXT,
+  change_summary   JSONB NOT NULL DEFAULT '{}'::jsonb,
+  privacy_class    TEXT NOT NULL,
+  retention_class  TEXT NOT NULL,
+  legal_basis      TEXT NOT NULL,
+  success          BOOLEAN NOT NULL,
+  error_code       TEXT,
+  created_at       TIMESTAMPTZ DEFAULT now()
 );
 CREATE INDEX ON audit_log(tenant_id, created_at DESC);
-CREATE INDEX ON audit_log(actor_id, created_at DESC);
-CREATE INDEX ON audit_log(resource_type, resource_id);
+CREATE INDEX ON audit_log(subject_alias, created_at DESC);
+CREATE INDEX ON audit_log(resource_type, resource_ref);
+
+CREATE TABLE audit_private_context (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  audit_id          UUID UNIQUE NOT NULL REFERENCES audit_log(id),
+  purpose           TEXT NOT NULL,
+  encrypted_payload BYTEA NOT NULL,
+  key_version       TEXT NOT NULL,
+  expires_at        TIMESTAMPTZ NOT NULL,
+  erased_at         TIMESTAMPTZ
+);
+CREATE INDEX ON audit_private_context(expires_at);
 
 -- ═══════════════════════════════════════════════
 -- CONSENT (GDPR)
@@ -809,9 +822,34 @@ CREATE TABLE consent_records (
   consent_type   TEXT NOT NULL,
   policy_version TEXT NOT NULL,
   given_at       TIMESTAMPTZ NOT NULL,
-  ip_address     INET,
+  ip_fingerprint BYTEA,
+  evidence_ref   UUID,
   revoked_at     TIMESTAMPTZ
 );
+
+CREATE TABLE data_subject_requests (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id           UUID NOT NULL,
+  subject_ref         UUID NOT NULL,
+  request_type        TEXT NOT NULL,
+  status              TEXT NOT NULL,
+  requested_by_actor  UUID,
+  legal_hold          BOOLEAN NOT NULL DEFAULT FALSE,
+  reason              TEXT,
+  submitted_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  completed_at        TIMESTAMPTZ
+);
+
+CREATE TABLE data_subject_request_items (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  dsr_id              UUID NOT NULL REFERENCES data_subject_requests(id),
+  store_name          TEXT NOT NULL,
+  action              TEXT NOT NULL,
+  status              TEXT NOT NULL,
+  resolution_note     TEXT,
+  executed_at         TIMESTAMPTZ
+);
+CREATE INDEX ON data_subject_request_items(dsr_id, store_name);
 
 -- ═══════════════════════════════════════════════
 -- FIRMWARE
@@ -921,7 +959,7 @@ GET    /v1/subscribers/:id/sessions
 GET    /v1/subscribers/:id/accounting
 GET    /v1/subscribers/:id/invoices
 GET    /v1/subscribers/:id/gdpr/export
-DELETE /v1/subscribers/:id/gdpr/erase
+POST   /v1/subscribers/:id/gdpr/erasure-requests
 
 # ── PACKAGES ─────────────────────────────────────────────
 GET    /v1/packages
@@ -1055,8 +1093,12 @@ GET    /v1/firmware/upgrades/:id
 
 # ── AUDIT (oxNOC) ─────────────────────────────────────────
 GET    /v1/audit-log
+POST   /v1/data-subject-requests
+GET    /v1/data-subject-requests/:id
+POST   /v1/data-subject-requests/:id/verify
+POST   /v1/data-subject-requests/:id/cancel
 GET    /v1/subscribers/:id/gdpr/export
-DELETE /v1/subscribers/:id/gdpr/erase
+POST   /v1/subscribers/:id/gdpr/erasure-requests
 GET    /v1/subscribers/:id/consent
 POST   /v1/subscribers/:id/consent
 DELETE /v1/subscribers/:id/consent/:type
@@ -1090,8 +1132,8 @@ GET    /graphql/subscriptions    (WebSocket upgrade)
 - Payment provider tokens tersimpan sebagai tokenized reference — tidak ada raw card number
 - Password subscriber: bcrypt (cost 12) atau PBKDF2
 - PDF invoice di Cloudflare R2 / Backblaze menggunakan signed URL dengan TTL 1 jam
-- GDPR: semua PII dapat di-anonymize via `gdpr/erase` endpoint
-- Audit log bersifat append-only — tidak ada UPDATE/DELETE
+- DSR diproses via workflow request dengan identity verification, legal-hold check, dan store-level execution
+- Audit log utama bersifat append-only dan redacted; PII sensitif ditempatkan di encrypted short-retention side store
 
 ### Kubernetes Secrets
 

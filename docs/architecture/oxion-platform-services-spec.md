@@ -853,10 +853,34 @@ Session Settings:
 
 ## 9. Audit Log & GDPR Compliance
 
-### Audit Engine
+### Target Model
 
 ```gleam
 // apps/audit_engine/src/audit_engine.gleam
+
+pub type PrivacyClass {
+  NoPersonalData
+  PseudonymisedOperationalData
+  DirectPersonalData
+  SensitiveOperationalContext
+}
+
+pub type RetentionClass {
+  ShortOperational
+  SecurityForensic
+  ConsentEvidence
+  FinancialStatutory
+  LongAudit
+}
+
+pub type LegalBasis {
+  Contract
+  LegalObligation
+  LegitimateInterest
+  Consent
+  VitalInterest
+  PublicTask
+}
 
 pub type AuditEvent {
   AuditEvent(
@@ -866,14 +890,26 @@ pub type AuditEvent {
     actor_role: String,
     action: AuditAction,
     resource_type: String,
-    resource_id: String,
-    old_value: Option(Json),
-    new_value: Option(Json),
-    ip_address: String,
-    user_agent: String,
+    resource_ref: Option(String),
+    subject_ref: Option(String),
+    subject_alias: Option(String),
+    change_summary: Json,
+    privacy_class: PrivacyClass,
+    retention_class: RetentionClass,
+    legal_basis: LegalBasis,
     timestamp: DateTime,
     success: Bool,
-    error: Option(String),
+    error_code: Option(String),
+  )
+}
+
+pub type AuditPrivateContext {
+  AuditPrivateContext(
+    audit_id: String,
+    purpose: String,
+    encrypted_payload: Bytes,
+    key_version: String,
+    expires_at: DateTime,
   )
 }
 
@@ -901,20 +937,82 @@ pub type AuditAction {
   OtaCompleted
 }
 
-// Setiap handler wajib emit audit event
+// Why: audit utama harus immutable dan long-retention, tetapi PII mentah
+// tidak boleh ikut menetap di jalur append-only.
 pub fn emit(event: AuditEvent, ctx: Context) -> Result(Nil, AuditError) {
   // Insert ke audit_log table (append-only, NO UPDATE/DELETE)
   // Publish ke NATS aaa.audit.{tenant_id}
   db.insert_audit(event, ctx.db)
 }
+
+pub fn attach_private_context(
+  context: AuditPrivateContext,
+  ctx: Context,
+) -> Result(Nil, AuditError) {
+  db.insert_audit_private_context(context, ctx.db)
+}
 ```
+
+### DSR Workflow
+
+Hak privasi tidak lagi dimodelkan sebagai aksi destruktif instan seperti `DELETE /gdpr/erase`.
+
+Target workflow:
+
+```text
+submitted
+  -> identity_verification_pending
+  -> verified
+  -> inventory_resolved
+  -> execution_planned
+  -> in_progress
+  -> completed
+
+failure branches:
+  -> rejected
+  -> blocked_by_legal_hold
+  -> partially_completed
+  -> cancelled
+```
+
+Keputusan dieksekusi per data store:
+
+- subscriber profile: delete atau pseudonymise,
+- active session/cache: delete,
+- accounting/invoice: retain bila ada `LegalObligation`, tetapi direct identifier dipseudonymise,
+- audit log: tetap append-only tetapi payload harus redacted,
+- audit private context: hapus atau crypto-shred sesuai retention/DSR,
+- consent evidence: retain minimal evidence yang masih punya dasar hukum.
 
 ### GDPR Tools
 
 ```gleam
 // apps/audit_engine/src/gdpr_exporter.gleam
 
-// Right to Access: export semua data subscriber
+pub type DsrRequestType {
+  Access
+  Erasure
+  Restriction
+  Rectification
+  Objection
+  Portability
+}
+
+pub type DsrRequestStatus {
+  Submitted
+  IdentityVerificationPending
+  Verified
+  InventoryResolved
+  ExecutionPlanned
+  InProgress
+  Completed
+  Rejected
+  BlockedByLegalHold
+  PartiallyCompleted
+  Cancelled
+}
+
+// Right to Access: export data sesuai inventory dan policy.
 pub fn export_subscriber_data(
   subscriber_id: String,
   ctx: Context,
@@ -923,7 +1021,7 @@ pub fn export_subscriber_data(
   use sessions   <- result.try(db.get_all_sessions(subscriber_id, ctx.db))
   use accounting <- result.try(db.get_all_accounting(subscriber_id, ctx.db))
   use invoices   <- result.try(db.get_all_invoices(subscriber_id, ctx.db))
-  use audit_log  <- result.try(db.get_audit_log(subscriber_id, ctx.db))
+  use audit_log  <- result.try(db.get_redacted_audit_log(subscriber_id, ctx.db))
 
   let package = GdprDataPackage(
     exported_at: datetime.now(),
@@ -938,15 +1036,13 @@ pub fn export_subscriber_data(
   gdpr_zip_generator.generate(package)
 }
 
-// Right to Erasure
-pub fn erase_subscriber(
+// Why: erasure harus diperlakukan sebagai workflow karena satu subject bisa
+// menyentuh store dengan legal basis dan retention yang berbeda.
+pub fn request_erasure(
   subscriber_id: String,
   ctx: Context,
-) -> Result(ErasureReport, GdprError) {
-  // Anonymize: ganti username/email/phone dengan SHA256 hash
-  // Retain accounting records dengan anonymized ID (wajib hukum)
-  // Hard delete: password_hash, personal contact info
-  // Catat erasure event di audit_log
+) -> Result(DsrRequest, GdprError) {
+  dsr_workflow.submit_erasure_request(subscriber_id, ctx)
 }
 ```
 
@@ -961,7 +1057,8 @@ pub type ConsentRecord {
     tenant_id: String,
     consent_type: ConsentType,
     given_at: DateTime,
-    ip_address: String,
+    ip_fingerprint: BitArray,
+    evidence_ref: Option(String),
     version: String,
     revoked_at: Option(DateTime),
   )
@@ -980,26 +1077,40 @@ pub type ConsentType {
 ### Database Schema
 
 ```sql
--- AUDIT LOG (append-only, tidak boleh ada UPDATE/DELETE)
+-- AUDIT LOG (append-only, redacted, long-retention)
 CREATE TABLE audit_log (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id     UUID NOT NULL,
-  actor_id      UUID NOT NULL,
-  actor_role    TEXT NOT NULL,
-  action        TEXT NOT NULL,
-  resource_type TEXT NOT NULL,
-  resource_id   TEXT,
-  old_value     JSONB,
-  new_value     JSONB,
-  ip_address    INET,
-  user_agent    TEXT,
-  success       BOOLEAN NOT NULL,
-  error_msg     TEXT,
-  created_at    TIMESTAMPTZ DEFAULT now()
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id        UUID NOT NULL,
+  actor_id         UUID,
+  actor_role       TEXT NOT NULL,
+  action           TEXT NOT NULL,
+  resource_type    TEXT NOT NULL,
+  resource_ref     TEXT,
+  subject_ref      UUID,
+  subject_alias    TEXT,
+  change_summary   JSONB NOT NULL DEFAULT '{}'::jsonb,
+  privacy_class    TEXT NOT NULL,
+  retention_class  TEXT NOT NULL,
+  legal_basis      TEXT NOT NULL,
+  success          BOOLEAN NOT NULL,
+  error_code       TEXT,
+  created_at       TIMESTAMPTZ DEFAULT now()
 );
 CREATE INDEX ON audit_log(tenant_id, created_at DESC);
-CREATE INDEX ON audit_log(actor_id, created_at DESC);
-CREATE INDEX ON audit_log(resource_type, resource_id);
+CREATE INDEX ON audit_log(subject_alias, created_at DESC);
+CREATE INDEX ON audit_log(resource_type, resource_ref);
+
+-- PRIVATE CONTEXT (encrypted, short-retention, erasable)
+CREATE TABLE audit_private_context (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  audit_id          UUID UNIQUE NOT NULL REFERENCES audit_log(id),
+  purpose           TEXT NOT NULL,
+  encrypted_payload BYTEA NOT NULL,
+  key_version       TEXT NOT NULL,
+  expires_at        TIMESTAMPTZ NOT NULL,
+  erased_at         TIMESTAMPTZ
+);
+CREATE INDEX ON audit_private_context(expires_at);
 
 -- CONSENT (GDPR)
 CREATE TABLE consent_records (
@@ -1009,21 +1120,54 @@ CREATE TABLE consent_records (
   consent_type   TEXT NOT NULL,
   policy_version TEXT NOT NULL,
   given_at       TIMESTAMPTZ NOT NULL,
-  ip_address     INET,
+  ip_fingerprint BYTEA,
+  evidence_ref   UUID,
   revoked_at     TIMESTAMPTZ
 );
+
+CREATE TABLE data_subject_requests (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id           UUID NOT NULL,
+  subject_ref         UUID NOT NULL,
+  request_type        TEXT NOT NULL,
+  status              TEXT NOT NULL,
+  requested_by_actor  UUID,
+  legal_hold          BOOLEAN NOT NULL DEFAULT FALSE,
+  reason              TEXT,
+  submitted_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  completed_at        TIMESTAMPTZ
+);
+
+CREATE TABLE data_subject_request_items (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  dsr_id              UUID NOT NULL REFERENCES data_subject_requests(id),
+  store_name          TEXT NOT NULL,
+  action              TEXT NOT NULL,
+  status              TEXT NOT NULL,
+  resolution_note     TEXT,
+  executed_at         TIMESTAMPTZ
+);
+CREATE INDEX ON data_subject_request_items(dsr_id, store_name);
 ```
 
 ### API Endpoints
 
 ```
 GET    /v1/audit-log                          (filter: tenant, actor, resource, action, date)
-GET    /v1/subscribers/:id/gdpr/export        (Right to Access)
-DELETE /v1/subscribers/:id/gdpr/erase         (Right to Erasure)
+POST   /v1/data-subject-requests
+GET    /v1/data-subject-requests/:id
+POST   /v1/data-subject-requests/:id/verify
+POST   /v1/data-subject-requests/:id/cancel
+GET    /v1/subscribers/:id/gdpr/export        (Right to Access shortcut)
+POST   /v1/subscribers/:id/gdpr/erasure-requests
 GET    /v1/subscribers/:id/consent
 POST   /v1/subscribers/:id/consent
 DELETE /v1/subscribers/:id/consent/:type      (revoke consent)
 ```
+
+Companion design document:
+
+- `docs/implementation/audit-privacy-and-dsr-model.md`
 
 ---
 

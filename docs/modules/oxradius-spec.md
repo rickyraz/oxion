@@ -211,7 +211,9 @@ POST   /v1/subscribers/:id/disconnect
 GET    /v1/subscribers/:id/sessions
 GET    /v1/subscribers/:id/accounting
 GET    /v1/subscribers/:id/gdpr/export
-DELETE /v1/subscribers/:id/gdpr/erase
+POST   /v1/subscribers/:id/gdpr/erasure-requests
+POST   /v1/data-subject-requests
+GET    /v1/data-subject-requests/:id
 ```
 
 ### Auth Methods yang Didukung
@@ -389,4 +391,5 @@ erlang_vm_scheduler_utilization
 - API Key auth untuk internal (rlm_rest)
 - JWT dari ZITADEL untuk dashboard/UI
 - AES-256-GCM untuk enkripsi credentials NAS
-- GDPR: anonymization via `/gdpr/erase`
+- Audit payload harus redacted; raw context sensitif mengikuti platform `audit_private_context`
+- DSR mengikuti workflow platform, bukan delete sinkron satu langkah

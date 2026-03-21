@@ -23,6 +23,7 @@ Companion docs:
 - `docs/implementation/phase-d-production-breakdown.md`
 - `docs/implementation/freeradius-interop-standard.md`
 - `docs/implementation/radius-hardening-roadmap.md`
+- `docs/implementation/audit-privacy-and-dsr-model.md`
 
 ---
 
@@ -114,7 +115,7 @@ What is missing:
 - `Severity`: `High`
 - `Verdict`: valid sebagai gap desain; klaim "definitif melanggar" terlalu absolut
 
-Spec menyatakan semua PII bisa dianonymize via `gdpr/erase`, tetapi `audit_log` menyimpan `old_value`, `new_value`, `ip_address`, dan `user_agent`, lalu secara eksplisit dinyatakan append-only tanpa `UPDATE/DELETE`.
+Spec sebelumnya menyatakan semua PII bisa dianonymize via `gdpr/erase`, tetapi `audit_log` menyimpan `old_value`, `new_value`, `ip_address`, dan `user_agent`, lalu secara eksplisit dinyatakan append-only tanpa `UPDATE/DELETE`.
 
 Repo references:
 
@@ -136,6 +137,10 @@ What is missing:
 - retention schedule,
 - legal basis per field,
 - redaction/crypto-shredding/anonymization strategy yang kompatibel dengan append-only semantics.
+
+Target remediation model sekarang didokumentasikan di:
+
+- `docs/implementation/audit-privacy-and-dsr-model.md`
 
 ### 3.4 oxRADIUS Fallback Saat oxCore Down
 
@@ -314,11 +319,12 @@ Urutan ini sengaja risk-driven. Tujuannya bukan mengejar checklist paling panjan
 ### P1 - Security dan Compliance yang Tidak Boleh Ditunda
 
 4. `Audit privacy model untuk GDPR-compatible append-only logging`
-   - menutup risk `3`
-   - artefak:
-     - field classification
-     - redaction/anonymization strategy
-     - retention schedule
+  - menutup risk `3`
+  - target spec sekarang ada di `docs/implementation/audit-privacy-and-dsr-model.md`
+  - artefak:
+    - field classification
+    - redaction/anonymization strategy
+    - retention schedule
      - audit event contract yang meminimalkan raw PII
 
 5. `ONU admission whitelist / approval gate`

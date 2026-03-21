@@ -448,6 +448,10 @@ Kalau target pasar mencakup EU, maka selain flow teknis ini kamu masih perlu:
 7. SOP penanganan data subject request,
 8. propagation plan ke processor atau downstream system.
 
+Model target untuk kebutuhan ini sekarang dijahit di:
+
+- `docs/implementation/audit-privacy-and-dsr-model.md`
+
 ### 8.5 Hal Penting dari Sumber Resmi
 
 Berdasarkan sumber resmi EU:
@@ -469,10 +473,10 @@ Dokumen ini adalah engineering guidance, bukan legal advice.
 
 Urutan yang paling sehat setelah mengikuti flow ini:
 
-1. teruskan `Status-Server` dan ops tooling,
-2. perluas dictionary/VSA registry,
-3. bangun `RadSec`,
-4. selesaikan audit privacy model dan DSR workflow di layer platform yang relevan.
+1. implementasikan runtime audit adapter yang hanya mengirim `change_summary` ter-redact ke audit utama,
+2. bangun workflow `data_subject_requests` dan wire outcome-nya ke `oxRADIUS`, `oxBill`, `oxCore`, dan `oxNOC`,
+3. teruskan live `RadSec` sampai benar-benar menggantikan config plan/scaffold,
+4. perluas dictionary/VSA registry sampai vendor coverage tidak lagi sempit.
 
 Kalau dibalik, transport akan terlihat makin canggih tapi fondasi compliance dan runtime correctness tetap bolong.
 

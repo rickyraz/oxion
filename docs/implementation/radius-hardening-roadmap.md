@@ -124,7 +124,8 @@ Workstream lintas modul yang harus berjalan paralel:
 
 - `workflow saga / compensation` di `oxCore`,
 - `payment webhook idempotency` di `oxBill`,
-- `audit privacy model` dan `ONU admission gate` di spec/domain masing-masing.
+- `audit privacy model` di `docs/implementation/audit-privacy-and-dsr-model.md`,
+- `ONU admission gate` di spec/domain yang relevan.
 
 Dengan kata lain, backlog berikut tetap benar secara teknis, tetapi secara prioritas eksekusi harus dibaca bersama risk review.
 

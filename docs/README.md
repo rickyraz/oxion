@@ -57,6 +57,7 @@ Kalau fokusnya implementation hardening yang sedang aktif:
 4. [FreeRADIUS Interop Standard](implementation/freeradius-interop-standard.md)
 5. [Radius Hardening Roadmap](implementation/radius-hardening-roadmap.md)
 6. [Architecture Risk Review](implementation/architecture-risk-review.md)
+7. [Audit Privacy and DSR Model](implementation/audit-privacy-and-dsr-model.md)
 
 Kalau fokusnya contract dan conformance:
 

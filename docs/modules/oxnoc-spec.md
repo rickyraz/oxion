@@ -256,16 +256,20 @@ interface ActivityLog {
   actor_role: string
   action: string
   resource_type: string   // 'service' | 'onu' | 'subscriber' | 'invoice'
-  resource_id: string
-  old_value?: object
-  new_value?: object
-  ip_address: string
-  user_agent: string
+  resource_ref?: string
+  subject_ref?: string
+  subject_alias?: string
+  change_summary: object
+  privacy_class: string
+  retention_class: string
+  legal_basis: string
   timestamp: Date
   success: boolean
-  error?: string
+  error_code?: string
 }
 ```
+
+`oxNOC` hanya menampilkan audit utama yang sudah redacted. Raw `ip_address`, `user_agent`, dan private support context tidak boleh ikut menjadi default activity feed.
 
 ---
 
