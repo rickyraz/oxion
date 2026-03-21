@@ -1,5 +1,5 @@
 -module(oxion_radius_mock_transport_ffi).
--export([start_ack_server/1, start_nak_server/3, start_bad_auth_server/1]).
+-export([start_ack_server/1, start_nak_server/3, start_bad_auth_server/1, start_echo_server/0]).
 
 start_ack_server(Secret) when is_binary(Secret) ->
     start_server(Secret, ack).
@@ -9,6 +9,9 @@ start_nak_server(Secret, ErrorCause, Message) when is_binary(Secret), is_integer
 
 start_bad_auth_server(Secret) when is_binary(Secret) ->
     start_server(Secret, bad_auth).
+
+start_echo_server() ->
+    start_server(<<>>, echo).
 
 start_server(Secret, Mode) ->
     case gen_udp:open(0, [binary, {active, false}, {reuseaddr, true}]) of
@@ -23,7 +26,11 @@ start_server(Secret, Mode) ->
 serve_once(Socket, Secret, Mode) ->
     case gen_udp:recv(Socket, 0, 3000) of
         {ok, {ClientIp, ClientPort, Packet}} ->
-            Reply = build_reply(Packet, Secret, Mode),
+            Reply =
+                case Mode of
+                    echo -> Packet;
+                    _ -> build_reply(Packet, Secret, Mode)
+                end,
             _ = gen_udp:send(Socket, ClientIp, ClientPort, Reply),
             gen_udp:close(Socket);
         {error, _Reason} ->

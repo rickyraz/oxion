@@ -4,6 +4,8 @@ import oxion/radius/coa/request
 import oxion/radius/coa/response
 import oxion/radius/packet
 import oxion/radius/registry/types as registry_types
+import oxion/radius/udp/types as udp_types
+import oxion/radius/udp/worker as udp_worker
 import oxion/radius/vendor/types as vendor_types
 
 pub type CoaTransportConfig {
@@ -180,6 +182,74 @@ pub fn roundtrip_prepared(
           }
       }
   }
+}
+
+pub fn roundtrip_prepared_with_worker(
+  worker_state: udp_worker.WorkerState,
+  endpoint_id: String,
+  prepared: PreparedRoundtrip,
+  target_id: String,
+  config: CoaTransportConfig,
+  now_ms: Int,
+) -> #(response.CoaResponse, udp_worker.WorkerState) {
+  let CoaTransportConfig(
+    host: host,
+    port: port,
+    secret: secret,
+    timeout_ms: timeout_ms,
+    request_security: _request_security,
+    require_message_authenticator_response: require_message_authenticator_response,
+  ) = config
+  let PreparedRoundtrip(
+    identifier: identifier,
+    request_authenticator: request_authenticator,
+    event_timestamp: _event_timestamp,
+    payload: payload,
+  ) = prepared
+  let #(raw_result, next_worker_state) =
+    udp_worker.roundtrip(
+      worker_state,
+      udp_types.OutstandingRequest(
+        endpoint_id: endpoint_id,
+        identifier: identifier,
+        started_at_ms: now_ms,
+        timeout_ms: timeout_ms,
+      ),
+      host,
+      port,
+      payload,
+      now_ms,
+    )
+
+  #(
+    case raw_result {
+      Error(reason) -> map_transport_error(reason)
+      Ok(raw_response) ->
+        case packet.decode_packet(raw_response) {
+          Error(error) -> response.Malformed(reason: packet_error_reason(error))
+          Ok(response_packet) ->
+            case packet.ensure_identifier(response_packet, identifier) {
+              Error(error) ->
+                response.Malformed(reason: packet_error_reason(error))
+              Ok(_) ->
+                case
+                  packet.verify_response_security(
+                    response_packet,
+                    request_authenticator,
+                    secret,
+                    require_message_authenticator_response,
+                  )
+                {
+                  Error(error) ->
+                    response.Malformed(reason: packet_error_reason(error))
+                  Ok(_) ->
+                    map_packet_to_response(response_packet, host, target_id)
+                }
+            }
+        }
+    },
+    next_worker_state,
+  )
 }
 
 fn map_packet_to_response(

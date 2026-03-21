@@ -13,6 +13,8 @@ import oxion/radius/profile/snapshot
 import oxion/radius/registry/capability
 import oxion/radius/registry/types as registry_types
 import oxion/radius/session/types as session_types
+import oxion/radius/udp/types as udp_types
+import oxion/radius/udp/worker as udp_worker
 import oxion/radius/vendor/types as vendor_types
 
 @external(erlang, "oxion_radius_mock_transport_ffi", "start_ack_server")
@@ -135,6 +137,39 @@ pub fn disconnect_execution_managed_runtime_replay_rejects_duplicate_test() {
 
   assert second_result == result.ReplayRejected(reason: "duplicate_request")
   assert cache_after_second == cache_after_first
+}
+
+pub fn disconnect_transport_roundtrip_prepared_with_worker_ack_test() {
+  let secret = "sharedsecret"
+  let port = case start_ack_server(secret) {
+    Ok(port) -> port
+    Error(_) -> panic
+  }
+  let config = test_transport_config(port, secret)
+  let prepared = case
+    transport.prepare_roundtrip(disconnect_request(), config)
+  {
+    Ok(prepared) -> prepared
+    Error(_) -> panic
+  }
+  let worker_state =
+    udp_worker.init(udp_types.UdpWorkerConfig(
+      local_bind: "0.0.0.0",
+      max_inflight: 4,
+      reuse_socket: True,
+    ))
+  let #(response_value, next_worker_state) =
+    transport.roundtrip_prepared_with_worker(
+      worker_state,
+      "edge_1",
+      prepared,
+      config,
+      1_710_000_000,
+    )
+
+  assert response_value == response.Ack(nas: "127.0.0.1")
+  let _closed = udp_worker.close(next_worker_state)
+  Nil
 }
 
 fn disconnect_request() -> request.DisconnectRequest {

@@ -13,6 +13,8 @@ import oxion/radius/profile/types
 import oxion/radius/registry/capability
 import oxion/radius/registry/types as registry_types
 import oxion/radius/session/types as session_types
+import oxion/radius/udp/types as udp_types
+import oxion/radius/udp/worker as udp_worker
 import oxion/radius/vendor/types as vendor_types
 
 @external(erlang, "oxion_radius_mock_transport_ffi", "start_ack_server")
@@ -222,6 +224,57 @@ pub fn execution_managed_runtime_rejects_duplicate_request_via_replay_cache_test
 
   assert second_result == result.ReplayRejected(reason: "duplicate_request")
   assert cache_after_second == cache_after_first
+}
+
+pub fn transport_roundtrip_prepared_with_worker_ack_test() {
+  let secret = "sharedsecret"
+  let port = case start_ack_server(secret) {
+    Ok(port) -> port
+    Error(_) -> panic
+  }
+  let config = test_transport_config(port, secret)
+  let prepared = case
+    transport.prepare_roundtrip(
+      request.CoaRequest(
+        packet_type: "CoA-Request",
+        reason: "collection_soft_throttle",
+        action_fingerprint: "fp:worker:ack",
+        session_selector: sample_selector(),
+        attributes: [
+          vendor_types.RadiusAttribute(
+            name: "class",
+            value: "throttled_due_overdue",
+          ),
+        ],
+        disconnect_hint: False,
+      ),
+      vendor_types.Cisco,
+      config,
+    )
+  {
+    Ok(prepared) -> prepared
+    Error(_) -> panic
+  }
+  let worker_state =
+    udp_worker.init(udp_types.UdpWorkerConfig(
+      local_bind: "0.0.0.0",
+      max_inflight: 4,
+      reuse_socket: True,
+    ))
+  let #(response_value, next_worker_state) =
+    transport.roundtrip_prepared_with_worker(
+      worker_state,
+      "edge_1",
+      prepared,
+      "bw_4mbps",
+      config,
+      1_710_000_000,
+    )
+
+  assert response_value
+    == response.Ack(nas: "127.0.0.1", applied_target: "bw_4mbps")
+  let _closed = udp_worker.close(next_worker_state)
+  Nil
 }
 
 fn throttle_plan() -> commands.CommandPlan {

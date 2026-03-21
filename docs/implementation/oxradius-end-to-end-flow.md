@@ -82,7 +82,7 @@ Submodule dan fungsinya saat ini:
 | Registry | `src/oxion/radius/registry/*` | resolve NAS endpoint dan capability | secret dan endpoint tidak boleh hardcoded di call site |
 | Session | `src/oxion/radius/session/*` | source of truth session aktif / accounting materialization | targeting session harus datang dari runtime state, bukan tebakan caller |
 | Ops | `src/oxion/radius/ops/*` | healthcheck, status, radclient tooling | tooling operasional tidak boleh bercampur dengan business path |
-| UDP | `src/oxion/radius/udp/*` | worker/socket reuse untuk transport UDP | reuse socket adalah concern transport, bukan packet |
+| UDP | `src/oxion/radius/udp/*` | worker/socket reuse, socket handle lifecycle, outstanding request tracking | reuse socket adalah concern transport, bukan packet |
 | RadSec | `src/oxion/radius/radsec/*` | TLS transport future path | jangan campur UDP logic dengan TLS lifecycle |
 | Protocol | `src/oxion/radius/protocol/*` | tracking future protocol evolution | roadmap `RADIUS/1.1` tidak boleh mengotori path MVP |
 
@@ -383,7 +383,7 @@ Hal berikut sudah benar kalau mengikuti file ini:
 Hal berikut belum boleh diklaim selesai penuh:
 
 1. replay protection shared runtime lintas worker UDP dan family lain di luar managed boundary sekarang,
-2. UDP worker socket reuse dan outstanding request table,
+2. worker-driven default path dan concurrency scheduler di atas UDP reuse yang baru,
 3. `Status-Server` live path,
 4. `RadSec` live path,
 5. vendor dictionary coverage yang lebih lengkap,
@@ -463,11 +463,10 @@ Dokumen ini adalah engineering guidance, bukan legal advice.
 
 Urutan yang paling sehat setelah mengikuti flow ini:
 
-1. kerjakan `UDP worker socket reuse`,
-2. teruskan `Status-Server` dan ops tooling,
-3. perluas dictionary/VSA registry,
-4. bangun `RadSec`,
-5. selesaikan audit privacy model dan DSR workflow di layer platform yang relevan.
+1. teruskan `Status-Server` dan ops tooling,
+2. perluas dictionary/VSA registry,
+3. bangun `RadSec`,
+4. selesaikan audit privacy model dan DSR workflow di layer platform yang relevan.
 
 Kalau dibalik, transport akan terlihat makin canggih tapi fondasi compliance dan runtime correctness tetap bolong.
 

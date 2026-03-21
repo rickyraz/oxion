@@ -79,6 +79,7 @@ Yang masih belum selesai penuh:
 - replay cache belum menjadi shared runtime enforcement lintas worker UDP
 - vendor registry belum menggantikan seluruh legacy naming path karena `vBNG` live transport masih unsupported dan shim kompatibilitas snapshot lama masih sengaja dipertahankan
 - `Status-Server`, `UDP worker`, dan `RadSec` masih berupa baseline contract
+- worker UDP sekarang sudah memiliki reusable socket handle dan outstanding request table pada prepared transport seam, tetapi belum menjadi default orchestration path atau concurrency scheduler penuh
 
 ---
 
@@ -463,7 +464,7 @@ Checklist pendek yang bisa dipakai sebagai gate:
 - [ ] dictionary/VSA registry tersedia
 - [ ] session read model tersedia
 - [ ] `Status-Server` tersedia
-- [ ] worker socket reuse tersedia
+- [x] worker socket reuse tersedia
 - [ ] RadSec tersedia
 
 ---
