@@ -38,3 +38,16 @@ pub fn supports_dynamic_authorization(
 
   supports_coa || supports_disconnect
 }
+
+pub fn supports_disconnect(capabilities: types.NasCapabilities) -> Bool {
+  let types.NasCapabilities(
+    supports_coa: _supports_coa,
+    supports_disconnect: supports_disconnect,
+    supports_status_server: _supports_status_server,
+    requires_message_authenticator: _requires_message_authenticator,
+    requires_event_timestamp: _requires_event_timestamp,
+    supports_multi_session_match: _supports_multi_session_match,
+  ) = capabilities
+
+  supports_disconnect
+}

@@ -30,22 +30,26 @@ serve_once(Socket, Secret, Mode) ->
             gen_udp:close(Socket)
     end.
 
-build_reply(<<_Code, Identifier, _Length:16, RequestAuthenticator:16/binary, _/binary>>, Secret, Mode) ->
+build_reply(<<RequestCode, Identifier, _Length:16, RequestAuthenticator:16/binary, _/binary>>, Secret, Mode) ->
+    {AckCode, NakCode} = reply_codes(RequestCode),
     {ReplyCode, Attributes, Authenticator} =
         case Mode of
             ack ->
-                Attrs = with_message_authenticator(44, Identifier, RequestAuthenticator, <<>>, Secret),
-                {44, Attrs, response_authenticator(44, Identifier, RequestAuthenticator, Attrs, Secret)};
+                Attrs = with_message_authenticator(AckCode, Identifier, RequestAuthenticator, <<>>, Secret),
+                {AckCode, Attrs, response_authenticator(AckCode, Identifier, RequestAuthenticator, Attrs, Secret)};
             {nak, ErrorCause, Message} ->
                 Attrs0 = <<101, 6, ErrorCause:32, 18, (byte_size(Message) + 2), Message/binary>>,
-                Attrs = with_message_authenticator(45, Identifier, RequestAuthenticator, Attrs0, Secret),
-                {45, Attrs, response_authenticator(45, Identifier, RequestAuthenticator, Attrs, Secret)};
+                Attrs = with_message_authenticator(NakCode, Identifier, RequestAuthenticator, Attrs0, Secret),
+                {NakCode, Attrs, response_authenticator(NakCode, Identifier, RequestAuthenticator, Attrs, Secret)};
             bad_auth ->
                 Attrs = <<>>,
-                {44, Attrs, <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0>>}
+                {AckCode, Attrs, <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0>>}
         end,
     Length = 20 + byte_size(Attributes),
     <<ReplyCode, Identifier, Length:16, Authenticator/binary, Attributes/binary>>.
+
+reply_codes(40) -> {41, 42};
+reply_codes(_) -> {44, 45}.
 
 response_authenticator(Code, Identifier, RequestAuthenticator, Attributes, Secret) ->
     Length = 20 + byte_size(Attributes),

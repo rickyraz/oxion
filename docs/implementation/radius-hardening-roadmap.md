@@ -67,12 +67,13 @@ Progress yang sudah benar-benar terhubung sesudah scaffold awal:
 - session compatibility layer sudah bisa mematerialisasi `ActiveSession` dari accounting-style records
 - endpoint resolution pada managed path sekarang mempertahankan `nas_identifier`, bukan hanya `nas_ip_address`
 - replay cache sudah terhubung ke managed `CoA` runtime path sebagai state input/output yang eksplisit
+- `Disconnect` sekarang punya live transport dan managed execution path dengan prepared-request seam yang setara secara pola dengan `CoA`
 
 Yang masih belum selesai penuh:
 
 - `Message-Authenticator` belum diterapkan ke seluruh packet family di semua jalur transport
 - replay cache baru terhubung ke managed `CoA` path dan belum menjadi shared runtime enforcement lintas `Disconnect` atau worker UDP
-- `Disconnect` belum punya live transport/execution setara `CoA`
+- `Disconnect` belum terhubung ke replay/runtime enforcement yang sama dengan `CoA`
 - vendor registry belum menggantikan semua prefix mapping legacy
 - `Status-Server`, `UDP worker`, dan `RadSec` masih berupa baseline contract
 
