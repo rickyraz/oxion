@@ -14,6 +14,7 @@ Dokumen ini fokus pada urutan kerja, artefak yang perlu dibuat, dan definisi sel
 
 Dokumen ini melengkapi:
 
+- `oxradius-end-to-end-flow.md`
 - `phase-d-production-breakdown.md`
 - `freeradius-interop-standard.md`
 - `architecture-risk-review.md`

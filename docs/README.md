@@ -53,9 +53,10 @@ Kalau fokusnya implementation hardening yang sedang aktif:
 
 1. [MVP Fast-Track Plan](policies/oxion-mvp-fasttrack-plan.md)
 2. [Phase D Production Breakdown](implementation/phase-d-production-breakdown.md)
-3. [FreeRADIUS Interop Standard](implementation/freeradius-interop-standard.md)
-4. [Radius Hardening Roadmap](implementation/radius-hardening-roadmap.md)
-5. [Architecture Risk Review](implementation/architecture-risk-review.md)
+3. [oxRADIUS End-to-End Flow](implementation/oxradius-end-to-end-flow.md)
+4. [FreeRADIUS Interop Standard](implementation/freeradius-interop-standard.md)
+5. [Radius Hardening Roadmap](implementation/radius-hardening-roadmap.md)
+6. [Architecture Risk Review](implementation/architecture-risk-review.md)
 
 Kalau fokusnya contract dan conformance:
 

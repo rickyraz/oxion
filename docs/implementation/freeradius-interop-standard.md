@@ -13,6 +13,7 @@ Dokumen ini bukan blueprint admin panel. Fokusnya adalah:
 
 Dokumen ini melengkapi:
 
+- `oxradius-end-to-end-flow.md`
 - `phase-d-production-breakdown.md`
 - `radius-hardening-roadmap.md`
 
