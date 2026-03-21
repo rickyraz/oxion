@@ -87,8 +87,8 @@ Submodule dan fungsinya saat ini:
 | UDP | `src/oxion/radius/udp/*` | worker/socket reuse, socket handle lifecycle, outstanding request tracking | reuse socket adalah concern transport, bukan packet |
 | RadSec | `src/oxion/radius/radsec/*` | TLS transport future path | jangan campur UDP logic dengan TLS lifecycle |
 | Protocol | `src/oxion/radius/protocol/*` | tracking future protocol evolution | roadmap `RADIUS/1.1` tidak boleh mengotori path MVP |
-| Platform Audit | `src/oxion/platform/audit/*` | ubah runtime outcome menjadi audit envelope redacted + private context short-retention | kontrak audit platform tidak boleh bocor ke orchestration kecil atau packet path |
-| Platform DSR | `src/oxion/platform/dsr/*` | state machine request privasi, inventory resolution, per-store execution planning | DSR workflow bukan endpoint destruktif tunggal dan tidak boleh digantung di controller tipis |
+| Platform Audit | `src/oxion/platform/audit/{types,adapter,persistence,service}.gleam` | ubah runtime outcome menjadi audit envelope redacted lalu simpan ke `audit_log`/`audit_private_context` shaped store | kontrak audit platform tidak boleh bocor ke orchestration kecil atau packet path |
+| Platform DSR | `src/oxion/platform/dsr/{types,workflow,executor}.gleam` + `src/oxion/platform/dsr/adapters/*` | state machine request privasi, inventory resolution, per-store execution planning, dan routing ke store adapter `oxRADIUS`/`oxBill`/`oxCore`/`oxNOC` | DSR workflow bukan endpoint destruktif tunggal dan tidak boleh digantung di controller tipis |
 
 ---
 
@@ -463,8 +463,9 @@ Model target untuk kebutuhan ini sekarang dijahit di:
 
 Runtime foundation yang sekarang sudah ada:
 
-- `src/oxion/platform/audit/*` untuk redacted audit envelope,
-- `src/oxion/platform/dsr/*` untuk workflow state machine dan store-level planning.
+- `src/oxion/platform/audit/*` untuk redacted audit envelope dan append-only persistence adapter,
+- `src/oxion/platform/dsr/*` untuk workflow state machine, store-level planning, dan executor,
+- `src/oxion/platform/dsr/adapters/*` untuk bounded-context adapters `oxRADIUS`, `oxBill`, `oxCore`, dan `oxNOC`.
 
 ### 8.5 Hal Penting dari Sumber Resmi
 
@@ -487,8 +488,8 @@ Dokumen ini adalah engineering guidance, bukan legal advice.
 
 Urutan yang paling sehat setelah mengikuti flow ini:
 
-1. wire `platform/audit` ke adapter persistence nyata untuk `audit_log` dan `audit_private_context`,
-2. wire `platform/dsr` ke store adapters nyata di `oxRADIUS`, `oxBill`, `oxCore`, dan `oxNOC`,
+1. ganti audit persistence in-memory sekarang dengan adapter DB sungguhan untuk `audit_log` dan `audit_private_context`,
+2. ganti DSR store adapters in-memory sekarang dengan adapter persistence/API sungguhan di `oxRADIUS`, `oxBill`, `oxCore`, dan `oxNOC`,
 3. teruskan live `RadSec` sampai benar-benar menggantikan config plan/scaffold,
 4. perluas dictionary/VSA registry sampai vendor coverage tidak lagi sempit.
 

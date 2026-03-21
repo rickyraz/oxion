@@ -58,6 +58,7 @@ Kalau fokusnya implementation hardening yang sedang aktif:
 5. [Radius Hardening Roadmap](implementation/radius-hardening-roadmap.md)
 6. [Architecture Risk Review](implementation/architecture-risk-review.md)
 7. [Audit Privacy and DSR Model](implementation/audit-privacy-and-dsr-model.md)
+8. [Codex Next-Session Handoff](implementation/codex-next-session-handoff.md)
 
 Kalau fokusnya contract dan conformance:
 

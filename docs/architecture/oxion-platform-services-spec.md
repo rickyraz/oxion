@@ -959,8 +959,9 @@ Hak privasi tidak lagi dimodelkan sebagai aksi destruktif instan seperti `DELETE
 
 Runtime foundation yang sekarang disarankan untuk model ini:
 
-- `src/oxion/platform/audit/*`
-- `src/oxion/platform/dsr/*`
+- `src/oxion/platform/audit/{types,adapter,persistence,service}.gleam`
+- `src/oxion/platform/dsr/{types,workflow,executor}.gleam`
+- `src/oxion/platform/dsr/adapters/*`
 
 Target workflow:
 
