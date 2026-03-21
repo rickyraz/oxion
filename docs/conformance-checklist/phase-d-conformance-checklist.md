@@ -34,6 +34,7 @@ Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 - `src/oxion/radius/coa/replay.gleam`
 - `src/oxion/radius/coa/execution.gleam`
 - `src/oxion/radius/coa/transport.gleam`
+- `src/oxion/radius/dictionary/freeradius.gleam`
 - `src/oxion/radius/disconnect/request.gleam`
 - `src/oxion/radius/disconnect/response.gleam`
 - `src/oxion/radius/disconnect/result.gleam`
@@ -53,6 +54,7 @@ Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 - `test/oxion/radius/coa/transport_test.gleam`
 - `test/oxion/radius/udp/worker_test.gleam`
 - `test/oxion/radius/coa/replay_test.gleam`
+- `test/oxion/radius/dictionary/freeradius_test.gleam`
 - `test/oxion/radius/disconnect/request_test.gleam`
 - `test/oxion/radius/disconnect/execution_test.gleam`
 - `test/oxion/radius/ops/healthcheck_test.gleam`
@@ -77,6 +79,7 @@ Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 - [x] Managed replay/runtime enforcement tersedia untuk `CoA` dan `Disconnect`.
 - [x] UDP worker reuse dan outstanding request tracking tersedia pada prepared live transport seam.
 - [x] `Status-Server` ops path dan `radclient` rendering baseline tersedia.
+- [x] Dictionary FreeRADIUS merender physical AVP/VSA yang terdeduplikasi dari logical registry.
 - [x] Audit projection dari command outcome tersedia.
 
 ---
@@ -105,6 +108,7 @@ Perubahan test phase ini mencakup:
 - duplicate Disconnect runtime execution ditolak oleh replay cache pada managed path
 - reusable UDP worker menjaga outstanding request table, prune timeout, dan prepared roundtrip path untuk CoA/Disconnect
 - `Status-Server` live smoke path, health classification, dan `radclient` command rendering baseline tersedia
+- FreeRADIUS dictionary rendering memverifikasi bahwa banyak logical vendor attr dapat jatuh ke satu physical VSA yang sama secara benar
 
 Status verifikasi pada patch ini:
 

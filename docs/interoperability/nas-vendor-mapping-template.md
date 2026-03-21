@@ -78,6 +78,7 @@ Catatan:
 - gunakan logical name vendor yang eksplisit seperti `cisco.qos_down` atau `juniper.profile_name`,
 - jangan menambah mapping baru dengan prefix lama seperti `cisco_avpair.*` atau `dynamic_profile.*`,
 - shim prefix lama hanya dipertahankan untuk kompatibilitas snapshot lama di packet layer.
+- beberapa logical name dapat memetakan ke physical VSA yang sama; perbedaannya ada pada `value_prefix` di registry dictionary, bukan pada nama attribute FreeRADIUS fisik.
 
 ## Cisco BNG (Contoh)
 

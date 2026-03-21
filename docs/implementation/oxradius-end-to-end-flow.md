@@ -258,6 +258,12 @@ Ini lebih baik karena:
 - value prefix,
 - FreeRADIUS dictionary name.
 
+Satu hal penting:
+
+- beberapa logical attr memang sengaja jatuh ke physical VSA yang sama,
+- contoh: `cisco.service_profile`, `cisco.qos_down`, dan `cisco.qos_up` semuanya tetap memakai `Cisco-AVPair`,
+- yang membedakan ketiganya adalah `value_prefix`, bukan nama physical VSA.
+
 Kalau informasi ini disebar ke renderer dan packet layer sekaligus, hasilnya cepat menjadi split-brain.
 
 ### 5.4 Packet dan Transport Tidak Boleh Disatukan
