@@ -40,6 +40,23 @@ Gap yang masih tersisa:
 - belum ada health tooling,
 - belum ada RadSec path.
 
+Scaffold baseline yang sudah ditanam di repo untuk workstream berikutnya:
+
+- `src/oxion/radius/registry/*`
+- `src/oxion/radius/coa/replay.gleam`
+- `src/oxion/radius/disconnect/*`
+- `src/oxion/radius/dictionary/*`
+- `src/oxion/radius/session/*`
+- `src/oxion/radius/ops/*`
+- `src/oxion/radius/udp/*`
+- `src/oxion/radius/radsec/*`
+- `src/oxion/radius/protocol/tracking.gleam`
+
+Catatan:
+
+- scaffold ini sengaja belum menyatakan workstream selesai,
+- yang ditanam sekarang adalah type contract, resolver dasar, helper packet awal, dan test baseline agar implementasi berikutnya tidak mulai dari nol.
+
 ---
 
 ## 3. Urutan Implementasi

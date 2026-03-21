@@ -87,8 +87,10 @@ fn map_packet_to_response(
         error_code: nak_code(attributes),
         error_message: nak_message(attributes),
       )
-    packet.CoaRequestCode ->
+    packet.CoaRequestCode | packet.DisconnectRequestCode ->
       response.Malformed(reason: "unexpected_request_packet_received")
+    packet.DisconnectAckCode | packet.DisconnectNakCode ->
+      response.Malformed(reason: "unexpected_disconnect_packet_received")
   }
 }
 

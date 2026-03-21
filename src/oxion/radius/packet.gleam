@@ -9,6 +9,9 @@ import oxion/radius/profile/snapshot
 import oxion/radius/vendor/types as vendor_types
 
 pub type RadiusCode {
+  DisconnectRequestCode
+  DisconnectAckCode
+  DisconnectNakCode
   CoaRequestCode
   CoaAckCode
   CoaNakCode
@@ -219,6 +222,52 @@ pub fn reply_message(attributes: List(RadiusAttribute)) -> option.Option(String)
   reply_message_loop(attributes)
 }
 
+pub fn event_timestamp(attributes: List(RadiusAttribute)) -> option.Option(Int) {
+  event_timestamp_loop(attributes)
+}
+
+pub fn message_authenticator(
+  attributes: List(RadiusAttribute),
+) -> option.Option(BitArray) {
+  message_authenticator_loop(attributes)
+}
+
+pub fn with_event_timestamp(
+  attributes: List(RadiusAttribute),
+  timestamp: Int,
+) -> List(RadiusAttribute) {
+  [
+    RadiusAttribute(type_id: 55, value: <<timestamp:32>>),
+    ..remove_attributes(attributes, 55)
+  ]
+}
+
+pub fn with_message_authenticator_placeholder(
+  attributes: List(RadiusAttribute),
+) -> List(RadiusAttribute) {
+  [
+    RadiusAttribute(type_id: 80, value: <<
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+    >>),
+    ..remove_attributes(attributes, 80)
+  ]
+}
+
 fn reply_message_loop(
   attributes: List(RadiusAttribute),
 ) -> option.Option(String) {
@@ -230,6 +279,32 @@ fn reply_message_loop(
         Error(_) -> reply_message_loop(rest)
       }
     [_, ..rest] -> reply_message_loop(rest)
+  }
+}
+
+fn event_timestamp_loop(attributes: List(RadiusAttribute)) -> option.Option(Int) {
+  case attributes {
+    [] -> option.None
+    [RadiusAttribute(type_id: 55, value: value), ..rest] ->
+      case value {
+        <<timestamp:32>> -> option.Some(timestamp)
+        _ -> event_timestamp_loop(rest)
+      }
+    [_, ..rest] -> event_timestamp_loop(rest)
+  }
+}
+
+fn message_authenticator_loop(
+  attributes: List(RadiusAttribute),
+) -> option.Option(BitArray) {
+  case attributes {
+    [] -> option.None
+    [RadiusAttribute(type_id: 80, value: value), ..rest] ->
+      case bit_array.byte_size(value) == 16 {
+        True -> option.Some(value)
+        False -> message_authenticator_loop(rest)
+      }
+    [_, ..rest] -> message_authenticator_loop(rest)
   }
 }
 
@@ -463,6 +538,9 @@ fn decode_attributes(
 
 fn radius_code_from_int(code: Int) -> Result(RadiusCode, PacketError) {
   case code {
+    40 -> Ok(DisconnectRequestCode)
+    41 -> Ok(DisconnectAckCode)
+    42 -> Ok(DisconnectNakCode)
     43 -> Ok(CoaRequestCode)
     44 -> Ok(CoaAckCode)
     45 -> Ok(CoaNakCode)
@@ -472,10 +550,23 @@ fn radius_code_from_int(code: Int) -> Result(RadiusCode, PacketError) {
 
 pub fn radius_code_to_int(code: RadiusCode) -> Int {
   case code {
+    DisconnectRequestCode -> 40
+    DisconnectAckCode -> 41
+    DisconnectNakCode -> 42
     CoaRequestCode -> 43
     CoaAckCode -> 44
     CoaNakCode -> 45
   }
+}
+
+fn remove_attributes(
+  attributes: List(RadiusAttribute),
+  type_id: Int,
+) -> List(RadiusAttribute) {
+  list.filter(attributes, fn(attribute) {
+    let RadiusAttribute(type_id: attribute_type_id, value: _value) = attribute
+    attribute_type_id != type_id
+  })
 }
 
 fn byte_at(payload: BitArray, position: Int) -> Result(Int, PacketError) {
