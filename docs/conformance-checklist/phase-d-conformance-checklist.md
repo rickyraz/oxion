@@ -43,6 +43,9 @@ Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 - `src/oxion/radius/ops/status.gleam`
 - `src/oxion/radius/ops/healthcheck.gleam`
 - `src/oxion/radius/ops/radclient.gleam`
+- `src/oxion/radius/radsec/types.gleam`
+- `src/oxion/radius/radsec/certs.gleam`
+- `src/oxion/radius/radsec/transport.gleam`
 - `src/oxion_radius_transport_ffi.erl`
 - `src/oxion_radius_mock_transport_ffi.erl`
 - `test/oxion/orchestration/collection/orchestrator_test.gleam`
@@ -58,6 +61,7 @@ Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 - `test/oxion/radius/disconnect/request_test.gleam`
 - `test/oxion/radius/disconnect/execution_test.gleam`
 - `test/oxion/radius/ops/healthcheck_test.gleam`
+- `test/oxion/radius/radsec/transport_test.gleam`
 
 ---
 
@@ -80,6 +84,7 @@ Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 - [x] UDP worker reuse dan outstanding request tracking tersedia pada prepared live transport seam.
 - [x] `Status-Server` ops path dan `radclient` rendering baseline tersedia.
 - [x] Dictionary FreeRADIUS merender physical AVP/VSA yang terdeduplikasi dari logical registry.
+- [x] `RadSec` transport planning baseline tersedia dari endpoint registry dan TLS config.
 - [x] Audit projection dari command outcome tersedia.
 
 ---
@@ -109,6 +114,7 @@ Perubahan test phase ini mencakup:
 - reusable UDP worker menjaga outstanding request table, prune timeout, dan prepared roundtrip path untuk CoA/Disconnect
 - `Status-Server` live smoke path, health classification, dan `radclient` command rendering baseline tersedia
 - FreeRADIUS dictionary rendering memverifikasi bahwa banyak logical vendor attr dapat jatuh ke satu physical VSA yang sama secara benar
+- `RadSec` config validation dan endpoint planning memiliki regression test untuk mTLS, verification mode, dan transport-kind mismatch
 
 Status verifikasi pada patch ini:
 

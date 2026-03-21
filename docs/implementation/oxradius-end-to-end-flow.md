@@ -370,7 +370,7 @@ Statusnya lebih tepat seperti ini:
 | RFC 5080 retransmission / duplicate handling | Partially aligned | replay model sudah dipakai pada managed `CoA` dan `Disconnect`, tetapi UDP worker/shared runtime enforcement belum final |
 | RFC 5176 CoA / Disconnect separation | Mostly aligned | builder `CoA` dan `Disconnect` sudah terpisah, packet family juga terpisah |
 | RFC 5997 Status-Server | Partially aligned | live smoke path dan response verification sudah ada, tetapi inventory target dan diagnostics masih belum final |
-| RFC 6613 / 6614 TCP/TLS / RadSec | Not complete | baru scaffold |
+| RFC 6613 / 6614 TCP/TLS / RadSec | Partially aligned | endpoint planning dan TLS config validation sudah ada, tetapi live TLS transport belum final |
 | RFC 6929 extended vendor model | Partial groundwork | dictionary/VSA registry sudah lebih baik, tapi coverage vendor belum lengkap |
 | RFC 9765 RADIUS/1.1 | Future track only | masih tracking, bukan implementation target sekarang |
 
@@ -391,7 +391,7 @@ Hal berikut belum boleh diklaim selesai penuh:
 1. replay protection shared runtime lintas worker UDP dan family lain di luar managed boundary sekarang,
 2. worker-driven default path dan concurrency scheduler di atas UDP reuse yang baru,
 3. richer `Status-Server` inventory target dan diagnostics,
-4. `RadSec` live path,
+4. `RadSec` live connect / reconnect / certificate handling yang benar-benar end-to-end,
 5. vendor dictionary coverage yang lebih lengkap,
 6. vBNG live transport yang benar-benar supported.
 

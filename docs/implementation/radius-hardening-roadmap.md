@@ -81,6 +81,7 @@ Yang masih belum selesai penuh:
 - `Status-Server` live smoke path dan `radclient` rendering baseline sudah tersedia, tetapi ops diagnostics yang lebih kaya masih belum final
 - worker UDP sekarang sudah memiliki reusable socket handle dan outstanding request table pada prepared transport seam, tetapi belum menjadi default orchestration path atau concurrency scheduler penuh
 - dictionary FreeRADIUS sekarang merender physical AVP/VSA yang terdeduplikasi dari logical attr registry, sehingga registry bisa dipakai sebagai source of truth interop yang lebih nyata
+- `RadSec` sekarang punya transport planning baseline dari endpoint registry + TLS config validation, tetapi belum menjadi live TLS I/O path
 
 ---
 
@@ -466,7 +467,7 @@ Checklist pendek yang bisa dipakai sebagai gate:
 - [ ] session read model tersedia
 - [x] `Status-Server` tersedia
 - [x] worker socket reuse tersedia
-- [ ] RadSec tersedia
+- [x] RadSec tersedia
 
 ---
 
