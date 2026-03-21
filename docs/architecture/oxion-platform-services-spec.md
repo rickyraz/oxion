@@ -957,6 +957,11 @@ pub fn attach_private_context(
 
 Hak privasi tidak lagi dimodelkan sebagai aksi destruktif instan seperti `DELETE /gdpr/erase`.
 
+Runtime foundation yang sekarang disarankan untuk model ini:
+
+- `src/oxion/platform/audit/*`
+- `src/oxion/platform/dsr/*`
+
 Target workflow:
 
 ```text

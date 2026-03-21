@@ -66,6 +66,7 @@ Module besar yang terlibat pada flow ini:
 14. `oxion/radius/radsec`
 15. `oxion/radius/protocol`
 16. `oxion/platform/audit`
+17. `oxion/platform/dsr`
 
 Submodule dan fungsinya saat ini:
 
@@ -87,6 +88,7 @@ Submodule dan fungsinya saat ini:
 | RadSec | `src/oxion/radius/radsec/*` | TLS transport future path | jangan campur UDP logic dengan TLS lifecycle |
 | Protocol | `src/oxion/radius/protocol/*` | tracking future protocol evolution | roadmap `RADIUS/1.1` tidak boleh mengotori path MVP |
 | Platform Audit | `src/oxion/platform/audit/*` | ubah runtime outcome menjadi audit envelope redacted + private context short-retention | kontrak audit platform tidak boleh bocor ke orchestration kecil atau packet path |
+| Platform DSR | `src/oxion/platform/dsr/*` | state machine request privasi, inventory resolution, per-store execution planning | DSR workflow bukan endpoint destruktif tunggal dan tidak boleh digantung di controller tipis |
 
 ---
 
@@ -459,6 +461,11 @@ Model target untuk kebutuhan ini sekarang dijahit di:
 
 - `docs/implementation/audit-privacy-and-dsr-model.md`
 
+Runtime foundation yang sekarang sudah ada:
+
+- `src/oxion/platform/audit/*` untuk redacted audit envelope,
+- `src/oxion/platform/dsr/*` untuk workflow state machine dan store-level planning.
+
 ### 8.5 Hal Penting dari Sumber Resmi
 
 Berdasarkan sumber resmi EU:
@@ -480,8 +487,8 @@ Dokumen ini adalah engineering guidance, bukan legal advice.
 
 Urutan yang paling sehat setelah mengikuti flow ini:
 
-1. implementasikan runtime audit adapter yang hanya mengirim `change_summary` ter-redact ke audit utama,
-2. bangun workflow `data_subject_requests` dan wire outcome-nya ke `oxRADIUS`, `oxBill`, `oxCore`, dan `oxNOC`,
+1. wire `platform/audit` ke adapter persistence nyata untuk `audit_log` dan `audit_private_context`,
+2. wire `platform/dsr` ke store adapters nyata di `oxRADIUS`, `oxBill`, `oxCore`, dan `oxNOC`,
 3. teruskan live `RadSec` sampai benar-benar menggantikan config plan/scaffold,
 4. perluas dictionary/VSA registry sampai vendor coverage tidak lagi sempit.
 
