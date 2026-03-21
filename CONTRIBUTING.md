@@ -16,9 +16,10 @@ Fokus utama:
 
 1. `CONTRIBUTING.md`
 2. `AGENTS.md`
-3. `docs/oxion-mvp-fasttrack-plan.md`
-4. `docs/oxion-testing-strategy.md`
-5. `docs/collection-policy.schema.json` + `docs/collection-policy-ebnf.md`
+3. `docs/README.md`
+4. `docs/policies/oxion-mvp-fasttrack-plan.md`
+5. `docs/operations/oxion-testing-strategy.md`
+6. `docs/policies/collection-policy.schema.json` + `docs/policies/collection-policy-ebnf.md`
 
 ---
 
@@ -62,7 +63,7 @@ Setiap implementasi phase **wajib** menyertakan testing pada Gleam dan stack ter
 
 ### Phase gate rule
 
-Untuk setiap phase di `docs/oxion-mvp-fasttrack-plan.md`, PR harus menyertakan:
+Untuk setiap phase di `docs/policies/oxion-mvp-fasttrack-plan.md`, PR harus menyertakan:
 
 1. daftar test yang ditambahkan/diupdate,
 2. hasil test pass,
@@ -85,6 +86,8 @@ Tanpa test evidence, phase dianggap belum selesai.
 
 ## Commit and Review
 
-- Commit message harus jelas menjelaskan why.
+- Setelah verification yang relevan lulus, usahakan langsung commit secara atomik.
+- Commit message harus deskriptif, memakai imperative present tense, dan jelas menjelaskan `what` + `why`.
+- Subject line harus layak dibaca engineer internasional tanpa perlu konteks chat.
 - Reviewer berhak reject jika test tidak memadai untuk phase yang diubah.
 - Perubahan besar lintas stack wajib pecah jadi beberapa PR kecil agar mudah di-review.
