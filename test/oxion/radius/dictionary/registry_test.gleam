@@ -2,7 +2,6 @@ import gleam/option
 import oxion/radius/dictionary/encoder
 import oxion/radius/dictionary/registry
 import oxion/radius/dictionary/types
-import oxion/radius/packet
 
 pub fn dictionary_registry_knows_message_authenticator_test() {
   assert registry.lookup("message_authenticator")
@@ -22,5 +21,5 @@ pub fn dictionary_registry_knows_message_authenticator_test() {
 
 pub fn dictionary_encoder_encodes_error_cause_integer_test() {
   assert encoder.encode_named(types.CoA, "error_cause", "401")
-    == Ok(packet.RadiusAttribute(type_id: 101, value: <<401:32>>))
+    == Ok(encoder.WireAttribute(type_id: 101, value: <<401:32>>))
 }

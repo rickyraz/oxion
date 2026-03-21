@@ -3,10 +3,18 @@ import gleam/option
 import oxion/radius/coa/request
 import oxion/radius/coa/response
 import oxion/radius/packet
+import oxion/radius/registry/types as registry_types
 import oxion/radius/vendor/types as vendor_types
 
 pub type CoaTransportConfig {
-  CoaTransportConfig(host: String, port: Int, secret: String, timeout_ms: Int)
+  CoaTransportConfig(
+    host: String,
+    port: Int,
+    secret: String,
+    timeout_ms: Int,
+    request_security: packet.PacketSecurityConfig,
+    require_message_authenticator_response: Bool,
+  )
 }
 
 @external(erlang, "oxion_radius_transport_ffi", "send_and_receive")
@@ -16,6 +24,52 @@ fn send_and_receive(
   payload: BitArray,
   timeout_ms: Int,
 ) -> Result(BitArray, String)
+
+pub fn from_endpoint(
+  endpoint: registry_types.NasEndpoint,
+  secret: String,
+  now_seconds: Int,
+) -> CoaTransportConfig {
+  let registry_types.NasEndpoint(
+    tenant_id: _tenant_id,
+    endpoint_id: _endpoint_id,
+    vendor: _vendor,
+    transport: _transport,
+    coa_host: coa_host,
+    coa_port: coa_port,
+    secret_ref: _secret_ref,
+    timeout_ms: timeout_ms,
+    retry_profile_id: _retry_profile_id,
+    nas_ip_address: _nas_ip_address,
+    nas_identifier: _nas_identifier,
+    capabilities: capabilities,
+  ) = endpoint
+  let registry_types.NasCapabilities(
+    supports_coa: _supports_coa,
+    supports_disconnect: _supports_disconnect,
+    supports_status_server: _supports_status_server,
+    requires_message_authenticator: requires_message_authenticator,
+    requires_event_timestamp: requires_event_timestamp,
+    supports_multi_session_match: _supports_multi_session_match,
+  ) = capabilities
+
+  // Why: endpoint capabilities must drive packet hardening so the live path
+  // stops relying on ad-hoc caller decisions about message integrity settings.
+  CoaTransportConfig(
+    host: coa_host,
+    port: coa_port,
+    secret: secret,
+    timeout_ms: timeout_ms,
+    request_security: packet.PacketSecurityConfig(
+      message_authenticator: requires_message_authenticator,
+      event_timestamp: case requires_event_timestamp {
+        True -> option.Some(now_seconds)
+        False -> option.None
+      },
+    ),
+    require_message_authenticator_response: requires_message_authenticator,
+  )
+}
 
 pub fn roundtrip(
   request_value: request.CoaRequest,
@@ -28,9 +82,18 @@ pub fn roundtrip(
     port: port,
     secret: secret,
     timeout_ms: timeout_ms,
+    request_security: request_security,
+    require_message_authenticator_response: require_message_authenticator_response,
   ) = config
 
-  case packet.encode_coa_request(request_value, vendor, secret) {
+  case
+    packet.encode_coa_request_with_security(
+      request_value,
+      vendor,
+      secret,
+      request_security,
+    )
+  {
     Error(error) -> response.TransportError(reason: packet_error_reason(error))
     Ok(packet.EncodedRequest(
       identifier: identifier,
@@ -49,10 +112,11 @@ pub fn roundtrip(
                   response.Malformed(reason: packet_error_reason(error))
                 Ok(_) ->
                   case
-                    packet.verify_response_authenticator(
+                    packet.verify_response_security(
                       response_packet,
                       request_authenticator,
                       secret,
+                      require_message_authenticator_response,
                     )
                   {
                     Error(error) ->
@@ -132,6 +196,8 @@ fn packet_error_reason(error: packet.PacketError) -> String {
     packet.UnsupportedLiveAttribute(name) ->
       "unsupported_live_attribute:" <> name
     packet.UnsupportedLiveVendor(vendor) -> "unsupported_live_vendor:" <> vendor
+    packet.MissingMessageAuthenticator -> "missing_message_authenticator"
+    packet.MessageAuthenticatorMismatch -> "message_authenticator_mismatch"
     packet.ResponseAuthenticatorMismatch -> "response_authenticator_mismatch"
     packet.UnexpectedIdentifier(expected, actual) ->
       "unexpected_identifier:"

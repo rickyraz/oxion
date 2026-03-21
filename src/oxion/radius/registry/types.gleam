@@ -48,6 +48,7 @@ pub type NasEndpoint {
 }
 
 pub type RegistryError {
+  MissingEndpointSelector
   NoEndpointMatch
   MultipleEndpointMatches
   InvalidEndpoint(reason: String)

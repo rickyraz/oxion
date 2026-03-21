@@ -5,6 +5,9 @@ import gleam/option
 import gleam/result
 import gleam/string
 import oxion/radius/coa/request
+import oxion/radius/dictionary/encoder as dictionary_encoder
+import oxion/radius/dictionary/types as dictionary_types
+import oxion/radius/disconnect/request as disconnect_request
 import oxion/radius/profile/snapshot
 import oxion/radius/vendor/types as vendor_types
 
@@ -41,6 +44,8 @@ pub type PacketError {
   InvalidAttributeValue(reason: String)
   UnsupportedLiveAttribute(name: String)
   UnsupportedLiveVendor(vendor: String)
+  MissingMessageAuthenticator
+  MessageAuthenticatorMismatch
   ResponseAuthenticatorMismatch
   UnexpectedIdentifier(expected: Int, actual: Int)
 }
@@ -53,8 +58,25 @@ pub type EncodedRequest {
   )
 }
 
+pub type PacketSecurityConfig {
+  PacketSecurityConfig(
+    message_authenticator: Bool,
+    event_timestamp: option.Option(Int),
+  )
+}
+
 @external(erlang, "oxion_radius_transport_ffi", "md5")
 fn md5(input: BitArray) -> BitArray
+
+@external(erlang, "oxion_radius_transport_ffi", "hmac_md5")
+fn hmac_md5(secret: BitArray, input: BitArray) -> BitArray
+
+pub fn default_security_config() -> PacketSecurityConfig {
+  PacketSecurityConfig(
+    message_authenticator: False,
+    event_timestamp: option.None,
+  )
+}
 
 pub fn identifier_from_fingerprint(fingerprint: String) -> Int {
   let digest = md5(bit_array.from_string(fingerprint))
@@ -69,6 +91,20 @@ pub fn encode_coa_request(
   request_value: request.CoaRequest,
   vendor: vendor_types.RadiusVendor,
   secret: String,
+) -> Result(EncodedRequest, PacketError) {
+  encode_coa_request_with_security(
+    request_value,
+    vendor,
+    secret,
+    default_security_config(),
+  )
+}
+
+pub fn encode_coa_request_with_security(
+  request_value: request.CoaRequest,
+  vendor: vendor_types.RadiusVendor,
+  secret: String,
+  security: PacketSecurityConfig,
 ) -> Result(EncodedRequest, PacketError) {
   let request.CoaRequest(
     packet_type: _packet_type,
@@ -87,13 +123,53 @@ pub fn encode_coa_request(
   )
 
   let all_attributes = list.append(selector_attributes, request_attributes)
-  let attributes_bits = encode_attributes(all_attributes, [])
+  let code = CoaRequestCode
+
+  encode_request(code, identifier, all_attributes, secret, security)
+}
+
+pub fn encode_disconnect_request_with_security(
+  request_value: disconnect_request.DisconnectRequest,
+  secret: String,
+  security: PacketSecurityConfig,
+) -> Result(EncodedRequest, PacketError) {
+  let disconnect_request.DisconnectRequest(
+    packet_type: _packet_type,
+    reason: _reason,
+    action_fingerprint: action_fingerprint,
+    session_selector: selector,
+  ) = request_value
+  let identifier = identifier_from_fingerprint(action_fingerprint)
+  use selector_attributes <- result.try(selector_to_attributes(selector))
+
+  // Why: RFC 5176 allows only NAS and session identification attributes in a
+  // Disconnect-Request, so the packet builder intentionally ignores policy
+  // metadata such as human-readable reasons when generating the wire payload.
+  encode_request(
+    DisconnectRequestCode,
+    identifier,
+    selector_attributes,
+    secret,
+    security,
+  )
+}
+
+fn encode_request(
+  code: RadiusCode,
+  identifier: Int,
+  attributes: List(RadiusAttribute),
+  secret: String,
+  security: PacketSecurityConfig,
+) -> Result(EncodedRequest, PacketError) {
+  let secure_attributes =
+    apply_security(attributes, code, identifier, secret, security)
+  let attributes_bits = encode_attributes(secure_attributes, [])
   let length = 20 + bit_array.byte_size(attributes_bits)
-  let zero_authenticator = <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
+  let zero_authenticator = zero_authenticator()
   let secret_bits = bit_array.from_string(secret)
   let authenticator =
     md5(<<
-      43,
+      radius_code_to_int(code),
       identifier,
       length:16,
       zero_authenticator:bits,
@@ -101,7 +177,7 @@ pub fn encode_coa_request(
       secret_bits:bits,
     >>)
   let payload = <<
-    43,
+    radius_code_to_int(code),
     identifier,
     length:16,
     authenticator:bits,
@@ -180,6 +256,57 @@ pub fn verify_response_authenticator(
   }
 }
 
+pub fn verify_response_security(
+  packet: RadiusPacket,
+  request_authenticator: BitArray,
+  secret: String,
+  require_message_authenticator: Bool,
+) -> Result(Nil, PacketError) {
+  case verify_response_authenticator(packet, request_authenticator, secret) {
+    Error(error) -> Error(error)
+    Ok(_) ->
+      case message_authenticator(packet.attributes) {
+        option.Some(_) ->
+          verify_response_message_authenticator(
+            packet,
+            request_authenticator,
+            secret,
+          )
+        option.None ->
+          case require_message_authenticator {
+            True -> Error(MissingMessageAuthenticator)
+            False -> Ok(Nil)
+          }
+      }
+  }
+}
+
+pub fn verify_response_message_authenticator(
+  packet: RadiusPacket,
+  request_authenticator: BitArray,
+  secret: String,
+) -> Result(Nil, PacketError) {
+  case message_authenticator(packet.attributes) {
+    option.None -> Error(MissingMessageAuthenticator)
+    option.Some(authenticator_value) -> {
+      let expected =
+        calculate_message_authenticator(
+          packet.code,
+          packet.identifier,
+          packet.length,
+          request_authenticator,
+          with_message_authenticator_placeholder(packet.attributes),
+          secret,
+        )
+
+      case expected == authenticator_value {
+        True -> Ok(Nil)
+        False -> Error(MessageAuthenticatorMismatch)
+      }
+    }
+  }
+}
+
 pub fn ensure_identifier(
   packet: RadiusPacket,
   expected_identifier: Int,
@@ -245,27 +372,124 @@ pub fn with_event_timestamp(
 pub fn with_message_authenticator_placeholder(
   attributes: List(RadiusAttribute),
 ) -> List(RadiusAttribute) {
-  [
-    RadiusAttribute(type_id: 80, value: <<
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-    >>),
-    ..remove_attributes(attributes, 80)
-  ]
+  upsert_message_authenticator(attributes, <<
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+  >>)
+}
+
+// Why: request packet hardening has to happen before the Request Authenticator
+// is calculated, otherwise Message-Authenticator verification will fail even
+// though the rest of the packet looks structurally correct.
+fn apply_security(
+  attributes: List(RadiusAttribute),
+  code: RadiusCode,
+  identifier: Int,
+  secret: String,
+  security: PacketSecurityConfig,
+) -> List(RadiusAttribute) {
+  let PacketSecurityConfig(
+    message_authenticator: include_message_authenticator,
+    event_timestamp: event_timestamp,
+  ) = security
+  let event_timestamp_attributes = case event_timestamp {
+    option.Some(timestamp) -> with_event_timestamp(attributes, timestamp)
+    option.None -> attributes
+  }
+
+  case include_message_authenticator {
+    False -> event_timestamp_attributes
+    True -> {
+      let with_placeholder =
+        with_message_authenticator_placeholder(event_timestamp_attributes)
+      let attributes_bits = encode_attributes(with_placeholder, [])
+      let length = 20 + bit_array.byte_size(attributes_bits)
+      let message_authenticator =
+        calculate_message_authenticator(
+          code,
+          identifier,
+          length,
+          zero_authenticator(),
+          with_placeholder,
+          secret,
+        )
+
+      upsert_message_authenticator(with_placeholder, message_authenticator)
+    }
+  }
+}
+
+fn upsert_message_authenticator(
+  attributes: List(RadiusAttribute),
+  value: BitArray,
+) -> List(RadiusAttribute) {
+  let #(replaced_attributes, replaced_existing) =
+    replace_message_authenticator(attributes, value, [], False)
+
+  case replaced_existing {
+    True -> replaced_attributes
+    False ->
+      list.append(replaced_attributes, [
+        RadiusAttribute(type_id: 80, value: value),
+      ])
+  }
+}
+
+fn replace_message_authenticator(
+  remaining: List(RadiusAttribute),
+  value: BitArray,
+  acc: List(RadiusAttribute),
+  replaced_existing: Bool,
+) -> #(List(RadiusAttribute), Bool) {
+  case remaining {
+    [] -> #(list.reverse(acc), replaced_existing)
+    [RadiusAttribute(type_id: 80, value: _old_value), ..rest] ->
+      replace_message_authenticator(
+        rest,
+        value,
+        [RadiusAttribute(type_id: 80, value: value), ..acc],
+        True,
+      )
+    [attribute, ..rest] ->
+      replace_message_authenticator(
+        rest,
+        value,
+        [attribute, ..acc],
+        replaced_existing,
+      )
+  }
+}
+
+fn calculate_message_authenticator(
+  code: RadiusCode,
+  identifier: Int,
+  length: Int,
+  request_authenticator: BitArray,
+  attributes: List(RadiusAttribute),
+  secret: String,
+) -> BitArray {
+  let attributes_bits = encode_attributes(attributes, [])
+  hmac_md5(bit_array.from_string(secret), <<
+    radius_code_to_int(code),
+    identifier,
+    length:16,
+    request_authenticator:bits,
+    attributes_bits:bits,
+  >>)
 }
 
 fn reply_message_loop(
@@ -389,38 +613,29 @@ fn named_attribute_to_radius(
 
   case name {
     "class" | "policy_tag" ->
-      Ok([RadiusAttribute(type_id: 25, value: bit_array.from_string(value))])
+      dictionary_named_attribute_to_radius("class", value)
 
     "reason" ->
-      Ok([RadiusAttribute(type_id: 18, value: bit_array.from_string(value))])
+      // Why: vendor suspend mappings already expose a `reason` logical field,
+      // so the packet layer keeps translating it deterministically until the
+      // vendor registry owns that semantic explicitly.
+      dictionary_named_attribute_to_radius("reply_message", value)
 
     _ ->
       case string.starts_with(name, "cisco_avpair.") {
         True ->
-          Ok([
-            RadiusAttribute(
-              type_id: 26,
-              value: vendor_specific_value(
-                9,
-                1,
-                strip_prefix(name, "cisco_avpair.") <> "=" <> value,
-              ),
-            ),
-          ])
+          dictionary_named_attribute_to_radius(
+            "cisco.avpair",
+            strip_prefix(name, "cisco_avpair.") <> "=" <> value,
+          )
 
         False ->
           case string.starts_with(name, "dynamic_profile.") {
             True ->
-              Ok([
-                RadiusAttribute(
-                  type_id: 26,
-                  value: vendor_specific_value(
-                    2636,
-                    1,
-                    strip_prefix(name, "dynamic_profile.") <> "=" <> value,
-                  ),
-                ),
-              ])
+              dictionary_named_attribute_to_radius(
+                "juniper.avpair",
+                strip_prefix(name, "dynamic_profile.") <> "=" <> value,
+              )
 
             False ->
               case string.starts_with(name, "api.policy.") {
@@ -434,14 +649,29 @@ fn named_attribute_to_radius(
   }
 }
 
-fn vendor_specific_value(
-  vendor_id: Int,
-  vendor_type: Int,
-  content: String,
-) -> BitArray {
-  let content_bits = bit_array.from_string(content)
-  let vendor_length = 2 + bit_array.byte_size(content_bits)
-  <<vendor_id:32, vendor_type, vendor_length, content_bits:bits>>
+fn dictionary_named_attribute_to_radius(
+  logical_name: String,
+  value: String,
+) -> Result(List(RadiusAttribute), PacketError) {
+  case
+    dictionary_encoder.encode_named(dictionary_types.CoA, logical_name, value)
+  {
+    Ok(dictionary_encoder.WireAttribute(type_id: type_id, value: encoded_value)) ->
+      Ok([RadiusAttribute(type_id: type_id, value: encoded_value)])
+    Error(dictionary_encoder.RegistryError(error)) ->
+      case error {
+        dictionary_types.UnknownAttribute(name) ->
+          Error(UnsupportedLiveAttribute(name: name))
+        dictionary_types.UnsupportedPacketFamily(name, _family) ->
+          Error(UnsupportedLiveAttribute(name: name))
+      }
+    Error(dictionary_encoder.InvalidIntegerValue(_logical_name, bad_value)) ->
+      Error(InvalidAttributeValue(reason: bad_value))
+    Error(dictionary_encoder.InvalidIpAddress(_logical_name, bad_value)) ->
+      Error(InvalidIpAddress(value: bad_value))
+    Error(dictionary_encoder.InvalidOctetsLength(logical_name)) ->
+      Error(InvalidAttributeValue(reason: logical_name))
+  }
 }
 
 fn vendor_to_string(vendor: vendor_types.RadiusVendor) -> String {
@@ -567,6 +797,10 @@ fn remove_attributes(
     let RadiusAttribute(type_id: attribute_type_id, value: _value) = attribute
     attribute_type_id != type_id
   })
+}
+
+fn zero_authenticator() -> BitArray {
+  <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
 }
 
 fn byte_at(payload: BitArray, position: Int) -> Result(Int, PacketError) {

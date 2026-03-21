@@ -5,7 +5,10 @@ import gleam/result
 import gleam/string
 import oxion/radius/dictionary/registry
 import oxion/radius/dictionary/types
-import oxion/radius/packet
+
+pub type WireAttribute {
+  WireAttribute(type_id: Int, value: BitArray)
+}
 
 pub type EncodeError {
   RegistryError(error: types.RegistryError)
@@ -18,7 +21,7 @@ pub fn encode_named(
   family: types.PacketFamily,
   logical_name: String,
   value: String,
-) -> Result(packet.RadiusAttribute, EncodeError) {
+) -> Result(WireAttribute, EncodeError) {
   case registry.lookup(logical_name) {
     Error(error) -> Error(RegistryError(error: error))
     Ok(spec) ->
@@ -35,7 +38,7 @@ pub fn encode(
   spec: types.RadiusAttributeSpec,
   logical_name: String,
   value: String,
-) -> Result(packet.RadiusAttribute, EncodeError) {
+) -> Result(WireAttribute, EncodeError) {
   let encoded_value_result = case spec.data_type {
     types.Text -> Ok(bit_array.from_string(value))
     types.Integer -> encode_integer(logical_name, value)
@@ -48,11 +51,11 @@ pub fn encode(
 
   case spec.protocol_family {
     types.Standard | types.Evs ->
-      Ok(packet.RadiusAttribute(type_id: spec.radius_type, value: encoded_value))
+      Ok(WireAttribute(type_id: spec.radius_type, value: encoded_value))
     types.Vsa ->
       case spec.vendor_id, spec.vendor_type {
         option.Some(encoded_vendor_id), option.Some(encoded_vendor_type) ->
-          Ok(packet.RadiusAttribute(
+          Ok(WireAttribute(
             type_id: spec.radius_type,
             value: vendor_specific_value(
               encoded_vendor_id,

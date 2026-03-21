@@ -1,8 +1,11 @@
 -module(oxion_radius_transport_ffi).
--export([md5/1, send_and_receive/4]).
+-export([md5/1, hmac_md5/2, send_and_receive/4]).
 
 md5(Input) when is_binary(Input) ->
     crypto:hash(md5, Input).
+
+hmac_md5(Secret, Input) when is_binary(Secret), is_binary(Input) ->
+    crypto:mac(hmac, md5, Secret, Input).
 
 send_and_receive(Host, Port, Payload, Timeout) when is_binary(Host), is_integer(Port), is_binary(Payload), is_integer(Timeout) ->
     case inet:parse_address(binary_to_list(Host)) of

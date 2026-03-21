@@ -64,6 +64,8 @@ Progress yang sudah benar-benar terhubung sesudah scaffold awal:
 - packet layer sudah punya helper `Message-Authenticator` dan `Event-Timestamp`
 - encoder dictionary sudah mulai dipakai oleh packet translation path
 - live `CoA` path sudah bisa dibangun dari `NAS registry + session read model` via managed execution path
+- session compatibility layer sudah bisa mematerialisasi `ActiveSession` dari accounting-style records
+- endpoint resolution pada managed path sekarang mempertahankan `nas_identifier`, bukan hanya `nas_ip_address`
 
 Yang masih belum selesai penuh:
 

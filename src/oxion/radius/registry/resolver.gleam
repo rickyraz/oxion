@@ -2,6 +2,7 @@ import gleam/list
 import gleam/option
 import oxion/radius/profile/snapshot
 import oxion/radius/registry/types
+import oxion/radius/session/types as session_types
 import oxion/radius/vendor/types as vendor_types
 
 pub fn from_session_selector(
@@ -20,6 +21,29 @@ pub fn from_session_selector(
   )
 }
 
+pub fn from_active_session(
+  session: session_types.ActiveSession,
+) -> types.EndpointSelector {
+  let session_types.ActiveSession(
+    tenant_id: _tenant_id,
+    service_id: _service_id,
+    username: _username,
+    acct_session_id: _acct_session_id,
+    framed_ip: _framed_ip,
+    nas_ip_address: nas_ip_address,
+    nas_identifier: nas_identifier,
+    active_profile_id: _active_profile_id,
+    attributes: _attributes,
+    last_accounting_epoch_seconds: _last_accounting_epoch_seconds,
+    session_active: _session_active,
+  ) = session
+
+  types.EndpointSelector(
+    nas_ip_address: nas_ip_address,
+    nas_identifier: nas_identifier,
+  )
+}
+
 // Why: endpoint selection must be deterministic and fail closed because the
 // transport secret is bound to the NAS peer, not to business intent.
 pub fn resolve_endpoint(
@@ -28,15 +52,19 @@ pub fn resolve_endpoint(
   vendor: vendor_types.RadiusVendor,
   selector: types.EndpointSelector,
 ) -> Result(types.NasEndpoint, types.RegistryError) {
-  case
-    list.filter(endpoints, fn(endpoint) {
-      matches_tenant_vendor(endpoint, tenant_id, vendor)
-      && matches_selector(endpoint, selector)
-    })
-  {
-    [] -> Error(types.NoEndpointMatch)
-    [endpoint] -> validate_endpoint(endpoint)
-    _ -> Error(types.MultipleEndpointMatches)
+  case has_selector_value(selector) {
+    False -> Error(types.MissingEndpointSelector)
+    True ->
+      case
+        list.filter(endpoints, fn(endpoint) {
+          matches_tenant_vendor(endpoint, tenant_id, vendor)
+          && matches_selector(endpoint, selector)
+        })
+      {
+        [] -> Error(types.NoEndpointMatch)
+        [endpoint] -> validate_endpoint(endpoint)
+        _ -> Error(types.MultipleEndpointMatches)
+      }
   }
 }
 
@@ -99,6 +127,22 @@ fn option_matches(
     option.Some(expected_value) ->
       case actual {
         option.Some(actual_value) -> expected_value == actual_value
+        option.None -> False
+      }
+  }
+}
+
+fn has_selector_value(selector: types.EndpointSelector) -> Bool {
+  let types.EndpointSelector(
+    nas_ip_address: nas_ip_address,
+    nas_identifier: nas_identifier,
+  ) = selector
+
+  case nas_ip_address {
+    option.Some(_) -> True
+    option.None ->
+      case nas_identifier {
+        option.Some(_) -> True
         option.None -> False
       }
   }

@@ -1,3 +1,4 @@
+import gleam/int
 import gleam/option
 import oxion/orchestration/collection/commands
 import oxion/radius/coa/request
@@ -9,6 +10,10 @@ import oxion/radius/profile/diff
 import oxion/radius/profile/resolver
 import oxion/radius/profile/snapshot
 import oxion/radius/profile/types as profile_types
+import oxion/radius/registry/resolver as registry_resolver
+import oxion/radius/registry/types as registry_types
+import oxion/radius/session/resolver as session_resolver
+import oxion/radius/session/types as session_types
 import oxion/radius/vendor/types as vendor_types
 
 pub fn send_coa_if_needed(
@@ -139,6 +144,81 @@ pub fn send_coa_live(
           )
         Error(execution_result) -> execution_result
       }
+  }
+}
+
+pub fn send_coa_live_managed(
+  plan: commands.CommandPlan,
+  vendor: vendor_types.RadiusVendor,
+  session_lookup: session_types.SessionLookup,
+  session_max_age_seconds: Int,
+  endpoints: List(registry_types.NasEndpoint),
+  sessions: List(session_types.ActiveSession),
+  profile_registry: List(profile_types.ProfileDefinition),
+  retry_policy: retry.RetryPolicy,
+  now_seconds: Int,
+) -> result.CoaExecutionResult {
+  let session_types.SessionLookup(
+    tenant_id: tenant_id,
+    service_id: _service_id,
+    username: _username,
+    acct_session_id: _acct_session_id,
+    framed_ip: _framed_ip,
+  ) = session_lookup
+
+  // Why: the managed live path should derive active session and endpoint state
+  // from adapter-owned runtime models so transport config stops being caller
+  // assembled by hand.
+  case
+    session_resolver.resolve_active_session(
+      sessions,
+      session_lookup,
+      session_max_age_seconds,
+      now_seconds,
+    )
+  {
+    Error(error) ->
+      result.SnapshotUnavailable(reason: session_error_reason(error))
+    Ok(active_session) -> {
+      let active_snapshot = session_resolver.to_snapshot(active_session)
+      let snapshot.ActiveProfileSnapshot(
+        service_id: _snapshot_service_id,
+        selector: selector,
+        profile_id: _snapshot_profile_id,
+        attributes: _snapshot_attributes,
+        session_active: _snapshot_session_active,
+      ) = active_snapshot
+
+      case
+        registry_resolver.resolve_endpoint(
+          endpoints,
+          tenant_id,
+          vendor,
+          registry_resolver.from_active_session(active_session),
+        )
+      {
+        Error(error) ->
+          result.TransportFailed(
+            reason: "endpoint_resolution_failed:"
+              <> registry_error_reason(error),
+            retries: 0,
+          )
+        Ok(endpoint) ->
+          case endpoint_secret(endpoint) {
+            Error(reason) -> result.TransportFailed(reason: reason, retries: 0)
+            Ok(secret) ->
+              send_coa_live(
+                plan,
+                vendor,
+                selector,
+                option.Some(active_snapshot),
+                profile_registry,
+                retry_policy,
+                transport.from_endpoint(endpoint, secret, now_seconds),
+              )
+          }
+      }
+    }
   }
 }
 
@@ -279,5 +359,50 @@ fn resolution_error_reason(
       "invalid_profile_definition:" <> profile_id <> ":" <> reason
     profile_types.VendorMappingFailed(reason) ->
       "vendor_mapping_failed:" <> reason
+  }
+}
+
+fn session_error_reason(error: session_types.SessionResolutionError) -> String {
+  case error {
+    session_types.NoActiveSession -> "no_active_session"
+    session_types.AmbiguousSession -> "ambiguous_active_session"
+    session_types.StaleSession(max_age_seconds) ->
+      "stale_session:max_age_seconds:" <> int.to_string(max_age_seconds)
+  }
+}
+
+fn registry_error_reason(error: registry_types.RegistryError) -> String {
+  case error {
+    registry_types.MissingEndpointSelector -> "missing_endpoint_selector"
+    registry_types.NoEndpointMatch -> "no_endpoint_match"
+    registry_types.MultipleEndpointMatches -> "multiple_endpoint_matches"
+    registry_types.InvalidEndpoint(reason) -> "invalid_endpoint:" <> reason
+  }
+}
+
+fn endpoint_secret(
+  endpoint: registry_types.NasEndpoint,
+) -> Result(String, String) {
+  let registry_types.NasEndpoint(
+    tenant_id: _tenant_id,
+    endpoint_id: _endpoint_id,
+    vendor: _vendor,
+    transport: _transport,
+    coa_host: _coa_host,
+    coa_port: _coa_port,
+    secret_ref: secret_ref,
+    timeout_ms: _timeout_ms,
+    retry_profile_id: _retry_profile_id,
+    nas_ip_address: _nas_ip_address,
+    nas_identifier: _nas_identifier,
+    capabilities: _capabilities,
+  ) = endpoint
+
+  case secret_ref {
+    registry_types.InlineSecret(value) -> Ok(value)
+    registry_types.EnvSecret(name) ->
+      Error("unsupported_secret_ref:env:" <> name)
+    registry_types.VaultSecret(path, key) ->
+      Error("unsupported_secret_ref:vault:" <> path <> ":" <> key)
   }
 }

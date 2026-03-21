@@ -34,10 +34,11 @@ build_reply(<<_Code, Identifier, _Length:16, RequestAuthenticator:16/binary, _/b
     {ReplyCode, Attributes, Authenticator} =
         case Mode of
             ack ->
-                Attrs = <<>>,
+                Attrs = with_message_authenticator(44, Identifier, RequestAuthenticator, <<>>, Secret),
                 {44, Attrs, response_authenticator(44, Identifier, RequestAuthenticator, Attrs, Secret)};
             {nak, ErrorCause, Message} ->
-                Attrs = <<101, 6, ErrorCause:32, 18, (byte_size(Message) + 2), Message/binary>>,
+                Attrs0 = <<101, 6, ErrorCause:32, 18, (byte_size(Message) + 2), Message/binary>>,
+                Attrs = with_message_authenticator(45, Identifier, RequestAuthenticator, Attrs0, Secret),
                 {45, Attrs, response_authenticator(45, Identifier, RequestAuthenticator, Attrs, Secret)};
             bad_auth ->
                 Attrs = <<>>,
@@ -49,6 +50,18 @@ build_reply(<<_Code, Identifier, _Length:16, RequestAuthenticator:16/binary, _/b
 response_authenticator(Code, Identifier, RequestAuthenticator, Attributes, Secret) ->
     Length = 20 + byte_size(Attributes),
     crypto:hash(md5, <<Code, Identifier, Length:16, RequestAuthenticator/binary, Attributes/binary, Secret/binary>>).
+
+with_message_authenticator(Code, Identifier, RequestAuthenticator, Attributes, Secret) ->
+    Placeholder = <<Attributes/binary, 80, 18, 0:128>>,
+    Length = 20 + byte_size(Placeholder),
+    MessageAuthenticator =
+        crypto:mac(
+            hmac,
+            md5,
+            Secret,
+            <<Code, Identifier, Length:16, RequestAuthenticator/binary, Placeholder/binary>>
+        ),
+    <<Attributes/binary, 80, 18, MessageAuthenticator/binary>>.
 
 format_reason(Reason) ->
     iolist_to_binary(io_lib:format("~p", [Reason])).
