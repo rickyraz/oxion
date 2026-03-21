@@ -14,6 +14,9 @@
 - [Brand Naming](./oxion-brand-naming.md)
 - [Plugin Architecture](./oxion-plugin-architecture.md)
 - [Plugin Examples](./oxion-plugin-examples.md)
+- [Collection Policy Schema](./collection-policy.schema.json)
+- [Collection Policy EBNF](./collection-policy-ebnf.md)
+- [Tier-1 Broadband Interop Profile](./oxion-tier1-broadband-interoperability-profile.md)
 - [dalo Migration Runbook](./oxion-dalo-migration-runbook.md)
 
 ---
@@ -100,34 +103,54 @@ oxion/
 │   │       ├── fraud_scorer.gleam
 │   │       └── device_fingerprint.gleam
 │   │
-│   ├── api_server/
+│   ├── api_gateway/
 │   │   └── src/
-│   │       ├── api_server.gleam
-│   │       ├── graphql_schema.gleam
-│   │       ├── ws_handler.gleam
-│   │       ├── handlers/
-│   │       │   ├── authorize_handler.gleam
-│   │       │   ├── accounting_handler.gleam
-│   │       │   ├── coa_handler.gleam
-│   │       │   ├── subscriber_handler.gleam
-│   │       │   ├── voucher_handler.gleam
-│   │       │   ├── billing_handler.gleam
-│   │       │   ├── package_handler.gleam
-│   │       │   ├── reseller_handler.gleam
-│   │       │   ├── tenant_handler.gleam
-│   │       │   ├── nas_handler.gleam
-│   │       │   ├── gis_handler.gleam
-│   │       │   ├── report_handler.gleam
-│   │       │   ├── notification_handler.gleam
-│   │       │   ├── payment_handler.gleam
-│   │       │   ├── firmware_handler.gleam
-│   │       │   ├── audit_handler.gleam
-│   │       │   └── health_handler.gleam
+│   │       ├── api_gateway.gleam
+│   │       ├── graphql_router.gleam
+│   │       ├── ws_router.gleam
+│   │       ├── routes/
+│   │       │   ├── aaa_routes.gleam
+│   │       │   ├── billing_routes.gleam
+│   │       │   ├── subscriber_routes.gleam
+│   │       │   ├── inventory_routes.gleam
+│   │       │   ├── olt_routes.gleam
+│   │       │   ├── notification_routes.gleam
+│   │       │   ├── report_routes.gleam
+│   │       │   └── health_routes.gleam
 │   │       └── middleware/
 │   │           ├── auth_middleware.gleam
 │   │           ├── tenant_middleware.gleam
 │   │           ├── rate_limit.gleam
 │   │           └── tracing.gleam
+│   │
+│   ├── aaa_api/
+│   │   └── src/
+│   │       ├── authorize_handler.gleam
+│   │       ├── accounting_handler.gleam
+│   │       ├── coa_handler.gleam
+│   │       └── package_handler.gleam
+│   │
+│   ├── subscriber_api/
+│   │   └── src/
+│   │       ├── subscriber_handler.gleam
+│   │       ├── reseller_handler.gleam
+│   │       └── tenant_handler.gleam
+│   │
+│   ├── billing_api/
+│   │   └── src/
+│   │       ├── billing_handler.gleam
+│   │       ├── payment_handler.gleam
+│   │       └── voucher_handler.gleam
+│   │
+│   ├── ops_api/
+│   │   └── src/
+│   │       ├── nas_handler.gleam
+│   │       ├── gis_handler.gleam
+│   │       ├── report_handler.gleam
+│   │       ├── notification_handler.gleam
+│   │       ├── firmware_handler.gleam
+│   │       ├── audit_handler.gleam
+│   │       └── health_handler.gleam
 │   │
 │   ├── accounting_pipeline/
 │   │   └── src/
@@ -299,16 +322,22 @@ oxion/
 │   │       ├── oxnoc/
 │   │       ├── oxbill/
 │   │       ├── postgres/
-│   │       ├── redis/
+│   │       ├── nebulex-cluster/
 │   │       ├── nats/
-│   │       ├── keycloak/
-│   │       ├── minio/
+│   │       ├── zitadel/
+│   │       ├── object-storage/
 │   │       ├── monitoring/
 │   │       └── ai-anomaly/
 │   └── docker/
 │       └── docker-compose.yml
 └── docs/
 ```
+
+Catatan boundary API (do one thing well):
+
+- `api_gateway` hanya routing, auth middleware, rate limit, dan tracing.
+- `*_api` modules memegang domain handler sesuai bounded context.
+- `gateway` tidak boleh berisi business rule domain; semua rule tetap di engine domain terkait.
 
 ---
 
@@ -910,6 +939,12 @@ GET    /v1/invoices/:id
 GET    /v1/invoices/:id/pdf
 POST   /v1/invoices/:id/pay
 POST   /v1/invoices/:id/cancel
+GET    /v1/collection/policies
+POST   /v1/collection/policies
+PUT    /v1/collection/policies/:id
+POST   /v1/collection/policies/:id/simulate
+POST   /v1/collection/policies/:id/publish
+POST   /v1/collection/enforce/run
 GET    /v1/payments
 POST   /v1/payments/webhook/midtrans
 POST   /v1/payments/webhook/xendit
@@ -1401,9 +1436,10 @@ export function NasMap(props: { tenantId: string }) {
 - [ ] Monorepo setup, semua gleam.toml, test harness
 - [ ] `policy_types.gleam` v2 (tenant_id, fraud_score, anomaly_flags)
 - [ ] `policy_engine.gleam` — evaluate_policy + semua guard + unit tests
-- [ ] `api_server` Wisp — /v1/policy/authorize, /v1/policy/accounting, /health
+- [ ] `api_gateway` Wisp + domain APIs — /v1/policy/authorize, /v1/policy/accounting, /health
 - [ ] FreeRADIUS `rlm_rest` integration test (dev Docker)
 - [ ] `cache_layer` ETS + Nebulex
+- [ ] CoA idempotency guard (skip jika profile enforcement sudah aktif)
 - [ ] `otp_supervisor` supervision tree
 
 ### Fase 2 — User Management & Multi-Tenant (Minggu 4–5)
@@ -1421,6 +1457,9 @@ export function NasMap(props: { tenantId: string }) {
 - [ ] Invoice PDF generator (Typst/wkhtmltopdf + Cloudflare R2/Backblaze)
 - [ ] Payment adapter: Midtrans + Xendit
 - [ ] `voucher_engine` — bulk generate, redeem, refill
+- [ ] Collection policy engine (UI builder + JSON stages/actions, tanpa hardcoded day/speed)
+- [ ] Policy simulator + publish workflow (draft -> simulated -> published)
+- [ ] Notifikasi collection berbasis stage/template (dynamic payment link)
 - [ ] Voucher PDF kartu print (5cm×8cm)
 - [ ] Auto top-up & renewal logic
 - [ ] Payment webhook handlers

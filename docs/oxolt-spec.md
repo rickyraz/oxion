@@ -14,6 +14,7 @@
 - [oxBill Spec](./oxbill-spec.md)
 - [oxNOC Spec](./oxnoc-spec.md)
 - [Brand Naming](./oxion-brand-naming.md)
+- [Tier-1 Broadband Interop Profile](./oxion-tier1-broadband-interoperability-profile.md)
 
 ---
 

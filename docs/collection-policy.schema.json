@@ -1,0 +1,354 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://docs.oxion.io/schema/collection-policy.schema.json",
+  "title": "Oxion Collection Policy Builder v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "grace_days",
+    "timezone",
+    "stages"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 120
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "grace_days": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 365
+    },
+    "timezone": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z_]+/[A-Za-z_]+(?:/[A-Za-z_]+)?$"
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evaluation_time": {
+          "type": "string",
+          "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+        },
+        "payment_link_mode": {
+          "type": "string",
+          "enum": ["static", "signed"]
+        },
+        "payment_link_base_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "payment_link_ttl_minutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10080
+        }
+      }
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/stage"
+      }
+    }
+  },
+  "$defs": {
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "priority",
+        "when",
+        "actions"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_\\-]{2,63}$"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "when": {
+          "$ref": "#/$defs/condition"
+        },
+        "stop_on_match": {
+          "type": "boolean",
+          "default": true
+        },
+        "notification_template": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/action"
+          }
+        }
+      }
+    },
+    "condition": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/condition_group"
+        },
+        {
+          "$ref": "#/$defs/condition_rule"
+        }
+      ]
+    },
+    "condition_group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operator", "conditions"],
+      "properties": {
+        "operator": {
+          "type": "string",
+          "enum": ["all", "any"]
+        },
+        "conditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/condition"
+          }
+        }
+      }
+    },
+    "condition_rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "op"],
+      "properties": {
+        "field": {
+          "type": "string",
+          "enum": [
+            "days_past_due",
+            "invoice_status",
+            "operational_state",
+            "billing_plan",
+            "total_due_amount",
+            "is_paid"
+          ]
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "between",
+            "is_true",
+            "is_false"
+          ]
+        },
+        "value": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["min", "max"],
+              "properties": {
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "enum": ["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "between"]
+              }
+            },
+            "required": ["op"]
+          },
+          "then": {
+            "required": ["value"]
+          }
+        }
+      ]
+    },
+    "action": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "profile_id"],
+          "properties": {
+            "type": {
+              "const": "apply_bandwidth_profile"
+            },
+            "profile_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "reason"],
+          "properties": {
+            "type": {
+              "const": "suspend_service"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "const": "restore_service"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "template_id"],
+          "properties": {
+            "type": {
+              "const": "send_notification"
+            },
+            "template_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "include_payment_link": {
+              "type": "boolean",
+              "default": false
+            },
+            "channels": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": ["whatsapp", "telegram", "sms", "email", "push"]
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "topic"],
+          "properties": {
+            "type": {
+              "const": "emit_event"
+            },
+            "topic": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 200
+            },
+            "payload": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "state"],
+          "properties": {
+            "type": {
+              "const": "set_operational_state"
+            },
+            "state": {
+              "type": "string",
+              "enum": ["normal", "throttled_due_overdue", "suspended_due_overdue"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "plugin_id", "hook"],
+          "properties": {
+            "type": {
+              "const": "run_plugin_hook"
+            },
+            "plugin_id": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$",
+              "minLength": 5,
+              "maxLength": 120
+            },
+            "hook": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "payload": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

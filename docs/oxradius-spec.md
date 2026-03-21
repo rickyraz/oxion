@@ -16,6 +16,9 @@
 - [Brand Naming](./oxion-brand-naming.md)
 - [Plugin Architecture](./oxion-plugin-architecture.md)
 - [dalo Migration Runbook](./oxion-dalo-migration-runbook.md)
+- [Tier-1 Broadband Interop Profile](./oxion-tier1-broadband-interoperability-profile.md)
+- [RADIUS Access-Accept and CoA Examples](./radius-access-coa-examples.md)
+- [NAS Vendor Mapping Template](./nas-vendor-mapping-template.md)
 
 ---
 
@@ -250,7 +253,35 @@ pub type ServicePackage {
     custom_vsa: List(VsaAttribute),
   )
 }
+
+pub type CollectionThrottleProfile {
+  CollectionThrottleProfile(
+    id: String,
+    download_kbps: Int,
+    upload_kbps: Int,
+    reason: String,
+  )
+}
 ```
+
+### Profile Throttle dari Policy
+
+```text
+id: bw_4mbps_sample
+download_kbps: 4096
+upload_kbps: 4096
+reason: overdue_collection
+```
+
+Nilai profile tidak hardcoded di core; profile dipilih oleh collection policy per tenant.
+
+### CoA Idempotency Guard
+
+Untuk mencegah CoA berulang setiap hari pada profile yang sama:
+
+- Simpan `last_enforced_profile_id` per subscriber di cache + DB snapshot.
+- Saat menerima request `change-package` ke profile policy (`profile_id`), bandingkan dengan profile aktif.
+- Jika profile aktif sudah sama, skip `send_coa` dan catat sebagai `idempotent_skip`.
 
 ---
 

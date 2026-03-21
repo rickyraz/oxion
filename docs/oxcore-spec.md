@@ -97,13 +97,16 @@ CREATE TABLE services (
   external_odoo_order_id  TEXT,
   service_number          TEXT UNIQUE NOT NULL,
 
-  -- State trilogy
+  -- Workflow execution state
   status         TEXT NOT NULL,
-  -- draft | pending_activation | active | suspended
-  -- terminating | terminated | inconsistent
+  -- draft | pending_activation | active | throttled_due_overdue
+  -- suspended | terminating | terminated | inconsistent
 
   desired_state  TEXT NOT NULL,
   -- active | suspended | terminated
+
+  operational_state TEXT NOT NULL DEFAULT 'normal',
+  -- normal | throttled_due_overdue | suspended_due_overdue
 
   actual_state   TEXT NOT NULL DEFAULT 'unknown',
   -- active | suspended | terminated | partial | unknown
@@ -258,11 +261,12 @@ Steps:
 ```
 Steps:
 1. validate_new_package
-2. aaa_update_profile
-3. aaa_send_coa           (update bandwidth tanpa disconnect)
-4. olt_change_profile
-5. reconcile_service
-6. mark_package_updated
+2. detect_profile_diff     (idempotency guard: skip jika profile sama)
+3. aaa_update_profile
+4. aaa_send_coa_if_needed  (jangan kirim CoA berulang jika profile sudah aktif)
+5. olt_change_profile_optional
+6. reconcile_service
+7. mark_package_updated
 ```
 
 ---
@@ -273,6 +277,9 @@ Steps:
 Transitions:
 draft              → pending_activation
 pending_activation → active
+active             → throttled_due_overdue
+throttled_due_overdue → active
+throttled_due_overdue → suspended
 active             → suspended
 suspended          → active
 active             → terminating
@@ -281,11 +288,24 @@ terminating        → terminated
 any                → inconsistent
 ```
 
-### Tiga Dimensi State
+### Operational State (Collection-Aware)
+
+Selain `desired_state` dan `status`, Oxion memakai `operational_state` untuk kondisi enforcement non-terminal.
+
+Nilai utama:
+
+- `normal`
+- `throttled_due_overdue`
+- `suspended_due_overdue`
+
+Dengan pendekatan ini, layanan bisa tetap `desired_state=active` sambil berada di mode throttled karena tunggakan.
+
+### Empat Dimensi State
 
 | Field | Arti |
 |---|---|
 | `desired_state` | Target yang diinginkan bisnis |
+| `operational_state` | Mode operasional non-terminal (mis. throttle overdue) |
 | `status` | Posisi dalam workflow eksekusi |
 | `actual_state` | Hasil nyata di lapangan (AAA + OLT) |
 
@@ -368,10 +388,27 @@ Odoo → POST /v1/events/invoice-overdue
   { service_id, invoice_id, days_overdue }
 
 oxCore:
-  1. set desired_state = 'suspended'
-  2. create SuspendService job
-  3. execute steps
-  4. emit service.suspended event
+  1. load collection policy tenant
+  2. evaluate stage rules (condition AST + priority)
+  3. run stage actions:
+       - apply_bandwidth_profile -> ChangePackage
+       - suspend_service -> SuspendService
+       - send_notification -> notification_engine
+       - emit_event -> NATS JetStream
+  4. map operational_state berdasarkan action outcome
+       - throttle action -> 'throttled_due_overdue'
+       - suspend action  -> 'suspended_due_overdue'
+  5. enforce idempotency via action fingerprint
+```
+
+### Payment Received (restore from overdue)
+
+```text
+Jika service ada pada throttled/suspended karena overdue:
+  1. set operational_state = 'normal'
+  2. restore package/profile asli subscriber
+  3. unsuspend jika sebelumnya suspended_due_overdue
+  4. emit service.restored event
 ```
 
 ### Terminate Request

@@ -14,6 +14,9 @@
 - [oxOLT Spec](./oxolt-spec.md)
 - [oxNOC Spec](./oxnoc-spec.md)
 - [Brand Naming](./oxion-brand-naming.md)
+- [Collection Policy Schema](./collection-policy.schema.json)
+- [Collection Policy EBNF](./collection-policy-ebnf.md)
+- [Collection Policy Contract Matrix](./collection-policy-contract-matrix.md)
 
 ---
 
@@ -44,6 +47,33 @@ Payment Gateways
   └── NOWPayments (USDT, BTC, ETH)
 ```
 
+### Dalo-Inspired Operator Layer (Adopsi Bernilai)
+
+Oxion mengadopsi hal paling bernilai dari daloRADIUS di sisi operasional, tanpa mengorbankan prinsip platform-grade (policy-driven, event-driven, CoA-aware).
+
+Submodule adopsi:
+
+- `billing_plan_registry` untuk operator CRUD facade plan.
+- `rate_catalog` untuk tarif versioned + effective date.
+- `billing_history_query` untuk filter/query history operasional.
+- `pos_counter` untuk pembayaran manual di loket/kasir.
+- `payment_type_policy` untuk kontrol metode pembayaran per tenant/reseller.
+
+Guardrails platform-grade:
+
+- UI CRUD hanya facade; eksekusi domain tetap via command/event.
+- Tidak ada hardcoded business rule di handler UI.
+- Event enforcement tetap melewati `oxCore` -> `oxRADIUS`.
+- Semua mutasi penting masuk audit trail.
+
+Event minimum:
+
+- `billing.plan.created|updated|archived`
+- `billing.rate_catalog.published`
+- `billing.payment.manual_recorded`
+- `billing.payment_type_policy.updated`
+- `billing.history.query_executed`
+
 ---
 
 ## 4. Billing Engine
@@ -72,6 +102,93 @@ pub type BillingCycle {
 
 pub type Money {
   Money(amount: Int, currency: String)  // dalam sen
+}
+
+pub type CollectionLifecyclePolicy {
+  CollectionLifecyclePolicy(
+    id: String,
+    tenant_id: String,
+    name: String,
+
+    // Grace period global, bisa dioverride per stage
+    grace_days: Int,
+
+    // Rule engine tanpa hardcoded day/speed di core
+    stages: List(CollectionStage),
+
+    // timezone evaluasi harian per tenant
+    timezone: String,
+  )
+}
+
+pub type CollectionStage {
+  CollectionStage(
+    id: String,
+    priority: Int,
+    when: CollectionCondition,
+    actions: List(CollectionAction),
+    notification_template: Option(String),
+  )
+}
+
+pub type CollectionCondition {
+  All(List(CollectionCondition))
+  Any(List(CollectionCondition))
+  Rule(field: String, op: String, value: Dynamic)
+}
+
+pub type CollectionAction {
+  ApplyBandwidthProfile(profile_id: String)
+  SuspendService(reason: String)
+  RestoreService
+  SendNotification(template_id: String, include_payment_link: Bool)
+  EmitEvent(topic: String)
+  SetOperationalState(state: String)
+  RunPluginHook(plugin_id: String, hook: String, payload: Dynamic)
+}
+```
+
+### Contoh Policy (UI Policy Builder)
+
+Policy disusun dari UI builder dan disimpan sebagai JSON. Core tidak menanam angka hari atau speed secara hardcoded.
+
+Kontrak JSON policy builder ada di: `./collection-policy.schema.json`.
+
+```json
+{
+  "name": "Collection Default Tenant A",
+  "grace_days": 0,
+  "timezone": "Asia/Jakarta",
+  "stages": [
+    {
+      "id": "soft_throttle",
+      "priority": 10,
+      "when": {
+        "operator": "all",
+        "conditions": [
+          { "field": "days_past_due", "op": "gte", "value": 6 },
+          { "field": "days_past_due", "op": "lte", "value": 20 }
+        ]
+      },
+      "actions": [
+        { "type": "apply_bandwidth_profile", "profile_id": "bw_4mbps" },
+        { "type": "send_notification", "template_id": "collection.soft_throttle", "include_payment_link": true }
+      ]
+    },
+    {
+      "id": "hard_suspend",
+      "priority": 20,
+      "when": {
+        "field": "days_past_due",
+        "op": "gte",
+        "value": 21
+      },
+      "actions": [
+        { "type": "suspend_service", "reason": "overdue_collection" },
+        { "type": "send_notification", "template_id": "collection.hard_suspend", "include_payment_link": true }
+      ]
+    }
+  ]
 }
 ```
 
@@ -276,6 +393,29 @@ pub fn create_crypto_payment(
 10. Notify subscriber: "Pembayaran berhasil, layanan aktif"
 ```
 
+### Overdue Enforcement Flow (Collection Lifecycle)
+
+```text
+Scheduler harian (00:15 timezone tenant):
+  1. Ambil invoice postpaid status Sent/Overdue dan belum Paid
+  2. Hitung days_past_due = (today - due_date)
+  3. Load policy tenant dari UI Policy Builder
+  4. Evaluasi stage berdasarkan `when` AST + priority
+  5. Eksekusi action stage terpilih (apply profile/suspend/restore/notif/emit/set state/plugin hook)
+  6. Simpan jejak eksekusi terakhir agar idempotent
+```
+
+### Recovery & Conflict Resolution
+
+Jika ada lebih dari satu invoice overdue aktif pada subscriber yang sama, aturan precedence wajib:
+
+1. Hitung `days_past_due` tertinggi dari seluruh invoice overdue aktif.
+2. Evaluasi policy menggunakan nilai precedence tersebut (worst-case overdue).
+3. Jangan restore layanan jika masih ada invoice overdue aktif lain.
+4. Restore hanya dilakukan bila semua invoice yang memicu enforcement sudah `paid/cancelled`.
+
+Kaidah ini mencegah kondisi flip-flop throttle/suspend saat pembayaran parsial beberapa invoice.
+
 ---
 
 ## 8. Auto Top-up & Renewal
@@ -343,7 +483,10 @@ oxBill emit ke notification engine:
 payment.received      → "Pembayaran Rp X berhasil diterima"
 payment.failed        → "Pembayaran gagal, silakan coba lagi"
 invoice.generated     → "Invoice bulan ini telah dibuat"
-invoice.overdue       → "Tagihan jatuh tempo, layanan akan diputus"
+collection.stage.soft_throttle → "Tagihan menunggak: layanan dibatasi sesuai kebijakan"
+collection.stage.hard_suspend  → "Layanan disuspend sesuai kebijakan tunggakan"
+service.suspended      → "Layanan dinonaktifkan sementara sampai pembayaran diterima"
+service.restored       → "Pembayaran diterima, layanan kembali normal"
 voucher.redeemed      → "Voucher berhasil diaktifkan"
 voucher.expiring_soon → "Voucher akan kadaluarsa dalam 24 jam"
 auto_renew.success    → "Paket berhasil diperpanjang otomatis"
@@ -421,7 +564,165 @@ CREATE TABLE payment_methods_on_file (
   is_default     BOOLEAN DEFAULT false,
   expires_at     DATE
 );
+
+CREATE TABLE billing_plan_registry (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id           UUID REFERENCES tenants(id) NOT NULL,
+  plan_code           TEXT NOT NULL,
+  name                TEXT NOT NULL,
+  billing_plan_json   JSONB NOT NULL,
+  radius_profile_hint TEXT,
+  active              BOOLEAN NOT NULL DEFAULT true,
+  created_at          TIMESTAMPTZ DEFAULT now(),
+  updated_at          TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(tenant_id, plan_code)
+);
+
+CREATE TABLE billing_rate_catalog (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id        UUID REFERENCES tenants(id) NOT NULL,
+  catalog_name     TEXT NOT NULL,
+  version          INT NOT NULL,
+  effective_from   TIMESTAMPTZ NOT NULL,
+  effective_to     TIMESTAMPTZ,
+  rates_json       JSONB NOT NULL,
+  lifecycle_status TEXT NOT NULL DEFAULT 'draft',
+  -- draft | simulated | published | archived
+  created_at       TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(tenant_id, catalog_name, version)
+);
+
+CREATE TABLE billing_pos_transactions (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id          UUID REFERENCES tenants(id) NOT NULL,
+  subscriber_id      UUID NOT NULL,
+  invoice_id         UUID REFERENCES invoices(id),
+  cashier_id         UUID,
+  payment_type_code  TEXT NOT NULL,
+  amount             BIGINT NOT NULL,
+  currency           TEXT NOT NULL DEFAULT 'IDR',
+  receipt_number     TEXT NOT NULL,
+  notes              TEXT,
+  created_at         TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(tenant_id, receipt_number)
+);
+
+CREATE TABLE payment_type_policies (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id           UUID REFERENCES tenants(id) NOT NULL,
+  reseller_id         UUID REFERENCES resellers(id),
+  payment_type_code   TEXT NOT NULL,
+  enabled             BOOLEAN NOT NULL DEFAULT true,
+  constraints_json    JSONB DEFAULT '{}',
+  updated_at          TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(tenant_id, reseller_id, payment_type_code)
+);
+
+CREATE TABLE billing_history_index (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id          UUID REFERENCES tenants(id) NOT NULL,
+  subscriber_id      UUID,
+  invoice_id         UUID,
+  event_type         TEXT NOT NULL,
+  event_ref          TEXT,
+  payload            JSONB DEFAULT '{}',
+  created_at         TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE collection_policies (
+  id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id              UUID REFERENCES tenants(id) NOT NULL,
+  name                   TEXT NOT NULL,
+  grace_days             INT NOT NULL DEFAULT 0,
+  policy_json            JSONB NOT NULL,
+  policy_version         INT NOT NULL DEFAULT 1,
+  lifecycle_status       TEXT NOT NULL DEFAULT 'draft',
+  -- draft | simulated | published | archived
+  is_active              BOOLEAN NOT NULL DEFAULT false,
+  simulated_at           TIMESTAMPTZ,
+  published_at           TIMESTAMPTZ,
+  timezone               TEXT NOT NULL DEFAULT 'Asia/Jakarta',
+  created_at             TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE collection_policies
+  ADD CONSTRAINT chk_collection_policy_lifecycle
+  CHECK (lifecycle_status IN ('draft', 'simulated', 'published', 'archived'));
+
+-- Satu tenant hanya boleh punya satu policy aktif-published pada satu waktu
+CREATE UNIQUE INDEX ux_collection_policy_single_active_published
+  ON collection_policies(tenant_id)
+  WHERE lifecycle_status = 'published' AND is_active = true;
+
+-- Versioning policy per tenant harus unik
+CREATE UNIQUE INDEX ux_collection_policy_tenant_version
+  ON collection_policies(tenant_id, policy_version);
+
+CREATE TABLE collection_enforcement_log (
+  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id            UUID REFERENCES tenants(id) NOT NULL,
+  subscriber_id        UUID NOT NULL,
+  invoice_id           UUID REFERENCES invoices(id) NOT NULL,
+  days_past_due        INT NOT NULL,
+  stage_id             TEXT,
+  action               TEXT NOT NULL,
+  action_payload       JSONB DEFAULT '{}',
+  action_fingerprint   TEXT NOT NULL,
+  executed_at          TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(tenant_id, action_fingerprint)
+);
 ```
+
+### Policy Lifecycle State Transition Table
+
+Invarian utama:
+
+- Hanya policy dengan `lifecycle_status='published'` yang boleh `is_active=true`.
+- Dalam satu tenant, hanya boleh ada satu policy `published + is_active=true`.
+
+| Dari | Ke | Status | Trigger API | Catatan |
+| --- | --- | --- | --- | --- |
+| `draft` | `simulated` | **Allowed** | `POST /v1/collection/policies/:id/simulate` | Wajib lulus schema + semantic validation |
+| `simulated` | `published` | **Allowed** | `POST /v1/collection/policies/:id/publish` | Publish membuat `published_at` |
+| `published` | `archived` | **Allowed** | `POST /v1/collection/policies/:id/archive` | Policy archived tidak boleh aktif |
+| `simulated` | `draft` | **Allowed** | `PUT /v1/collection/policies/:id` | Edit policy reset status ke draft |
+| `draft` | `draft` | **Allowed** | `PUT /v1/collection/policies/:id` | Update konten tanpa ubah lifecycle |
+| `simulated` | `simulated` | **Allowed** | `POST /v1/collection/policies/:id/simulate` | Re-simulate untuk update hasil |
+| `published` | `published` | **Allowed** | `POST /v1/collection/policies/:id/activate` | Re-activate idempotent |
+| `archived` | `draft` | **Forbidden** | - | Tidak boleh revive policy lama; buat versi baru |
+| `archived` | `simulated` | **Forbidden** | - | Archived immutable |
+| `archived` | `published` | **Forbidden** | - | Archived immutable |
+| `draft` | `published` | **Forbidden** | - | Harus melewati simulate dulu |
+| `published` | `draft` | **Forbidden** | - | Setelah publish, perubahan harus lewat policy version baru |
+| `published` | `simulated` | **Forbidden** | - | Tidak ada downgrade; gunakan clone version |
+
+### Aturan Aktivasi (`is_active`)
+
+- `POST /v1/collection/policies/:id/activate` hanya valid bila policy sudah `published`.
+- Saat aktivasi policy baru untuk tenant yang sama:
+  1. set policy active lama (`published`) -> `is_active=false`
+  2. set policy target -> `is_active=true`
+  3. commit atomik dalam satu transaksi DB
+- Jika langkah 1/2 gagal, transaction rollback penuh (tidak boleh ada dua active).
+
+### Error Code Normatif (Lifecycle)
+
+```json
+{
+  "code": "INVALID_POLICY_TRANSITION",
+  "policy_id": "pol_123",
+  "from": "draft",
+  "to": "published",
+  "reason": "simulate_required_before_publish"
+}
+```
+
+Kode minimum:
+
+- `INVALID_POLICY_TRANSITION`
+- `POLICY_NOT_PUBLISHED`
+- `ACTIVE_POLICY_CONFLICT`
+- `POLICY_IMMUTABLE_ARCHIVED`
 
 ---
 
@@ -435,6 +736,41 @@ GET    /v1/invoices/:id
 GET    /v1/invoices/:id/pdf
 POST   /v1/invoices/:id/pay
 POST   /v1/invoices/:id/cancel
+
+# Collection policy & enforcement
+GET    /v1/collection/policies
+POST   /v1/collection/policies
+GET    /v1/collection/policies/:id
+PUT    /v1/collection/policies/:id
+POST   /v1/collection/policies/:id/simulate
+POST   /v1/collection/policies/:id/publish
+POST   /v1/collection/policies/:id/archive
+POST   /v1/collection/policies/:id/activate
+POST   /v1/collection/enforce/run
+
+# Billing plan registry (operator facade)
+GET    /v1/billing/plans
+POST   /v1/billing/plans
+GET    /v1/billing/plans/:id
+PUT    /v1/billing/plans/:id
+POST   /v1/billing/plans/:id/archive
+
+# Rate catalog (versioned)
+GET    /v1/billing/rate-catalogs
+POST   /v1/billing/rate-catalogs
+POST   /v1/billing/rate-catalogs/:id/simulate
+POST   /v1/billing/rate-catalogs/:id/publish
+
+# POS counter
+GET    /v1/billing/pos/transactions
+POST   /v1/billing/pos/transactions
+
+# Payment type policy
+GET    /v1/billing/payment-type-policies
+PUT    /v1/billing/payment-type-policies/:id
+
+# Billing history query
+GET    /v1/billing/history
 
 # Payment
 GET    /v1/payments
@@ -459,13 +795,13 @@ POST   /v1/self/topup
 POST   /v1/self/voucher/redeem
 GET    /v1/self/quota
 
-# Reseller
-GET    /v1/resellers
-POST   /v1/resellers
-GET    /v1/resellers/:id
-PUT    /v1/resellers/:id
-GET    /v1/resellers/:id/stats
-GET    /v1/resellers/:id/commissions
+# Reseller billing view (read-only, bukan domain management reseller)
+GET    /v1/billing/reseller-commissions
+GET    /v1/billing/reseller-commissions/:reseller_id
+
+# Catatan boundary domain
+# Reseller management berada di oxCore/platform-services domain.
+# oxBill hanya expose data komisi/faktur reseller via endpoint billing domain.
 ```
 
 ---
@@ -482,6 +818,16 @@ oxbill_voucher_redeemed_total{tenant_id}
 oxbill_voucher_expired_total{tenant_id}
 oxbill_auto_renew_success_total{tenant_id}
 oxbill_auto_renew_fail_total{tenant_id}
+oxbill_collection_policy_eval_total{tenant_id, policy_id, stage_id, result}
+oxbill_collection_action_total{tenant_id, stage_id, action, result}
+oxbill_collection_idempotent_skip_total{tenant_id, action}
+oxbill_collection_restore_total{tenant_id, result}
+oxbill_collection_overdue_conflict_total{tenant_id, subscriber_id}
+oxbill_plan_registry_total{tenant_id, status}
+oxbill_rate_catalog_total{tenant_id, lifecycle_status}
+oxbill_pos_transaction_total{tenant_id, payment_type_code}
+oxbill_payment_type_policy_update_total{tenant_id}
+oxbill_billing_history_query_total{tenant_id, query_type}
 ```
 
 ---
