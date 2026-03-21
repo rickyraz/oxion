@@ -213,6 +213,11 @@ fn map_packet_to_response(
       response.Malformed(reason: "unexpected_request_packet_received")
     packet.CoaRequestCode | packet.CoaAckCode | packet.CoaNakCode ->
       response.Malformed(reason: "unexpected_coa_packet_received")
+    packet.AccessAcceptCode
+    | packet.AccessRejectCode
+    | packet.AccountingResponseCode
+    | packet.StatusServerCode ->
+      response.Malformed(reason: "unexpected_status_or_access_packet_received")
   }
 }
 

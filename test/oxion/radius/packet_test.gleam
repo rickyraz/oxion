@@ -50,6 +50,72 @@ pub fn packet_decodes_disconnect_request_code_test() {
     )
 }
 
+pub fn packet_decodes_status_and_access_codes_test() {
+  assert packet.decode_packet(<<
+      12,
+      7,
+      0,
+      20,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+    >>)
+    == Ok(
+      packet.RadiusPacket(
+        code: packet.StatusServerCode,
+        identifier: 7,
+        length: 20,
+        authenticator: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0>>,
+        attributes: [],
+      ),
+    )
+
+  assert packet.decode_packet(<<
+      2,
+      8,
+      0,
+      20,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+    >>)
+    == Ok(
+      packet.RadiusPacket(
+        code: packet.AccessAcceptCode,
+        identifier: 8,
+        length: 20,
+        authenticator: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0>>,
+        attributes: [],
+      ),
+    )
+}
+
 pub fn packet_encodes_hardened_coa_request_test() {
   let request_value =
     request.CoaRequest(

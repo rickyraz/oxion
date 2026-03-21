@@ -81,7 +81,7 @@ Submodule dan fungsinya saat ini:
 | Disconnect | `src/oxion/radius/disconnect/*` | request/response/result/execution/transport Disconnect | `Disconnect` punya constraints RFC 5176 yang lebih sempit |
 | Registry | `src/oxion/radius/registry/*` | resolve NAS endpoint dan capability | secret dan endpoint tidak boleh hardcoded di call site |
 | Session | `src/oxion/radius/session/*` | source of truth session aktif / accounting materialization | targeting session harus datang dari runtime state, bukan tebakan caller |
-| Ops | `src/oxion/radius/ops/*` | healthcheck, status, radclient tooling | tooling operasional tidak boleh bercampur dengan business path |
+| Ops | `src/oxion/radius/ops/*` | healthcheck, `Status-Server`, radclient tooling | tooling operasional tidak boleh bercampur dengan business path |
 | UDP | `src/oxion/radius/udp/*` | worker/socket reuse, socket handle lifecycle, outstanding request tracking | reuse socket adalah concern transport, bukan packet |
 | RadSec | `src/oxion/radius/radsec/*` | TLS transport future path | jangan campur UDP logic dengan TLS lifecycle |
 | Protocol | `src/oxion/radius/protocol/*` | tracking future protocol evolution | roadmap `RADIUS/1.1` tidak boleh mengotori path MVP |
@@ -363,7 +363,7 @@ Statusnya lebih tepat seperti ini:
 | RFC 2869 `Message-Authenticator` / `Event-Timestamp` | Mostly aligned | support sudah ada, tapi enforcement bersama lintas semua family dan worker belum final |
 | RFC 5080 retransmission / duplicate handling | Partially aligned | replay model sudah dipakai pada managed `CoA` dan `Disconnect`, tetapi UDP worker/shared runtime enforcement belum final |
 | RFC 5176 CoA / Disconnect separation | Mostly aligned | builder `CoA` dan `Disconnect` sudah terpisah, packet family juga terpisah |
-| RFC 5997 Status-Server | Not complete | baru scaffold ops path |
+| RFC 5997 Status-Server | Partially aligned | live smoke path dan response verification sudah ada, tetapi inventory target dan diagnostics masih belum final |
 | RFC 6613 / 6614 TCP/TLS / RadSec | Not complete | baru scaffold |
 | RFC 6929 extended vendor model | Partial groundwork | dictionary/VSA registry sudah lebih baik, tapi coverage vendor belum lengkap |
 | RFC 9765 RADIUS/1.1 | Future track only | masih tracking, bukan implementation target sekarang |
@@ -384,7 +384,7 @@ Hal berikut belum boleh diklaim selesai penuh:
 
 1. replay protection shared runtime lintas worker UDP dan family lain di luar managed boundary sekarang,
 2. worker-driven default path dan concurrency scheduler di atas UDP reuse yang baru,
-3. `Status-Server` live path,
+3. richer `Status-Server` inventory target dan diagnostics,
 4. `RadSec` live path,
 5. vendor dictionary coverage yang lebih lengkap,
 6. vBNG live transport yang benar-benar supported.

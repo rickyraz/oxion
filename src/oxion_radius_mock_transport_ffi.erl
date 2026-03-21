@@ -1,5 +1,5 @@
 -module(oxion_radius_mock_transport_ffi).
--export([start_ack_server/1, start_nak_server/3, start_bad_auth_server/1, start_echo_server/0]).
+-export([start_ack_server/1, start_nak_server/3, start_bad_auth_server/1, start_echo_server/0, start_status_server/1]).
 
 start_ack_server(Secret) when is_binary(Secret) ->
     start_server(Secret, ack).
@@ -12,6 +12,9 @@ start_bad_auth_server(Secret) when is_binary(Secret) ->
 
 start_echo_server() ->
     start_server(<<>>, echo).
+
+start_status_server(Secret) when is_binary(Secret) ->
+    start_server(Secret, status).
 
 start_server(Secret, Mode) ->
     case gen_udp:open(0, [binary, {active, false}, {reuseaddr, true}]) of
@@ -44,6 +47,10 @@ build_reply(<<RequestCode, Identifier, _Length:16, RequestAuthenticator:16/binar
             ack ->
                 Attrs = with_message_authenticator(AckCode, Identifier, RequestAuthenticator, <<>>, Secret),
                 {AckCode, Attrs, response_authenticator(AckCode, Identifier, RequestAuthenticator, Attrs, Secret)};
+            status ->
+                StatusCode = 2,
+                Attrs = with_message_authenticator(StatusCode, Identifier, RequestAuthenticator, <<>>, Secret),
+                {StatusCode, Attrs, response_authenticator(StatusCode, Identifier, RequestAuthenticator, Attrs, Secret)};
             {nak, ErrorCause, Message} ->
                 Attrs0 = <<101, 6, ErrorCause:32, 18, (byte_size(Message) + 2), Message/binary>>,
                 Attrs = with_message_authenticator(NakCode, Identifier, RequestAuthenticator, Attrs0, Secret),

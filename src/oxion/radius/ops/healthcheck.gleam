@@ -31,17 +31,35 @@ pub fn evaluate(
     capabilities: capabilities,
   ) = endpoint
 
-  case status_result {
-    status.Reachable ->
+  let types.NasCapabilities(
+    supports_coa: _supports_coa,
+    supports_disconnect: _supports_disconnect,
+    supports_status_server: supports_status_server,
+    requires_message_authenticator: _requires_message_authenticator,
+    requires_event_timestamp: _requires_event_timestamp,
+    supports_multi_session_match: _supports_multi_session_match,
+  ) = capabilities
+
+  case supports_status_server, status_result {
+    False, _ ->
+      HealthReport(
+        severity: Degraded,
+        reason: "status_server_unsupported_by_endpoint",
+      )
+    True, status.Reachable(response_kind) ->
       case capability.requires_hardened_packets(capabilities) {
-        True -> HealthReport(severity: Healthy, reason: "reachable_hardened")
+        True ->
+          HealthReport(
+            severity: Healthy,
+            reason: "reachable_hardened:" <> response_kind,
+          )
         False ->
           HealthReport(
             severity: Degraded,
-            reason: "reachable_without_hardening",
+            reason: "reachable_without_hardening:" <> response_kind,
           )
       }
-    status.Unreachable(reason) ->
+    True, status.Unreachable(reason) ->
       HealthReport(severity: Critical, reason: "unreachable:" <> reason)
   }
 }

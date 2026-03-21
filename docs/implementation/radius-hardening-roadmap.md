@@ -78,7 +78,7 @@ Yang masih belum selesai penuh:
 - `Message-Authenticator` belum diterapkan ke seluruh packet family di semua jalur transport
 - replay cache belum menjadi shared runtime enforcement lintas worker UDP
 - vendor registry belum menggantikan seluruh legacy naming path karena `vBNG` live transport masih unsupported dan shim kompatibilitas snapshot lama masih sengaja dipertahankan
-- `Status-Server`, `UDP worker`, dan `RadSec` masih berupa baseline contract
+- `Status-Server` live smoke path dan `radclient` rendering baseline sudah tersedia, tetapi ops diagnostics yang lebih kaya masih belum final
 - worker UDP sekarang sudah memiliki reusable socket handle dan outstanding request table pada prepared transport seam, tetapi belum menjadi default orchestration path atau concurrency scheduler penuh
 
 ---
@@ -463,7 +463,7 @@ Checklist pendek yang bisa dipakai sebagai gate:
 - [ ] `Disconnect-Request` tersedia
 - [ ] dictionary/VSA registry tersedia
 - [ ] session read model tersedia
-- [ ] `Status-Server` tersedia
+- [x] `Status-Server` tersedia
 - [x] worker socket reuse tersedia
 - [ ] RadSec tersedia
 

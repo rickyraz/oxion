@@ -39,6 +39,9 @@ Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 - `src/oxion/radius/disconnect/result.gleam`
 - `src/oxion/radius/disconnect/execution.gleam`
 - `src/oxion/radius/disconnect/transport.gleam`
+- `src/oxion/radius/ops/status.gleam`
+- `src/oxion/radius/ops/healthcheck.gleam`
+- `src/oxion/radius/ops/radclient.gleam`
 - `src/oxion_radius_transport_ffi.erl`
 - `src/oxion_radius_mock_transport_ffi.erl`
 - `test/oxion/orchestration/collection/orchestrator_test.gleam`
@@ -52,6 +55,7 @@ Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 - `test/oxion/radius/coa/replay_test.gleam`
 - `test/oxion/radius/disconnect/request_test.gleam`
 - `test/oxion/radius/disconnect/execution_test.gleam`
+- `test/oxion/radius/ops/healthcheck_test.gleam`
 
 ---
 
@@ -72,6 +76,7 @@ Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 - [x] Response authenticator verification tersedia.
 - [x] Managed replay/runtime enforcement tersedia untuk `CoA` dan `Disconnect`.
 - [x] UDP worker reuse dan outstanding request tracking tersedia pada prepared live transport seam.
+- [x] `Status-Server` ops path dan `radclient` rendering baseline tersedia.
 - [x] Audit projection dari command outcome tersedia.
 
 ---
@@ -99,6 +104,7 @@ Perubahan test phase ini mencakup:
 - Disconnect builder dan managed live disconnect ACK path via mock UDP server
 - duplicate Disconnect runtime execution ditolak oleh replay cache pada managed path
 - reusable UDP worker menjaga outstanding request table, prune timeout, dan prepared roundtrip path untuk CoA/Disconnect
+- `Status-Server` live smoke path, health classification, dan `radclient` command rendering baseline tersedia
 
 Status verifikasi pada patch ini:
 

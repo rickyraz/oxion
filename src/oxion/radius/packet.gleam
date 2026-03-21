@@ -12,6 +12,10 @@ import oxion/radius/profile/snapshot
 import oxion/radius/vendor/types as vendor_types
 
 pub type RadiusCode {
+  AccessAcceptCode
+  AccessRejectCode
+  AccountingResponseCode
+  StatusServerCode
   DisconnectRequestCode
   DisconnectAckCode
   DisconnectNakCode
@@ -152,6 +156,16 @@ pub fn encode_disconnect_request_with_security(
     secret,
     security,
   )
+}
+
+pub fn encode_status_request_with_security(
+  fingerprint: String,
+  secret: String,
+  security: PacketSecurityConfig,
+) -> Result(EncodedRequest, PacketError) {
+  let identifier = identifier_from_fingerprint(fingerprint)
+
+  encode_request(StatusServerCode, identifier, [], secret, security)
 }
 
 fn encode_request(
@@ -797,6 +811,10 @@ fn decode_attributes(
 
 fn radius_code_from_int(code: Int) -> Result(RadiusCode, PacketError) {
   case code {
+    2 -> Ok(AccessAcceptCode)
+    3 -> Ok(AccessRejectCode)
+    5 -> Ok(AccountingResponseCode)
+    12 -> Ok(StatusServerCode)
     40 -> Ok(DisconnectRequestCode)
     41 -> Ok(DisconnectAckCode)
     42 -> Ok(DisconnectNakCode)
@@ -809,6 +827,10 @@ fn radius_code_from_int(code: Int) -> Result(RadiusCode, PacketError) {
 
 pub fn radius_code_to_int(code: RadiusCode) -> Int {
   case code {
+    AccessAcceptCode -> 2
+    AccessRejectCode -> 3
+    AccountingResponseCode -> 5
+    StatusServerCode -> 12
     DisconnectRequestCode -> 40
     DisconnectAckCode -> 41
     DisconnectNakCode -> 42
