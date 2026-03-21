@@ -3,6 +3,7 @@ import gleam/option
 
 pub type CoaExecutionResult {
   IdempotentSkip(reason: String)
+  ReplayRejected(reason: String)
   Ack(applied_target: String, retries: Int)
   Nak(code: String, message: String, retries: Int)
   Timeout(retries: Int)
@@ -16,6 +17,7 @@ pub type CoaExecutionResult {
 pub fn retry_count(result: CoaExecutionResult) -> Int {
   case result {
     IdempotentSkip(_) -> 0
+    ReplayRejected(_) -> 0
     Ack(_, retries) -> retries
     Nak(_, _, retries) -> retries
     Timeout(retries) -> retries
@@ -30,6 +32,7 @@ pub fn retry_count(result: CoaExecutionResult) -> Int {
 pub fn reason(result: CoaExecutionResult) -> option.Option(String) {
   case result {
     IdempotentSkip(reason) -> option.Some(reason)
+    ReplayRejected(reason) -> option.Some(reason)
     Ack(_, _) -> option.None
     Nak(code, message, _) -> option.Some(code <> ":" <> message)
     Timeout(retries) ->

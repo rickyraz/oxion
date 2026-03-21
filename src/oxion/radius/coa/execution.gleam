@@ -1,6 +1,7 @@
 import gleam/int
 import gleam/option
 import oxion/orchestration/collection/commands
+import oxion/radius/coa/replay
 import oxion/radius/coa/request
 import oxion/radius/coa/response
 import oxion/radius/coa/result
@@ -222,6 +223,167 @@ pub fn send_coa_live_managed(
   }
 }
 
+pub fn send_coa_live_managed_with_replay(
+  plan: commands.CommandPlan,
+  vendor: vendor_types.RadiusVendor,
+  session_lookup: session_types.SessionLookup,
+  session_max_age_seconds: Int,
+  endpoints: List(registry_types.NasEndpoint),
+  sessions: List(session_types.ActiveSession),
+  profile_registry: List(profile_types.ProfileDefinition),
+  retry_policy: retry.RetryPolicy,
+  replay_cache: replay.ReplayCache,
+  replay_window: replay.ReplayWindow,
+  now_seconds: Int,
+) -> #(result.CoaExecutionResult, replay.ReplayCache) {
+  let session_types.SessionLookup(
+    tenant_id: tenant_id,
+    service_id: _service_id,
+    username: _username,
+    acct_session_id: _acct_session_id,
+    framed_ip: _framed_ip,
+  ) = session_lookup
+
+  // Why: replay protection belongs at the managed runtime boundary so it can
+  // reject duplicate executions across calls without interfering with retries
+  // that happen inside one in-flight CoA attempt sequence.
+  case
+    session_resolver.resolve_active_session(
+      sessions,
+      session_lookup,
+      session_max_age_seconds,
+      now_seconds,
+    )
+  {
+    Error(error) -> #(
+      result.SnapshotUnavailable(reason: session_error_reason(error)),
+      replay_cache,
+    )
+    Ok(active_session) -> {
+      let active_snapshot = session_resolver.to_snapshot(active_session)
+      let snapshot.ActiveProfileSnapshot(
+        service_id: _snapshot_service_id,
+        selector: selector,
+        profile_id: _snapshot_profile_id,
+        attributes: _snapshot_attributes,
+        session_active: _snapshot_session_active,
+      ) = active_snapshot
+
+      case
+        registry_resolver.resolve_endpoint(
+          endpoints,
+          tenant_id,
+          vendor,
+          registry_resolver.from_active_session(active_session),
+        )
+      {
+        Error(error) -> #(
+          result.TransportFailed(
+            reason: "endpoint_resolution_failed:"
+              <> registry_error_reason(error),
+            retries: 0,
+          ),
+          replay_cache,
+        )
+        Ok(endpoint) ->
+          case endpoint_secret(endpoint) {
+            Error(reason) -> #(
+              result.TransportFailed(reason: reason, retries: 0),
+              replay_cache,
+            )
+            Ok(secret) -> {
+              let transport_config =
+                transport.from_endpoint(endpoint, secret, now_seconds)
+
+              case
+                prepare_request(
+                  plan,
+                  vendor,
+                  selector,
+                  option.Some(active_snapshot),
+                  profile_registry,
+                )
+              {
+                Error(execution_result) -> #(execution_result, replay_cache)
+                Ok(#(request_value, target_id)) ->
+                  case
+                    transport.prepare_roundtrip(
+                      request_value,
+                      vendor,
+                      transport_config,
+                    )
+                  {
+                    Error(reason) -> #(
+                      result.TransportFailed(
+                        reason: "packet_prepare_failed:" <> reason,
+                        retries: 0,
+                      ),
+                      replay_cache,
+                    )
+                    Ok(prepared) -> {
+                      let registry_types.NasEndpoint(
+                        tenant_id: _endpoint_tenant_id,
+                        endpoint_id: endpoint_id,
+                        vendor: _endpoint_vendor,
+                        transport: _endpoint_transport,
+                        coa_host: _endpoint_host,
+                        coa_port: _endpoint_port,
+                        secret_ref: _endpoint_secret_ref,
+                        timeout_ms: _endpoint_timeout_ms,
+                        retry_profile_id: _endpoint_retry_profile_id,
+                        nas_ip_address: _endpoint_nas_ip_address,
+                        nas_identifier: _endpoint_nas_identifier,
+                        capabilities: _endpoint_capabilities,
+                      ) = endpoint
+                      let transport.PreparedRoundtrip(
+                        identifier: identifier,
+                        request_authenticator: request_authenticator,
+                        event_timestamp: event_timestamp,
+                        payload: _payload,
+                      ) = prepared
+
+                      case
+                        replay.validate_and_store(
+                          replay_cache,
+                          replay.ReplayEntry(
+                            endpoint_id: endpoint_id,
+                            identifier: identifier,
+                            request_authenticator: request_authenticator,
+                            event_timestamp: replay_event_timestamp(
+                              event_timestamp,
+                            ),
+                          ),
+                          replay_window,
+                          now_seconds,
+                        )
+                      {
+                        Error(error) -> #(
+                          result.ReplayRejected(reason: replay_error_reason(
+                            error,
+                          )),
+                          replay_cache,
+                        )
+                        Ok(next_cache) -> #(
+                          execute_live_prepared_attempts(
+                            prepared,
+                            target_id,
+                            transport_config,
+                            retry_policy,
+                            0,
+                          ),
+                          next_cache,
+                        )
+                      }
+                    }
+                  }
+              }
+            }
+          }
+      }
+    }
+  }
+}
+
 fn execute_attempts(
   attempts: List(response.CoaResponse),
   retry_policy: retry.RetryPolicy,
@@ -349,6 +511,67 @@ fn execute_live_attempts(
   }
 }
 
+fn execute_live_prepared_attempts(
+  prepared: transport.PreparedRoundtrip,
+  target_id: String,
+  transport_config: transport.CoaTransportConfig,
+  retry_policy: retry.RetryPolicy,
+  retries_used: Int,
+) -> result.CoaExecutionResult {
+  let retry.RetryPolicy(max_attempts: max_attempts, backoff_ms: _backoff_ms) =
+    retry_policy
+  let attempt =
+    transport.roundtrip_prepared(prepared, target_id, transport_config)
+
+  case attempt {
+    response.Ack(_nas, applied_target) ->
+      result.Ack(applied_target: applied_target, retries: retries_used)
+
+    response.Nak(_nas, error_code, error_message) ->
+      result.Nak(
+        code: error_code,
+        message: error_message,
+        retries: retries_used,
+      )
+
+    response.Malformed(reason) ->
+      result.TransportFailed(
+        reason: "malformed_response:" <> reason,
+        retries: retries_used,
+      )
+
+    response.Timeout ->
+      case retry.is_retryable(attempt) && retries_used + 1 < max_attempts {
+        True -> {
+          let _delay = retry.retry_delay(retry_policy, retries_used)
+          execute_live_prepared_attempts(
+            prepared,
+            target_id,
+            transport_config,
+            retry_policy,
+            retries_used + 1,
+          )
+        }
+        False -> result.Timeout(retries: retries_used)
+      }
+
+    response.TransportError(reason) ->
+      case retry.is_retryable(attempt) && retries_used + 1 < max_attempts {
+        True -> {
+          let _delay = retry.retry_delay(retry_policy, retries_used)
+          execute_live_prepared_attempts(
+            prepared,
+            target_id,
+            transport_config,
+            retry_policy,
+            retries_used + 1,
+          )
+        }
+        False -> result.TransportFailed(reason: reason, retries: retries_used)
+      }
+  }
+}
+
 fn resolution_error_reason(
   error: profile_types.ProfileResolutionError,
 ) -> String {
@@ -368,6 +591,22 @@ fn session_error_reason(error: session_types.SessionResolutionError) -> String {
     session_types.AmbiguousSession -> "ambiguous_active_session"
     session_types.StaleSession(max_age_seconds) ->
       "stale_session:max_age_seconds:" <> int.to_string(max_age_seconds)
+  }
+}
+
+fn replay_error_reason(error: replay.ReplayError) -> String {
+  case error {
+    replay.InvalidReplayWindow -> "invalid_replay_window"
+    replay.MissingEventTimestamp -> "missing_event_timestamp"
+    replay.StaleEventTimestamp -> "stale_event_timestamp"
+    replay.DuplicateRequest -> "duplicate_request"
+  }
+}
+
+fn replay_event_timestamp(event_timestamp: option.Option(Int)) -> Int {
+  case event_timestamp {
+    option.Some(value) -> value
+    option.None -> 0
   }
 }
 

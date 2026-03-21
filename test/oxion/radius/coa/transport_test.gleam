@@ -1,6 +1,7 @@
 import gleam/option
 import oxion/orchestration/collection/commands
 import oxion/radius/coa/execution
+import oxion/radius/coa/replay
 import oxion/radius/coa/request
 import oxion/radius/coa/response
 import oxion/radius/coa/result
@@ -166,6 +167,61 @@ pub fn execution_managed_runtime_resolves_endpoint_and_session_test() {
       1_710_000_000,
     )
     == result.Ack(applied_target: "bw_4mbps", retries: 0)
+}
+
+pub fn execution_managed_runtime_rejects_duplicate_request_via_replay_cache_test() {
+  let secret = "sharedsecret"
+  let port = case start_ack_server(secret) {
+    Ok(port) -> port
+    Error(_) -> panic
+  }
+  let replay_window = replay.ReplayWindow(max_age_seconds: 60, max_entries: 10)
+  let #(first_result, cache_after_first) =
+    execution.send_coa_live_managed_with_replay(
+      throttle_plan(),
+      vendor_types.Cisco,
+      session_types.SessionLookup(
+        tenant_id: "tenant_a",
+        service_id: "svc_1",
+        username: option.Some("cust_001"),
+        acct_session_id: option.None,
+        framed_ip: option.None,
+      ),
+      60,
+      [sample_endpoint(port)],
+      [sample_active_session()],
+      sample_registry(),
+      retry.RetryPolicy(max_attempts: 2, backoff_ms: [100, 250]),
+      replay.new(),
+      replay_window,
+      1_710_000_000,
+    )
+
+  assert first_result == result.Ack(applied_target: "bw_4mbps", retries: 0)
+
+  let #(second_result, cache_after_second) =
+    execution.send_coa_live_managed_with_replay(
+      throttle_plan(),
+      vendor_types.Cisco,
+      session_types.SessionLookup(
+        tenant_id: "tenant_a",
+        service_id: "svc_1",
+        username: option.Some("cust_001"),
+        acct_session_id: option.None,
+        framed_ip: option.None,
+      ),
+      60,
+      [sample_endpoint(port)],
+      [sample_active_session()],
+      sample_registry(),
+      retry.RetryPolicy(max_attempts: 2, backoff_ms: [100, 250]),
+      cache_after_first,
+      replay_window,
+      1_710_000_000,
+    )
+
+  assert second_result == result.ReplayRejected(reason: "duplicate_request")
+  assert cache_after_second == cache_after_first
 }
 
 fn throttle_plan() -> commands.CommandPlan {

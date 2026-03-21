@@ -17,6 +17,15 @@ pub type CoaTransportConfig {
   )
 }
 
+pub type PreparedRoundtrip {
+  PreparedRoundtrip(
+    identifier: Int,
+    request_authenticator: BitArray,
+    event_timestamp: option.Option(Int),
+    payload: BitArray,
+  )
+}
+
 @external(erlang, "oxion_radius_transport_ffi", "send_and_receive")
 fn send_and_receive(
   host: String,
@@ -77,14 +86,30 @@ pub fn roundtrip(
   target_id: String,
   config: CoaTransportConfig,
 ) -> response.CoaResponse {
+  case prepare_roundtrip(request_value, vendor, config) {
+    Error(reason) ->
+      response.TransportError(reason: "packet_prepare_failed:" <> reason)
+    Ok(prepared) -> roundtrip_prepared(prepared, target_id, config)
+  }
+}
+
+pub fn prepare_roundtrip(
+  request_value: request.CoaRequest,
+  vendor: vendor_types.RadiusVendor,
+  config: CoaTransportConfig,
+) -> Result(PreparedRoundtrip, String) {
   let CoaTransportConfig(
-    host: host,
-    port: port,
     secret: secret,
-    timeout_ms: timeout_ms,
     request_security: request_security,
-    require_message_authenticator_response: require_message_authenticator_response,
+    host: _host,
+    port: _port,
+    timeout_ms: _timeout_ms,
+    require_message_authenticator_response: _require_message_authenticator_response,
   ) = config
+  let packet.PacketSecurityConfig(
+    message_authenticator: _message_authenticator,
+    event_timestamp: event_timestamp,
+  ) = request_security
 
   case
     packet.encode_coa_request_with_security(
@@ -94,36 +119,63 @@ pub fn roundtrip(
       request_security,
     )
   {
-    Error(error) -> response.TransportError(reason: packet_error_reason(error))
+    Error(error) -> Error(packet_error_reason(error))
     Ok(packet.EncodedRequest(
       identifier: identifier,
       request_authenticator: request_authenticator,
       payload: payload,
     )) ->
-      case send_and_receive(host, port, payload, timeout_ms) {
-        Error(reason) -> map_transport_error(reason)
-        Ok(raw_response) ->
-          case packet.decode_packet(raw_response) {
+      Ok(PreparedRoundtrip(
+        identifier: identifier,
+        request_authenticator: request_authenticator,
+        event_timestamp: event_timestamp,
+        payload: payload,
+      ))
+  }
+}
+
+pub fn roundtrip_prepared(
+  prepared: PreparedRoundtrip,
+  target_id: String,
+  config: CoaTransportConfig,
+) -> response.CoaResponse {
+  let CoaTransportConfig(
+    host: host,
+    port: port,
+    secret: secret,
+    timeout_ms: timeout_ms,
+    request_security: _request_security,
+    require_message_authenticator_response: require_message_authenticator_response,
+  ) = config
+  let PreparedRoundtrip(
+    identifier: identifier,
+    request_authenticator: request_authenticator,
+    event_timestamp: _event_timestamp,
+    payload: payload,
+  ) = prepared
+
+  case send_and_receive(host, port, payload, timeout_ms) {
+    Error(reason) -> map_transport_error(reason)
+    Ok(raw_response) ->
+      case packet.decode_packet(raw_response) {
+        Error(error) -> response.Malformed(reason: packet_error_reason(error))
+        Ok(response_packet) ->
+          case packet.ensure_identifier(response_packet, identifier) {
             Error(error) ->
               response.Malformed(reason: packet_error_reason(error))
-            Ok(response_packet) ->
-              case packet.ensure_identifier(response_packet, identifier) {
+            Ok(_) ->
+              case
+                packet.verify_response_security(
+                  response_packet,
+                  request_authenticator,
+                  secret,
+                  require_message_authenticator_response,
+                )
+              {
                 Error(error) ->
                   response.Malformed(reason: packet_error_reason(error))
                 Ok(_) ->
-                  case
-                    packet.verify_response_security(
-                      response_packet,
-                      request_authenticator,
-                      secret,
-                      require_message_authenticator_response,
-                    )
-                  {
-                    Error(error) ->
-                      response.Malformed(reason: packet_error_reason(error))
-                    Ok(_) ->
-                      map_packet_to_response(response_packet, host, target_id)
-                  }
+                  map_packet_to_response(response_packet, host, target_id)
               }
           }
       }
