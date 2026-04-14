@@ -8,8 +8,7 @@ const packageDirs = [
   "apps/oxcore",
   "apps/oxradius",
   "apps/oxnoc",
-  "apps/oxolt",
-  "apps/oxbill"
+  "apps/oxolt"
 ];
 
 const commandByMode = {
