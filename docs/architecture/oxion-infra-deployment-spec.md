@@ -104,7 +104,8 @@ oxion/
 |-- docs/
 |-- package.json
 |-- pnpm-workspace.yaml
-`-- turbo.json
+|-- nx.json
+`-- project.json
 ```
 
 ### Boundary Lintas Package

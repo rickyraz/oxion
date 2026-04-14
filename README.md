@@ -18,7 +18,7 @@ Oxion adalah repo policy-driven dengan core Gleam dan monorepo scaffolding untuk
 ## Monorepo Tooling
 
 - `pnpm-workspace.yaml` untuk workspace package discovery
-- `turbo.json` untuk pipeline task lintas workspace
+- `nx.json` + `project.json` untuk pipeline task lintas workspace
 - `package.json` root untuk command orchestration
 
 ## Development Commands
@@ -32,7 +32,7 @@ node scripts/run-gleam-all.mjs test
 node scripts/run-gleam-all.mjs build
 ```
 
-Monorepo root (pnpm + turbo):
+Monorepo root (pnpm + Nx):
 
 ```sh
 pnpm run dev
@@ -46,7 +46,7 @@ pnpm run check:generated
 
 Catatan:
 
-- Root `build/test/lint/typecheck` menjalankan jalur Gleam terlebih dahulu, lalu workspace Turbo.
+- Root `build/test/lint/typecheck` dijalankan oleh target Nx lintas workspace.
 - `generate:contracts` mengambil source dari public API Gleam (`packages/policy` + `packages/interop`)
   via `gleam export package-interface`.
 - `generate:zod` memetakan `generated/interfaces/*.interface.json` ke `generated/contracts.zod.ts`.
