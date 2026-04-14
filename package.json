@@ -3,24 +3,24 @@
   "private": true,
   "packageManager": "pnpm@10.0.0",
   "scripts": {
-    "dev": "turbo run dev --parallel",
-    "build": "pnpm run build:gleam && turbo run build",
-    "test": "pnpm run test:gleam && turbo run test",
-    "lint": "pnpm run lint:gleam && turbo run lint",
-    "typecheck": "pnpm run typecheck:gleam && turbo run typecheck",
-    "generate": "pnpm run generate:contracts && pnpm run generate:zod && turbo run generate",
+    "dev": "nx run-many -t dev --all --parallel",
+    "build": "nx run-many -t build --all",
+    "test": "nx run-many -t test --all",
+    "lint": "nx run oxion-workspace:boundaries && nx run-many -t lint --all",
+    "typecheck": "nx run-many -t typecheck --all",
+    "generate": "nx run oxion-workspace:generate && nx run-many -t generate --all --exclude=oxion-workspace",
     "generate:contracts": "node ./scripts/generate-contracts.mjs",
     "generate:zod": "node --experimental-strip-types ./scripts/generate-zod.ts",
     "check:generated": "pnpm run generate:contracts && pnpm run generate:zod && git diff --exit-code -- generated",
-    "build:gleam": "node ./scripts/run-gleam-all.mjs build",
-    "test:gleam": "node ./scripts/run-gleam-all.mjs test",
-    "lint:gleam": "node ./scripts/run-gleam-all.mjs format-check",
-    "typecheck:gleam": "node ./scripts/run-gleam-all.mjs check",
+    "build:gleam": "nx run-many -t build --projects=oxion_policy,oxion_interop,oxcore,oxradius,oxnoc,oxolt,oxbill",
+    "test:gleam": "nx run-many -t test --projects=oxion_policy,oxion_interop,oxcore,oxradius,oxnoc,oxolt,oxbill",
+    "lint:gleam": "nx run-many -t lint --projects=oxion_policy,oxion_interop,oxcore,oxradius,oxnoc,oxolt,oxbill",
+    "typecheck:gleam": "nx run-many -t typecheck --projects=oxion_policy,oxion_interop,oxcore,oxradius,oxnoc,oxolt,oxbill",
     "gleam:build": "pnpm run build:gleam",
     "gleam:test": "pnpm run test:gleam",
     "gleam:format:check": "pnpm run lint:gleam"
   },
   "devDependencies": {
-    "turbo": "^2.5.0"
+    "nx": "^20.3.1"
   }
 }

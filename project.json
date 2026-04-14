@@ -1,0 +1,30 @@
+{
+  "name": "oxion-workspace",
+  "root": ".",
+  "projectType": "application",
+  "tags": [
+    "scope:workspace",
+    "type:tooling"
+  ],
+  "targets": {
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node ./scripts/generate-contracts.mjs",
+          "node --experimental-strip-types ./scripts/generate-zod.ts"
+        ],
+        "parallel": false
+      },
+      "outputs": [
+        "{workspaceRoot}/generated/**"
+      ]
+    },
+    "boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node ./tools/check-boundaries.mjs"
+      }
+    }
+  }
+}
