@@ -2,92 +2,92 @@
 
 ## Purpose
 
-Dokumen ini menjadi aturan utama implementasi kode untuk repo Oxion.
+This document is the primary implementation rulebook for the Oxion repository.
 
-Fokus utama:
+Primary focus:
 
-- modular dan orthogonal design
-- code style konsisten
-- setiap phase implementasi wajib punya testing
+- modular and orthogonal design
+- consistent code style
+- every implementation phase must include testing
 
 ---
 
-## Read Order (Wajib)
+## Read Order (Required)
 
 1. `CONTRIBUTING.md`
 2. `AGENTS.md`
-3. `docs/README.md`
-4. `docs/policies/oxion-mvp-fasttrack-plan.md`
-5. `docs/operations/oxion-testing-strategy.md`
-6. `docs/policies/collection-policy.schema.json` + `docs/policies/collection-policy-ebnf.md`
+3. Documentation workspace main README
+4. Documentation workspace MVP fast-track plan
+5. Documentation workspace testing strategy
+6. Documentation workspace policy schema + EBNF references
 
 ---
 
 ## Engineering Rules
 
-- Satu module/satu tanggung jawab utama (do one thing well).
-- Pisahkan policy dari mechanism.
-- Hindari hardcoded business rule (hari, speed, vendor attr) di core.
-- Semua perubahan behavior harus traceable (audit + metrics).
-- Semua action enforcement wajib idempotent.
+- One module, one primary responsibility (do one thing well).
+- Separate policy from mechanism.
+- Avoid hardcoded business rules (day, speed, vendor attrs) in core.
+- All behavior changes must be traceable (audit + metrics).
+- All enforcement actions must be idempotent.
 
 ---
 
 ## Code Style and Structure
 
-- Ikuti style native tiap bahasa (Gleam/TS/Python/Elixir) dan formatter resmi.
-- Jangan tambahkan folder/module baru tanpa alasan bounded-context yang jelas.
-- Simpan vendor-specific logic di adapter/profile layer, bukan core logic.
+- Follow each language's native style (Gleam/TS/Python/Elixir) and official formatter.
+- Do not add new folders/modules without clear bounded-context rationale.
+- Keep vendor-specific logic in adapter/profile layers, not core logic.
 
 ---
 
 ## Mandatory Testing Per Change
 
-Setiap implementasi phase **wajib** menyertakan testing pada Gleam dan stack terkait yang disentuh.
+Each phase implementation **must** include testing for Gleam and any touched related stack.
 
 ### Minimal matrix
 
-- Jika ubah `Gleam` domain/core:
-  - wajib `node scripts/run-gleam-all.mjs test`
-  - wajib `node scripts/run-gleam-all.mjs format-check`
-- Jika ubah `TypeScript`:
-  - wajib unit test TS terkait module
-- Jika ubah `Python`:
-  - wajib unit test Python terkait module
-- Jika ubah `Elixir`:
-  - wajib ExUnit test terkait module
-- Jika ubah schema/contract policy:
-  - wajib contract test + conformance test ke EBNF
-- Jika ubah flow RADIUS/NAS/CoA:
-  - wajib integration test + packet-level checklist update
+- If changing `Gleam` domain/core:
+  - must run `node scripts/run-gleam-all.mjs test`
+  - must run `node scripts/run-gleam-all.mjs format-check`
+- If changing `TypeScript`:
+  - must run relevant TS unit tests
+- If changing `Python`:
+  - must run relevant Python unit tests
+- If changing `Elixir`:
+  - must run relevant ExUnit tests
+- If changing policy schema/contract:
+  - must run contract tests + EBNF conformance tests
+- If changing RADIUS/NAS/CoA flow:
+  - must run integration tests + update packet-level checklist
 
 ### Phase gate rule
 
-Untuk setiap phase di `docs/policies/oxion-mvp-fasttrack-plan.md`, PR harus menyertakan:
+For every phase in the documentation workspace MVP fast-track plan, a PR must include:
 
-1. daftar test yang ditambahkan/diupdate,
-2. hasil test pass,
-3. jika ada test belum bisa dijalankan, tulis reason + follow-up task.
+1. list of added/updated tests,
+2. passing test results,
+3. if any test cannot run yet, include reason + follow-up task.
 
-Tanpa test evidence, phase dianggap belum selesai.
+Without test evidence, the phase is considered incomplete.
 
 ---
 
-## PR Checklist (Wajib Isi)
+## PR Checklist (Required)
 
-- [ ] Scope perubahan mengikuti boundary module/submodule.
-- [ ] Tidak menambah hardcoded business rule di core.
-- [ ] Test baru/updated sudah ditambahkan untuk area yang diubah.
+- [ ] Change scope follows module/submodule boundaries.
+- [ ] No new hardcoded business rule in core.
+- [ ] New/updated tests are included for changed areas.
 - [ ] `node scripts/run-gleam-all.mjs test` pass.
 - [ ] `node scripts/run-gleam-all.mjs format-check` pass.
-- [ ] Docs terkait sudah diupdate (jika kontrak/flow berubah).
+- [ ] Related documentation workspace content is updated (if contract/flow changes).
 
 ---
 
 ## Commit and Review
 
-- Setelah verification yang relevan lulus, usahakan langsung commit secara atomik.
-- Commit message harus deskriptif, memakai imperative present tense, dan jelas menjelaskan `what` + `why`.
-- Subject line harus layak dibaca engineer internasional tanpa perlu konteks chat.
-- Reviewer berhak reject jika test tidak memadai untuk phase yang diubah.
-- Perubahan besar lintas stack wajib pecah jadi beberapa PR kecil agar mudah di-review.
+- After relevant verification passes, create atomic commits whenever possible.
+- Commit messages must be descriptive, use imperative present tense, and clearly explain `what` + `why`.
+- Subject lines must be readable by international engineers without chat context.
+- Reviewers may reject changes if tests are insufficient for the touched phase.
+- Large cross-stack changes should be split into smaller PRs for reviewability.

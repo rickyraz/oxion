@@ -1,14 +1,14 @@
 # oxion
 
-Oxion adalah repo policy-driven dengan model Open Core (Apache-2.0) dan boundary Enterprise Edition (EE) private.
+Oxion is a policy-driven repository using an Open Core model (Apache-2.0) with a private Enterprise Edition (EE) boundary.
 
 ## Current Layout
 
-- `apps/` -> backend Gleam services publik (`oxradius`, `oxcore`, `oxolt`, `oxnoc`)
-- `docs/` -> architecture, modules, policies, operations, conformance
-- `frontend/platform/` -> community/basic operator console untuk Platform Mode
+- `apps/` -> public backend Gleam services (`oxradius`, `oxcore`, `oxolt`, `oxnoc`)
+- documentation content -> ignored in this repository; maintained in a separate documentation workspace
+- `frontend/platform/` -> community/basic operator console for Platform Mode
 - `packages/policy/` -> extracted policy package (single source policy logic)
-- `packages/interop/` -> shared interop contract modules lintas app
+- `packages/interop/` -> shared cross-app interop contract modules
 - `schema/` -> optional schema-first area (non-primary for TS type generation)
 - `generated/` -> committed generated artifacts from Gleam interfaces
 - `scripts/` -> schema/codegen scripts
@@ -17,9 +17,9 @@ Oxion adalah repo policy-driven dengan model Open Core (Apache-2.0) dan boundary
 
 ## Monorepo Tooling
 
-- `pnpm-workspace.yaml` untuk workspace package discovery
-- `nx.json` + `project.json` untuk pipeline task lintas workspace
-- `package.json` root untuk command orchestration
+- `pnpm-workspace.yaml` for workspace package discovery
+- `nx.json` + `project.json` for cross-workspace task pipelines
+- root `package.json` for command orchestration
 
 ## Development Commands
 
@@ -44,17 +44,17 @@ pnpm run generate
 pnpm run check:generated
 ```
 
-Catatan:
+Notes:
 
-- Root `build/test/lint/typecheck` dijalankan oleh target Nx lintas workspace.
-- `generate:contracts` mengambil source dari public API Gleam (`packages/policy` + `packages/interop`)
+- Root `build/test/lint/typecheck` runs through Nx targets across the workspace.
+- `generate:contracts` pulls source from public Gleam APIs (`packages/policy` + `packages/interop`)
   via `gleam export package-interface`.
-- `generate:zod` memetakan `generated/interfaces/*.interface.json` ke `generated/contracts.zod.ts`.
+- `generate:zod` maps `generated/interfaces/*.interface.json` to `generated/contracts.zod.ts`.
 
 ## Docs Entry
 
-Mulai dari [docs/README.md](docs/README.md) untuk peta dokumen lengkap.
-Boundary legal/arsitektur Open Core ada di [docs/architecture/open-core-boundary.md](docs/architecture/open-core-boundary.md).
+Documentation is maintained outside this repository (separate docs workspace/repo).
+Open Core legal and architecture boundary references should be updated in that docs workspace.
 
 ## License and Trademark
 
