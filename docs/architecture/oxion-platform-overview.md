@@ -11,6 +11,7 @@
 - [oxOLT Spec](../modules/oxolt-spec.md)
 - [oxBill Spec](../modules/oxbill-spec.md)
 - [oxNOC Spec](../modules/oxnoc-spec.md)
+- [Open-Core Boundary](open-core-boundary.md)
 - [Brand Naming](oxion-brand-naming.md)
 - [Plugin Architecture](../plugins/oxion-plugin-architecture.md)
 
@@ -24,7 +25,7 @@
 | OLT & Fiber Management | **oxOLT** | Manajemen perangkat OLT, ONU lifecycle, VLAN, provisioning |
 | Orchestrator & Service Inventory | **oxCore** | Control plane ISP — orkestrasi, source of truth layanan |
 | Monitoring & Dashboard | **oxNOC** | Real-time monitoring, alerting, observabilitas penuh |
-| Billing & Payment | **oxBill** | Invoice, voucher, payment gateway, prepaid/postpaid |
+| Billing & Payment | **oxBill (EE)** | Invoice, voucher, payment gateway, prepaid/postpaid |
 
 ---
 

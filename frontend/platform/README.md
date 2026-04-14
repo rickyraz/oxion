@@ -1,8 +1,13 @@
 # frontend/platform
 
-TanStack Start app placeholder untuk Platform Mode.
+TanStack Start app placeholder untuk Platform Mode (community/basic operator console).
 
 Status saat ini: scaffold only.
+
+Boundary:
+
+- public repo: community/basic operator UI
+- private EE: advanced billing/orchestration enterprise UI
 
 Next:
 

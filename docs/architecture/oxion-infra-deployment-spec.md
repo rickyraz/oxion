@@ -61,7 +61,7 @@ Oxion memiliki dua profil operasi dalam satu codebase: **Lite Mode** untuk skena
 | Profil | Target Skenario | Paket Deploy | Modul Aktif Default | Catatan |
 | --- | --- | --- | --- | --- |
 | **Lite Mode** | ISP kecil / single POP / lab | Docker Compose (single VM) | oxRADIUS + panel subscriber/NAS/profile/accounting/voucher | UI default sederhana, advanced modules via feature flag |
-| **Platform Mode** | Multi-tenant / reseller / enterprise | Kubernetes + Helm + ArgoCD | Semua modul (oxRADIUS, oxCore, oxOLT, oxBill, oxNOC) | HA, autoscaling, GitOps, observability penuh |
+| **Platform Mode** | Multi-tenant / reseller / enterprise | Kubernetes + Helm + ArgoCD | Modul publik (oxRADIUS, oxCore, oxOLT, oxNOC) + modul EE (oxBill) | HA, autoscaling, GitOps, observability penuh |
 
 Prinsip produk: **simple by default, powerful by choice**.
 
@@ -90,7 +90,6 @@ oxion/
 |   |-- oxradius/
 |   |-- oxcore/
 |   |-- oxnoc/
-|   |-- oxbill/
 |   `-- oxolt/
 |-- packages/
 |   |-- policy/
@@ -116,6 +115,7 @@ oxion/
 - `apps/oxnoc` memegang audit + DSR workflow (`platform/audit`, `platform/dsr`).
 - `packages/interop` dipakai untuk contract lintas app (misalnya `oxion/radius/coa/result.gleam`).
 - `frontend/platform` adalah UI TanStack Start untuk operator dashboard saat ini.
+- Runtime `oxBill` berada di private Enterprise Edition (EE) repository; public repo menyimpan contract-level docs/API baseline.
 
 ### Ekspansi Terencana (Belum Aktif di Repo)
 

@@ -1,12 +1,12 @@
 # oxion
 
-Oxion adalah repo policy-driven dengan core Gleam dan monorepo scaffolding untuk ekspansi frontend/package sharing.
+Oxion adalah repo policy-driven dengan model Open Core (Apache-2.0) dan boundary Enterprise Edition (EE) private.
 
 ## Current Layout
 
-- `apps/` -> backend Gleam services (`oxradius`, `oxcore`, `oxolt`, `oxbill`, `oxnoc`)
+- `apps/` -> backend Gleam services publik (`oxradius`, `oxcore`, `oxolt`, `oxnoc`)
 - `docs/` -> architecture, modules, policies, operations, conformance
-- `frontend/platform/` -> placeholder app untuk Platform Mode
+- `frontend/platform/` -> community/basic operator console untuk Platform Mode
 - `packages/policy/` -> extracted policy package (single source policy logic)
 - `packages/interop/` -> shared interop contract modules lintas app
 - `schema/` -> optional schema-first area (non-primary for TS type generation)
@@ -54,3 +54,10 @@ Catatan:
 ## Docs Entry
 
 Mulai dari [docs/README.md](docs/README.md) untuk peta dokumen lengkap.
+Boundary legal/arsitektur Open Core ada di [docs/architecture/open-core-boundary.md](docs/architecture/open-core-boundary.md).
+
+## License and Trademark
+
+- Code in this repository is licensed under [Apache License 2.0](LICENSE).
+- Attribution notices are listed in [NOTICE](NOTICE).
+- Trademark usage is governed by [TRADEMARKS.md](TRADEMARKS.md).
