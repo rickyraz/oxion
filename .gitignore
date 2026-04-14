@@ -10,3 +10,4 @@ node_modules/
 skills-lock.json
 /docs
 .agents
+AGENTS.md
