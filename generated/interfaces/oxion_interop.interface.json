@@ -1,0 +1,291 @@
+{
+  "name": "oxion_interop",
+  "version": "1.0.0",
+  "gleam-version-constraint": null,
+  "modules": {
+    "oxion/radius/coa/result": {
+      "documentation": [],
+      "type-aliases": {},
+      "types": {
+        "CoaExecutionResult": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "IdempotentSkip",
+              "parameters": [
+                {
+                  "label": "reason",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "ReplayRejected",
+              "parameters": [
+                {
+                  "label": "reason",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "Ack",
+              "parameters": [
+                {
+                  "label": "applied_target",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "retries",
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "Nak",
+              "parameters": [
+                {
+                  "label": "code",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "message",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "retries",
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "Timeout",
+              "parameters": [
+                {
+                  "label": "retries",
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "SnapshotUnavailable",
+              "parameters": [
+                {
+                  "label": "reason",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "ProfileResolutionFailed",
+              "parameters": [
+                {
+                  "label": "reason",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "BuildRejected",
+              "parameters": [
+                {
+                  "label": "reason",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "InvalidRetryPolicy",
+              "parameters": [
+                {
+                  "label": "reason",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "TransportFailed",
+              "parameters": [
+                {
+                  "label": "reason",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "retries",
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "constants": {},
+      "functions": {
+        "reason": {
+          "documentation": null,
+          "deprecation": null,
+          "implementations": {
+            "gleam": false,
+            "uses-erlang-externals": true,
+            "uses-javascript-externals": true,
+            "can-run-on-erlang": true,
+            "can-run-on-javascript": true
+          },
+          "parameters": [
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "CoaExecutionResult",
+                "package": "oxion_interop",
+                "module": "oxion/radius/coa/result",
+                "parameters": []
+              }
+            }
+          ],
+          "return": {
+            "kind": "named",
+            "name": "Option",
+            "package": "gleam_stdlib",
+            "module": "gleam/option",
+            "parameters": [
+              {
+                "kind": "named",
+                "name": "String",
+                "package": "",
+                "module": "gleam",
+                "parameters": []
+              }
+            ]
+          }
+        },
+        "retry_count": {
+          "documentation": null,
+          "deprecation": null,
+          "implementations": {
+            "gleam": true,
+            "uses-erlang-externals": false,
+            "uses-javascript-externals": false,
+            "can-run-on-erlang": true,
+            "can-run-on-javascript": true
+          },
+          "parameters": [
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "CoaExecutionResult",
+                "package": "oxion_interop",
+                "module": "oxion/radius/coa/result",
+                "parameters": []
+              }
+            }
+          ],
+          "return": {
+            "kind": "named",
+            "name": "Int",
+            "package": "",
+            "module": "gleam",
+            "parameters": []
+          }
+        }
+      }
+    }
+  }
+}

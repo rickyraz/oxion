@@ -2,6 +2,23 @@
 
 Struktur `docs/` sekarang dipisah berdasarkan fungsi dokumen, bukan dibiarkan datar.
 
+## Repo Reality Check
+
+Struktur repository saat ini sudah masuk mode monorepo:
+
+- backend Gleam terpisah di `apps/` (`oxcore`, `oxradius`, `oxnoc`, `oxolt`, `oxbill`),
+- frontend ada di `frontend/platform`,
+- policy diextract ke `packages/policy`,
+- shared interop contract ada di `packages/interop`.
+
+Untuk command verifikasi Gleam lintas package, gunakan:
+
+```bash
+node scripts/run-gleam-all.mjs format-check
+node scripts/run-gleam-all.mjs check
+node scripts/run-gleam-all.mjs test
+```
+
 ## Folder Structure
 
 ```text
@@ -41,13 +58,14 @@ docs/
 Kalau mau memahami platform dari atas ke bawah, baca urut ini:
 
 1. [Platform Overview](architecture/oxion-platform-overview.md)
-2. [Infrastructure, Deployment, and Roadmap](architecture/oxion-infra-deployment-spec.md)
-3. [Platform Services Specification](architecture/oxion-platform-services-spec.md)
-4. [oxRADIUS Spec](modules/oxradius-spec.md)
-5. [oxCore Spec](modules/oxcore-spec.md)
-6. [oxOLT Spec](modules/oxolt-spec.md)
-7. [oxBill Spec](modules/oxbill-spec.md)
-8. [oxNOC Spec](modules/oxnoc-spec.md)
+2. [Platform Purpose and System Thesis](architecture/oxion-platform-purpose-thesis.md)
+3. [Infrastructure, Deployment, and Roadmap](architecture/oxion-infra-deployment-spec.md)
+4. [Platform Services Specification](architecture/oxion-platform-services-spec.md)
+5. [oxRADIUS Spec](modules/oxradius-spec.md)
+6. [oxCore Spec](modules/oxcore-spec.md)
+7. [oxOLT Spec](modules/oxolt-spec.md)
+8. [oxBill Spec](modules/oxbill-spec.md)
+9. [oxNOC Spec](modules/oxnoc-spec.md)
 
 Kalau fokusnya implementation hardening yang sedang aktif:
 
@@ -59,6 +77,8 @@ Kalau fokusnya implementation hardening yang sedang aktif:
 6. [Architecture Risk Review](implementation/architecture-risk-review.md)
 7. [Audit Privacy and DSR Model](implementation/audit-privacy-and-dsr-model.md)
 8. [Codex Next-Session Handoff](implementation/codex-next-session-handoff.md)
+9. [Future Rustler NIF External Type Pattern](implementation/rustler-nif-external-type-pattern.md)
+10. [Connect BEAM Adapter Roadmap](implementation/connect-beam-adapter-roadmap.md)
 
 Kalau fokusnya contract dan conformance:
 

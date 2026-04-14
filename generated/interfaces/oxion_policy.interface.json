@@ -1,0 +1,2047 @@
+{
+  "name": "oxion_policy",
+  "version": "1.0.0",
+  "gleam-version-constraint": null,
+  "modules": {
+    "oxion/policy/evaluator": {
+      "documentation": [],
+      "type-aliases": {},
+      "types": {
+        "EvaluationError": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "EvaluationError",
+              "parameters": [
+                {
+                  "label": "code",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "stage_id",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "path",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "reason",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "EvaluationResult": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "EvaluationResult",
+              "parameters": [
+                {
+                  "label": "matches",
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "StageMatch",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/evaluator",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "StageMatch": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "StageMatch",
+              "parameters": [
+                {
+                  "label": "stage_id",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "actions",
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "Action",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "constants": {},
+      "functions": {
+        "evaluate": {
+          "documentation": " Evaluates a policy against runtime context and returns matched stages deterministically.\n",
+          "deprecation": null,
+          "implementations": {
+            "gleam": false,
+            "uses-erlang-externals": true,
+            "uses-javascript-externals": true,
+            "can-run-on-erlang": true,
+            "can-run-on-javascript": true
+          },
+          "parameters": [
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "Policy",
+                "package": "oxion_policy",
+                "module": "oxion/policy/types",
+                "parameters": []
+              }
+            },
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "Context",
+                "package": "oxion_policy",
+                "module": "oxion/policy/types",
+                "parameters": []
+              }
+            }
+          ],
+          "return": {
+            "kind": "named",
+            "name": "Result",
+            "package": "",
+            "module": "gleam",
+            "parameters": [
+              {
+                "kind": "named",
+                "name": "EvaluationResult",
+                "package": "oxion_policy",
+                "module": "oxion/policy/evaluator",
+                "parameters": []
+              },
+              {
+                "kind": "named",
+                "name": "EvaluationError",
+                "package": "oxion_policy",
+                "module": "oxion/policy/evaluator",
+                "parameters": []
+              }
+            ]
+          }
+        }
+      }
+    },
+    "oxion/policy/lifecycle": {
+      "documentation": [],
+      "type-aliases": {},
+      "types": {
+        "ActivationError": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "PolicyNotPublished",
+              "parameters": [
+                {
+                  "label": "status",
+                  "type": {
+                    "kind": "named",
+                    "name": "LifecycleStatus",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/lifecycle",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "ActivePolicyConflict",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "PolicyImmutableArchived",
+              "parameters": []
+            }
+          ]
+        },
+        "ActivationState": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "ActivationState",
+              "parameters": [
+                {
+                  "label": "status",
+                  "type": {
+                    "kind": "named",
+                    "name": "LifecycleStatus",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/lifecycle",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "is_active",
+                  "type": {
+                    "kind": "named",
+                    "name": "Bool",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "LifecycleStatus": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "Draft",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Simulated",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Published",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Archived",
+              "parameters": []
+            }
+          ]
+        },
+        "TransitionError": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "InvalidTransition",
+              "parameters": [
+                {
+                  "label": "from",
+                  "type": {
+                    "kind": "named",
+                    "name": "LifecycleStatus",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/lifecycle",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "to",
+                  "type": {
+                    "kind": "named",
+                    "name": "LifecycleStatus",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/lifecycle",
+                    "parameters": []
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "constants": {},
+      "functions": {
+        "activate": {
+          "documentation": null,
+          "deprecation": null,
+          "implementations": {
+            "gleam": true,
+            "uses-erlang-externals": false,
+            "uses-javascript-externals": false,
+            "can-run-on-erlang": true,
+            "can-run-on-javascript": true
+          },
+          "parameters": [
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "ActivationState",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              }
+            },
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "Bool",
+                "package": "",
+                "module": "gleam",
+                "parameters": []
+              }
+            }
+          ],
+          "return": {
+            "kind": "named",
+            "name": "Result",
+            "package": "",
+            "module": "gleam",
+            "parameters": [
+              {
+                "kind": "named",
+                "name": "ActivationState",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              },
+              {
+                "kind": "named",
+                "name": "ActivationError",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              }
+            ]
+          }
+        },
+        "can_activate": {
+          "documentation": " Returns `True` only for statuses that satisfy the publish precondition.\n",
+          "deprecation": null,
+          "implementations": {
+            "gleam": true,
+            "uses-erlang-externals": false,
+            "uses-javascript-externals": false,
+            "can-run-on-erlang": true,
+            "can-run-on-javascript": true
+          },
+          "parameters": [
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "LifecycleStatus",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              }
+            }
+          ],
+          "return": {
+            "kind": "named",
+            "name": "Bool",
+            "package": "",
+            "module": "gleam",
+            "parameters": []
+          }
+        },
+        "can_transition": {
+          "documentation": " Returns `True` if a lifecycle transition is allowed by policy rules.\n",
+          "deprecation": null,
+          "implementations": {
+            "gleam": true,
+            "uses-erlang-externals": false,
+            "uses-javascript-externals": false,
+            "can-run-on-erlang": true,
+            "can-run-on-javascript": true
+          },
+          "parameters": [
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "LifecycleStatus",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              }
+            },
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "LifecycleStatus",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              }
+            }
+          ],
+          "return": {
+            "kind": "named",
+            "name": "Bool",
+            "package": "",
+            "module": "gleam",
+            "parameters": []
+          }
+        },
+        "deactivate": {
+          "documentation": null,
+          "deprecation": null,
+          "implementations": {
+            "gleam": true,
+            "uses-erlang-externals": false,
+            "uses-javascript-externals": false,
+            "can-run-on-erlang": true,
+            "can-run-on-javascript": true
+          },
+          "parameters": [
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "ActivationState",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              }
+            }
+          ],
+          "return": {
+            "kind": "named",
+            "name": "ActivationState",
+            "package": "oxion_policy",
+            "module": "oxion/policy/lifecycle",
+            "parameters": []
+          }
+        },
+        "is_mutable": {
+          "documentation": " Indicates whether a policy status is editable.\n",
+          "deprecation": null,
+          "implementations": {
+            "gleam": true,
+            "uses-erlang-externals": false,
+            "uses-javascript-externals": false,
+            "can-run-on-erlang": true,
+            "can-run-on-javascript": true
+          },
+          "parameters": [
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "LifecycleStatus",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              }
+            }
+          ],
+          "return": {
+            "kind": "named",
+            "name": "Bool",
+            "package": "",
+            "module": "gleam",
+            "parameters": []
+          }
+        },
+        "transition": {
+          "documentation": " Performs a lifecycle transition and returns an error when the transition is forbidden.\n",
+          "deprecation": null,
+          "implementations": {
+            "gleam": true,
+            "uses-erlang-externals": false,
+            "uses-javascript-externals": false,
+            "can-run-on-erlang": true,
+            "can-run-on-javascript": true
+          },
+          "parameters": [
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "LifecycleStatus",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              }
+            },
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "LifecycleStatus",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              }
+            }
+          ],
+          "return": {
+            "kind": "named",
+            "name": "Result",
+            "package": "",
+            "module": "gleam",
+            "parameters": [
+              {
+                "kind": "named",
+                "name": "LifecycleStatus",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              },
+              {
+                "kind": "named",
+                "name": "TransitionError",
+                "package": "oxion_policy",
+                "module": "oxion/policy/lifecycle",
+                "parameters": []
+              }
+            ]
+          }
+        }
+      }
+    },
+    "oxion/policy/simulator": {
+      "documentation": [],
+      "type-aliases": {},
+      "types": {
+        "SimulationError": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "InvalidRange",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "EvaluationFailed",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "EvaluationError",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/evaluator",
+                    "parameters": []
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "SimulationMatch": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "SimulationMatch",
+              "parameters": [
+                {
+                  "label": "stage_id",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "actions",
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "Action",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "reason",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "SimulationRow": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "SimulationRow",
+              "parameters": [
+                {
+                  "label": "day",
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "matches",
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "SimulationMatch",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/simulator",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "constants": {},
+      "functions": {
+        "simulate_days": {
+          "documentation": " Simulates policy matches for a day range and returns detailed stage outcomes.\n",
+          "deprecation": null,
+          "implementations": {
+            "gleam": false,
+            "uses-erlang-externals": true,
+            "uses-javascript-externals": true,
+            "can-run-on-erlang": true,
+            "can-run-on-javascript": true
+          },
+          "parameters": [
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "Policy",
+                "package": "oxion_policy",
+                "module": "oxion/policy/types",
+                "parameters": []
+              }
+            },
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "Context",
+                "package": "oxion_policy",
+                "module": "oxion/policy/types",
+                "parameters": []
+              }
+            },
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "Int",
+                "package": "",
+                "module": "gleam",
+                "parameters": []
+              }
+            },
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "Int",
+                "package": "",
+                "module": "gleam",
+                "parameters": []
+              }
+            }
+          ],
+          "return": {
+            "kind": "named",
+            "name": "Result",
+            "package": "",
+            "module": "gleam",
+            "parameters": [
+              {
+                "kind": "named",
+                "name": "List",
+                "package": "",
+                "module": "gleam",
+                "parameters": [
+                  {
+                    "kind": "named",
+                    "name": "SimulationRow",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/simulator",
+                    "parameters": []
+                  }
+                ]
+              },
+              {
+                "kind": "named",
+                "name": "SimulationError",
+                "package": "oxion_policy",
+                "module": "oxion/policy/simulator",
+                "parameters": []
+              }
+            ]
+          }
+        }
+      }
+    },
+    "oxion/policy/types": {
+      "documentation": [],
+      "type-aliases": {},
+      "types": {
+        "Action": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "ApplyBandwidthProfile",
+              "parameters": [
+                {
+                  "label": "profile_id",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "SuspendService",
+              "parameters": [
+                {
+                  "label": "reason",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "RestoreService",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "SendNotification",
+              "parameters": [
+                {
+                  "label": "template_id",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "include_payment_link",
+                  "type": {
+                    "kind": "named",
+                    "name": "Bool",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "channels",
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "NotificationChannel",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "EmitEvent",
+              "parameters": [
+                {
+                  "label": "topic",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "payload",
+                  "type": {
+                    "kind": "named",
+                    "name": "Option",
+                    "package": "gleam_stdlib",
+                    "module": "gleam/option",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "JsonValue",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "SetOperationalState",
+              "parameters": [
+                {
+                  "label": "state",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "RunPluginHook",
+              "parameters": [
+                {
+                  "label": "plugin_id",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "hook",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "payload",
+                  "type": {
+                    "kind": "named",
+                    "name": "Option",
+                    "package": "gleam_stdlib",
+                    "module": "gleam/option",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "JsonValue",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "Condition": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "All",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "Condition",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "Any",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "Condition",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "Rule",
+              "parameters": [
+                {
+                  "label": "field",
+                  "type": {
+                    "kind": "named",
+                    "name": "Field",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/types",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "op",
+                  "type": {
+                    "kind": "named",
+                    "name": "Operator",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/types",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "value",
+                  "type": {
+                    "kind": "named",
+                    "name": "Value",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/types",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "enabled",
+                  "type": {
+                    "kind": "named",
+                    "name": "Bool",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "Context": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "Context",
+              "parameters": [
+                {
+                  "label": "days_past_due",
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "invoice_status",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "operational_state",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "billing_plan",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "total_due_amount",
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "is_paid",
+                  "type": {
+                    "kind": "named",
+                    "name": "Bool",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "Field": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "DaysPastDue",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvoiceStatus",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "OperationalState",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "BillingPlan",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "TotalDueAmount",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "IsPaid",
+              "parameters": []
+            }
+          ]
+        },
+        "JsonValue": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "JsonNull",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "JsonBool",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "Bool",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "JsonInt",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "JsonFloat",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "Float",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "JsonString",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "JsonArray",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "JsonValue",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "JsonObject",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "tuple",
+                        "elements": [
+                          {
+                            "kind": "named",
+                            "name": "String",
+                            "package": "",
+                            "module": "gleam",
+                            "parameters": []
+                          },
+                          {
+                            "kind": "named",
+                            "name": "JsonValue",
+                            "package": "oxion_policy",
+                            "module": "oxion/policy/types",
+                            "parameters": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "NotificationChannel": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "Whatsapp",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Telegram",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Sms",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Email",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Push",
+              "parameters": []
+            }
+          ]
+        },
+        "Operator": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "Eq",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Ne",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Gt",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Gte",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Lt",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Lte",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "In",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "NotIn",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "Between",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "IsTrue",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "IsFalse",
+              "parameters": []
+            }
+          ]
+        },
+        "PaymentLinkMode": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "StaticPaymentLink",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "SignedPaymentLink",
+              "parameters": []
+            }
+          ]
+        },
+        "Policy": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "Policy",
+              "parameters": [
+                {
+                  "label": "name",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "description",
+                  "type": {
+                    "kind": "named",
+                    "name": "Option",
+                    "package": "gleam_stdlib",
+                    "module": "gleam/option",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "String",
+                        "package": "",
+                        "module": "gleam",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "grace_days",
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "timezone",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "context",
+                  "type": {
+                    "kind": "named",
+                    "name": "Option",
+                    "package": "gleam_stdlib",
+                    "module": "gleam/option",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "PolicyContextConfig",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "stages",
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "Stage",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "PolicyContextConfig": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "PolicyContextConfig",
+              "parameters": [
+                {
+                  "label": "evaluation_time",
+                  "type": {
+                    "kind": "named",
+                    "name": "Option",
+                    "package": "gleam_stdlib",
+                    "module": "gleam/option",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "String",
+                        "package": "",
+                        "module": "gleam",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "payment_link_mode",
+                  "type": {
+                    "kind": "named",
+                    "name": "Option",
+                    "package": "gleam_stdlib",
+                    "module": "gleam/option",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "PaymentLinkMode",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "payment_link_base_url",
+                  "type": {
+                    "kind": "named",
+                    "name": "Option",
+                    "package": "gleam_stdlib",
+                    "module": "gleam/option",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "String",
+                        "package": "",
+                        "module": "gleam",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "payment_link_ttl_minutes",
+                  "type": {
+                    "kind": "named",
+                    "name": "Option",
+                    "package": "gleam_stdlib",
+                    "module": "gleam/option",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "Int",
+                        "package": "",
+                        "module": "gleam",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "Scalar": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "IntValue",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "StringValue",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "BoolValue",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "Bool",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "Stage": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "Stage",
+              "parameters": [
+                {
+                  "label": "id",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "priority",
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "condition",
+                  "type": {
+                    "kind": "named",
+                    "name": "Condition",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/types",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "actions",
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "Action",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "stop_on_match",
+                  "type": {
+                    "kind": "named",
+                    "name": "Bool",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "notification_template",
+                  "type": {
+                    "kind": "named",
+                    "name": "Option",
+                    "package": "gleam_stdlib",
+                    "module": "gleam/option",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "String",
+                        "package": "",
+                        "module": "gleam",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "enabled",
+                  "type": {
+                    "kind": "named",
+                    "name": "Bool",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "Value": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "ScalarValue",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "Scalar",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/types",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "ListValue",
+              "parameters": [
+                {
+                  "label": null,
+                  "type": {
+                    "kind": "named",
+                    "name": "List",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": [
+                      {
+                        "kind": "named",
+                        "name": "Scalar",
+                        "package": "oxion_policy",
+                        "module": "oxion/policy/types",
+                        "parameters": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "BetweenValue",
+              "parameters": [
+                {
+                  "label": "min",
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "max",
+                  "type": {
+                    "kind": "named",
+                    "name": "Int",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            },
+            {
+              "documentation": null,
+              "name": "NoValue",
+              "parameters": []
+            }
+          ]
+        }
+      },
+      "constants": {},
+      "functions": {}
+    },
+    "oxion/policy/validator": {
+      "documentation": [],
+      "type-aliases": {},
+      "types": {
+        "ValidationCode": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "EmptyConditionGroupCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidOperatorForFieldCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "MissingRequiredValueCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "UnexpectedValueCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidValueTypeCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidBetweenRangeCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidStagePriorityCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "DuplicateStageIdCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "MissingStagesCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "MissingActionsCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidPolicyNameCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidPolicyDescriptionCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidTimezoneCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidGraceDaysCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidStageIdCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidNotificationTemplateCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidActionConfigCode",
+              "parameters": []
+            },
+            {
+              "documentation": null,
+              "name": "InvalidContextConfigCode",
+              "parameters": []
+            }
+          ]
+        },
+        "ValidationError": {
+          "documentation": null,
+          "deprecation": null,
+          "parameters": 0,
+          "constructors": [
+            {
+              "documentation": null,
+              "name": "ValidationError",
+              "parameters": [
+                {
+                  "label": "code",
+                  "type": {
+                    "kind": "named",
+                    "name": "ValidationCode",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/validator",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "path",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                },
+                {
+                  "label": "reason",
+                  "type": {
+                    "kind": "named",
+                    "name": "String",
+                    "package": "",
+                    "module": "gleam",
+                    "parameters": []
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "constants": {},
+      "functions": {
+        "validate_policy": {
+          "documentation": " Validates a policy structure and semantics before it can be simulated or published.\n",
+          "deprecation": null,
+          "implementations": {
+            "gleam": false,
+            "uses-erlang-externals": true,
+            "uses-javascript-externals": true,
+            "can-run-on-erlang": true,
+            "can-run-on-javascript": true
+          },
+          "parameters": [
+            {
+              "label": null,
+              "type": {
+                "kind": "named",
+                "name": "Policy",
+                "package": "oxion_policy",
+                "module": "oxion/policy/types",
+                "parameters": []
+              }
+            }
+          ],
+          "return": {
+            "kind": "named",
+            "name": "Result",
+            "package": "",
+            "module": "gleam",
+            "parameters": [
+              {
+                "kind": "named",
+                "name": "Nil",
+                "package": "",
+                "module": "gleam",
+                "parameters": []
+              },
+              {
+                "kind": "named",
+                "name": "List",
+                "package": "",
+                "module": "gleam",
+                "parameters": [
+                  {
+                    "kind": "named",
+                    "name": "ValidationError",
+                    "package": "oxion_policy",
+                    "module": "oxion/policy/validator",
+                    "parameters": []
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

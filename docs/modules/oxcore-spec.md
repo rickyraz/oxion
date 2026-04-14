@@ -1,4 +1,4 @@
-# oxCore — Orchestrator & Service Inventory
+# oxCore - Orchestrator & Service Inventory
 
 **Bagian dari platform:** Oxion ISP Operating Platform
 **Versi:** 2.0
@@ -23,64 +23,42 @@
 oxCore adalah otak dari platform Oxion. Berperan sebagai single control plane yang menerima intent bisnis dari ERP (Odoo), menyimpan source of truth layanan, mengatur eksekusi ke oxRADIUS dan oxOLT, serta memastikan seluruh sistem selalu sinkron melalui Reconciliation.
 
 **Prinsip utama:**
-> Odoo kirim intent → oxCore memutuskan → oxRADIUS + oxOLT mengeksekusi
+> Odoo kirim intent -> oxCore memutuskan -> oxRADIUS + oxOLT mengeksekusi
 
 ---
 
 ## 3. Arsitektur
 
-```
+```text
 Odoo / ERP / Operator Portal
-        ↓ intent (activate/suspend/terminate)
-┌─────────────────────────────────────────────┐
-│                  oxCore                      │
-│                                              │
-│  ┌─────────────┐   ┌────────────────────┐   │
-│  │ Orchestrator │   │ Service Inventory  │   │
-│  │  (commands)  │   │  (source of truth) │   │
-│  └──────┬───────┘   └────────────────────┘   │
-│         ↓                                    │
-│  ┌─────────────┐   ┌────────────────────┐   │
-│  │ AAA Adapter  │   │   OLT Adapter      │   │
-│  └──────┬───────┘   └────────┬───────────┘   │
-│         ↓                    ↓               │
-│  ┌─────────────────────────────────────────┐ │
-│  │           Reconciliation                 │ │
-│  └─────────────────────────────────────────┘ │
-└─────────────────────────────────────────────┘
-        ↓               ↓
-   oxRADIUS          oxOLT
+        -> intent (activate/suspend/terminate)
++---------------------------------------------+
+|                   oxCore                    |
+|                                             |
+|  Orchestrator            Service Inventory  |
+|  (commands)              (source of truth)  |
+|        ->                      ->           |
+|  AAA Adapter             OLT Adapter        |
+|         \\                   /              |
+|          \\                 /               |
+|           ---- Reconciliation ----          |
++---------------------------------------------+
+          -> oxRADIUS
+          -> oxOLT
 ```
 
 ---
 
 ## 4. Modul
 
-```
-src/modules
-  /service            ← Service Inventory
-    /_service
-    /types
-    /repository
+```text
+apps/oxcore/src/oxion
+  /orchestration/collection   <- orchestrator boundary (commands, planner/executor flow)
+  /collection                 <- scheduler/dispatcher/idempotency runtime
 
-  /orchestrator       ← Orchestrator
-    /commands
-    /planner
-    /executor
-    /_service
-
-  /reconciliation     ← Reconciliation engine
-    /_service
-    /scheduler
-    /rules
-
-  /aaa-adapter        ← Façade ke oxRADIUS
-    /_service
-    /providers
-
-  /olt-adapter        ← Façade ke oxOLT
-    /_service
-    /providers
+apps/oxcore/test/oxion
+  /orchestration/collection   <- orchestrator + guard tests
+  /collection                 <- collection behavior tests
 ```
 
 ---
@@ -275,17 +253,17 @@ Steps:
 
 ```
 Transitions:
-draft              → pending_activation
-pending_activation → active
-active             → throttled_due_overdue
-throttled_due_overdue → active
-throttled_due_overdue → suspended
-active             → suspended
-suspended          → active
-active             → terminating
-suspended          → terminating
-terminating        → terminated
-any                → inconsistent
+draft                 -> pending_activation
+pending_activation    -> active
+active                -> throttled_due_overdue
+throttled_due_overdue -> active
+throttled_due_overdue -> suspended
+active                -> suspended
+suspended             -> active
+active                -> terminating
+suspended             -> terminating
+terminating           -> terminated
+any                   -> inconsistent
 ```
 
 ### Operational State (Collection-Aware)
@@ -331,9 +309,9 @@ Dengan pendekatan ini, layanan bisa tetap `desired_state=active` sambil berada d
 ### Jadwal
 
 ```
-Setiap 5 menit  → reconcile services dengan status 'inconsistent'
-Setiap 1 jam    → full reconciliation semua active services
-Setiap 6 jam    → deep scan termasuk OLT signal + AAA accounting
+Setiap 5 menit   " reconcile services dengan status 'inconsistent'
+Setiap 1 jam     " full reconciliation semua active services
+Setiap 6 jam     " deep scan termasuk OLT signal + AAA accounting
 ```
 
 ---
@@ -370,7 +348,7 @@ interface OltAdapter {
 ### Payment Received (dari Odoo)
 
 ```
-Odoo → POST /v1/events/payment-received
+Odoo  " POST /v1/events/payment-received
   { service_id, amount, invoice_id }
 
 oxCore:
@@ -384,7 +362,7 @@ oxCore:
 ### Invoice Overdue (dari Odoo)
 
 ```
-Odoo → POST /v1/events/invoice-overdue
+Odoo  " POST /v1/events/invoice-overdue
   { service_id, invoice_id, days_overdue }
 
 oxCore:
@@ -414,7 +392,7 @@ Jika service ada pada throttled/suspended karena overdue:
 ### Terminate Request
 
 ```
-Odoo → POST /v1/events/terminate-request
+Odoo  " POST /v1/events/terminate-request
   { service_id, reason }
 
 oxCore:
@@ -517,11 +495,11 @@ POST /v1/webhooks/odoo/package-changed
 
 ## 14. Prinsip Implementasi
 
-1. **Semua step idempotent** — aman dipanggil lebih dari sekali
-2. **Tidak ada UI yang langsung ke oxRADIUS/oxOLT** — semua lewat oxCore
-3. **Source of truth** tetap di Service Inventory — bukan di FreeRADIUS, bukan di OLT
-4. **Adapter hanya executor** — semua keputusan di Orchestrator
-5. **Workflow sebagai audit trail** — setiap langkah tercatat
+1. **Semua step idempotent** - aman dipanggil lebih dari sekali
+2. **Tidak ada UI yang langsung ke oxRADIUS/oxOLT** - semua lewat oxCore
+3. **Source of truth** tetap di Service Inventory - bukan di FreeRADIUS, bukan di OLT
+4. **Adapter hanya executor** - semua keputusan di Orchestrator
+5. **Workflow sebagai audit trail** - setiap langkah tercatat
 
 ---
 
@@ -531,6 +509,6 @@ POST /v1/webhooks/odoo/package-changed
 |---|---|---|
 | Orang per aktivasi | 3 orang | 1 orang (happy path) |
 | Orang per suspensi | 3 orang | 0 orang (otomatis) |
-| Waktu aktivasi | 30–120 menit | 1–3 menit |
-| Insiden mismatch AAA↔OLT | Tinggi | Sangat rendah (auto-reconcile) |
+| Waktu aktivasi | 30-120 menit | 1-3 menit |
+| Insiden mismatch AAA->OLT | Tinggi | Sangat rendah (auto-reconcile) |
 | Audit trail | Manual/tidak ada | Lengkap otomatis |

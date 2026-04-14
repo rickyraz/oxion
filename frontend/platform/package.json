@@ -1,0 +1,13 @@
+{
+  "name": "@oxion/frontend-platform",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "echo TODO: wire TanStack Start dev",
+    "build": "echo TODO: wire TanStack Start build",
+    "test": "echo TODO: add frontend tests",
+    "lint": "echo TODO: add frontend lint",
+    "typecheck": "echo TODO: add frontend typecheck",
+    "generate": "echo TODO: frontend package does not generate contracts"
+  }
+}

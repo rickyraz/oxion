@@ -1,48 +1,45 @@
-# Penamaan Brand Oxion
+# Oxion — Brand Identity
 
 ## 1. Dokumen Terkait
 
 - [Platform Overview](oxion-platform-overview.md)
 - [Master Arsitektur & Deployment](oxion-infra-deployment-spec.md)
 - [Platform Services Specification](oxion-platform-services-spec.md)
+- [Platform Purpose and System Thesis](oxion-platform-purpose-thesis.md)
 
 ---
 
-## 2. Rekomendasi Utama
+## 2. Keputusan Penamaan
 
-Rekomendasi: **Opsi B** (brand name yang secara alami mengandung `ox`).
+Brand resmi yang ditetapkan: **Oxion**
 
-Alasan utama:
-
-- Opsi A (`oxnet.com`) terlalu generic dan lebih sulit dibedakan.
-- Opsi C memisahkan brand dan prefix sehingga rawan membingungkan.
-- Opsi B paling kohesif: **brand name = sumber prefix produk**.
+Brand name dipilih karena secara alami mengandung prefix `ox`, sehingga seluruh lini produk tumbuh organik dari satu identitas tunggal — bukan ditempelkan secara artifisial.
 
 ---
 
-## 3. Kandidat Teratas
+## 3. Evaluasi Kandidat
 
-| Nama | Preview | Alasan |
-| --- | --- | --- |
-| **Oxion** | oxion.com -> oxRADIUS, oxOLT, oxCore | Pendek, kuat, identitas teknis jelas |
-| **Oxara** | oxara.com -> oxRADIUS, oxOLT, oxCore | Elegan, terasa premium |
-| **Oxavia** | oxavia.com -> oxRADIUS, oxOLT, oxCore | Modern, cocok untuk positioning SaaS |
+| Nama | Domain | Catatan |
+|------|--------|---------|
+| **Oxion** | oxion.com | Pendek, kuat, identitas teknis langsung terbaca |
+| Oxara | oxara.com | Elegan, kesan premium |
+| Oxavia | oxavia.com | Modern, cocok untuk positioning SaaS |
 
 ---
 
-## 4. Pilihan Final
-
-Pilihan terkuat: **Oxion**
+## 4. Identitas Brand
 
 ```text
 Brand   : Oxion
 Tagline : ISP Operating Platform
 Domain  : oxion.com / oxion.io
 
-Product family:
-  oxRADIUS  - AAA & policy engine
-  oxOLT     - OLT & fiber management
-  oxCore    - orchestrator & service inventory
-  oxNOC     - monitoring & dashboard
-  oxBill    - billing & payment
+Product Family
+  oxRADIUS  — AAA & policy engine
+  oxOLT     — OLT & fiber management
+  oxCore    — orchestrator & service inventory
+  oxNOC     — monitoring & dashboard
+  oxBill    — billing & payment
 ```
+
+Setiap produk dalam ekosistem Oxion menggunakan prefix `ox` yang berasal langsung dari brand name — bukan singkatan eksternal. Ini menjaga konsistensi identitas di seluruh lini platform tanpa ambiguitas.

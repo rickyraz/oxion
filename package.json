@@ -1,0 +1,26 @@
+{
+  "name": "oxion-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "pnpm run build:gleam && turbo run build",
+    "test": "pnpm run test:gleam && turbo run test",
+    "lint": "pnpm run lint:gleam && turbo run lint",
+    "typecheck": "pnpm run typecheck:gleam && turbo run typecheck",
+    "generate": "pnpm run generate:contracts && pnpm run generate:zod && turbo run generate",
+    "generate:contracts": "node ./scripts/generate-contracts.mjs",
+    "generate:zod": "node --experimental-strip-types ./scripts/generate-zod.ts",
+    "check:generated": "pnpm run generate:contracts && pnpm run generate:zod && git diff --exit-code -- generated",
+    "build:gleam": "node ./scripts/run-gleam-all.mjs build",
+    "test:gleam": "node ./scripts/run-gleam-all.mjs test",
+    "lint:gleam": "node ./scripts/run-gleam-all.mjs format-check",
+    "typecheck:gleam": "node ./scripts/run-gleam-all.mjs check",
+    "gleam:build": "pnpm run build:gleam",
+    "gleam:test": "pnpm run test:gleam",
+    "gleam:format:check": "pnpm run lint:gleam"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  }
+}

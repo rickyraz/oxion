@@ -198,7 +198,7 @@ GET    /v1/subscribers
 POST   /v1/subscribers
 POST   /v1/subscribers/import      bulk import CSV
 GET    /v1/subscribers/export
-POST   /v1/subscribers/generate    bulk generate voucher-style
+POST   /v1/subscribers/bulk-generate    bulk generate voucher-style
 GET    /v1/subscribers/:id
 PATCH  /v1/subscribers/:id
 DELETE /v1/subscribers/:id

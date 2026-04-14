@@ -44,15 +44,15 @@ Gap yang masih tersisa:
 
 Scaffold baseline yang sudah ditanam di repo untuk workstream berikutnya:
 
-- `src/oxion/radius/registry/*`
-- `src/oxion/radius/coa/replay.gleam`
-- `src/oxion/radius/disconnect/*`
-- `src/oxion/radius/dictionary/*`
-- `src/oxion/radius/session/*`
-- `src/oxion/radius/ops/*`
-- `src/oxion/radius/udp/*`
-- `src/oxion/radius/radsec/*`
-- `src/oxion/radius/protocol/tracking.gleam`
+- `apps/oxradius/src/oxion/radius/registry/*`
+- `apps/oxradius/src/oxion/radius/coa/replay.gleam`
+- `apps/oxradius/src/oxion/radius/disconnect/*`
+- `apps/oxradius/src/oxion/radius/dictionary/*`
+- `apps/oxradius/src/oxion/radius/session/*`
+- `apps/oxradius/src/oxion/radius/ops/*`
+- `apps/oxradius/src/oxion/radius/udp/*`
+- `apps/oxradius/src/oxion/radius/radsec/*`
+- `apps/oxradius/src/oxion/radius/protocol/tracking.gleam`
 
 Catatan:
 
@@ -140,10 +140,10 @@ Menghilangkan dependency pada config manual `host/port/secret` per call dan meng
 ### 4.2 Artefak yang Disarankan
 
 ```text
-src/oxion/radius/registry/types.gleam
-src/oxion/radius/registry/resolver.gleam
-src/oxion/radius/registry/capability.gleam
-test/oxion/radius/registry/resolver_test.gleam
+apps/oxradius/src/oxion/radius/registry/types.gleam
+apps/oxradius/src/oxion/radius/registry/resolver.gleam
+apps/oxradius/src/oxion/radius/registry/capability.gleam
+apps/oxradius/test/oxion/radius/registry/resolver_test.gleam
 ```
 
 ### 4.3 Type Minimum
@@ -206,11 +206,11 @@ Menaikkan packet support dari baseline `Request/Response Authenticator` menjadi 
 ### 5.2 Artefak yang Disarankan
 
 ```text
-src/oxion/radius/packet.gleam
-src/oxion/radius/coa/transport.gleam
-src/oxion/radius/coa/replay.gleam
-test/oxion/radius/packet_test.gleam
-test/oxion/radius/coa/transport_test.gleam
+apps/oxradius/src/oxion/radius/packet.gleam
+apps/oxradius/src/oxion/radius/coa/transport.gleam
+apps/oxradius/src/oxion/radius/coa/replay.gleam
+apps/oxradius/test/oxion/radius/packet_test.gleam
+apps/oxradius/test/oxion/radius/coa/transport_test.gleam
 ```
 
 ### 5.3 Pekerjaan Inti
@@ -251,11 +251,11 @@ Menambah packet family `Disconnect-Request/ACK/NAK` sebagai path enforcement yan
 ### 6.2 Artefak yang Disarankan
 
 ```text
-src/oxion/radius/disconnect/request.gleam
-src/oxion/radius/disconnect/response.gleam
-src/oxion/radius/disconnect/execution.gleam
-test/oxion/radius/disconnect/request_test.gleam
-test/oxion/radius/disconnect/execution_test.gleam
+apps/oxradius/src/oxion/radius/disconnect/request.gleam
+apps/oxradius/src/oxion/radius/disconnect/response.gleam
+apps/oxradius/src/oxion/radius/disconnect/execution.gleam
+apps/oxradius/test/oxion/radius/disconnect/request_test.gleam
+apps/oxradius/test/oxion/radius/disconnect/execution_test.gleam
 ```
 
 ### 6.3 Rules
@@ -281,12 +281,12 @@ Mengganti prefix-string heuristik menjadi registry eksplisit berbasis vendor dic
 ### 7.2 Artefak yang Disarankan
 
 ```text
-src/oxion/radius/dictionary/types.gleam
-src/oxion/radius/dictionary/registry.gleam
-src/oxion/radius/dictionary/encoder.gleam
-src/oxion/radius/dictionary/freeradius.gleam
-test/oxion/radius/dictionary/registry_test.gleam
-test/oxion/radius/dictionary/encoder_test.gleam
+apps/oxradius/src/oxion/radius/dictionary/types.gleam
+apps/oxradius/src/oxion/radius/dictionary/registry.gleam
+apps/oxradius/src/oxion/radius/dictionary/encoder.gleam
+apps/oxradius/src/oxion/radius/dictionary/freeradius.gleam
+apps/oxradius/test/oxion/radius/dictionary/registry_test.gleam
+apps/oxradius/test/oxion/radius/dictionary/encoder_test.gleam
 ```
 
 ### 7.3 Data Minimum
@@ -327,10 +327,10 @@ Menghapus ketergantungan pada `ActiveProfileSnapshot` yang berasal dari input li
 ### 8.2 Artefak yang Disarankan
 
 ```text
-src/oxion/radius/session/types.gleam
-src/oxion/radius/session/resolver.gleam
-src/oxion/radius/session/compatibility.gleam
-test/oxion/radius/session/resolver_test.gleam
+apps/oxradius/src/oxion/radius/session/types.gleam
+apps/oxradius/src/oxion/radius/session/resolver.gleam
+apps/oxradius/src/oxion/radius/session/compatibility.gleam
+apps/oxradius/test/oxion/radius/session/resolver_test.gleam
 ```
 
 ### 8.3 Source Data
@@ -364,10 +364,10 @@ Menyediakan tooling operasional yang tidak mencemari business logic.
 ### 9.2 Artefak yang Disarankan
 
 ```text
-src/oxion/radius/ops/status.gleam
-src/oxion/radius/ops/healthcheck.gleam
-src/oxion/radius/ops/radclient.gleam
-test/oxion/radius/ops/healthcheck_test.gleam
+apps/oxradius/src/oxion/radius/ops/status.gleam
+apps/oxradius/src/oxion/radius/ops/healthcheck.gleam
+apps/oxradius/src/oxion/radius/ops/radclient.gleam
+apps/oxradius/test/oxion/radius/ops/healthcheck_test.gleam
 ```
 
 ### 9.3 Fungsi Minimum
@@ -393,9 +393,9 @@ Mengganti model `open-send-recv-close` per packet dengan worker socket reuse yan
 ### 10.2 Artefak yang Disarankan
 
 ```text
-src/oxion_radius_transport_ffi.erl
-src/oxion/radius/coa/transport.gleam
-test/oxion/radius/coa/transport_test.gleam
+apps/oxradius/src/oxion_radius_transport_ffi.erl
+apps/oxradius/src/oxion/radius/coa/transport.gleam
+apps/oxradius/test/oxion/radius/coa/transport_test.gleam
 ```
 
 ### 10.3 Rules
@@ -421,10 +421,10 @@ Menambah jalur TLS untuk transport yang lebih matang dan lebih siap untuk secret
 ### 11.2 Artefak yang Disarankan
 
 ```text
-src/oxion/radius/radsec/types.gleam
-src/oxion/radius/radsec/transport.gleam
-src/oxion/radius/radsec/certs.gleam
-test/oxion/radius/radsec/transport_test.gleam
+apps/oxradius/src/oxion/radius/radsec/types.gleam
+apps/oxradius/src/oxion/radius/radsec/transport.gleam
+apps/oxradius/src/oxion/radius/radsec/certs.gleam
+apps/oxradius/test/oxion/radius/radsec/transport_test.gleam
 ```
 
 ### 11.3 Rules

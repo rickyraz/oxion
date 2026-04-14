@@ -415,7 +415,7 @@ Ini adalah inference engineering dari standar dan docs di atas:
 Modul yang disarankan untuk langkah berikutnya:
 
 ```text
-src/oxion/radius/
+apps/oxradius/src/oxion/radius/
 ├── registry/
 │   ├── types.gleam
 │   ├── resolver.gleam

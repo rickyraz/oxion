@@ -48,8 +48,8 @@ Setiap implementasi phase **wajib** menyertakan testing pada Gleam dan stack ter
 ### Minimal matrix
 
 - Jika ubah `Gleam` domain/core:
-  - wajib `gleam test`
-  - wajib `gleam format --check src test`
+  - wajib `node scripts/run-gleam-all.mjs test`
+  - wajib `node scripts/run-gleam-all.mjs format-check`
 - Jika ubah `TypeScript`:
   - wajib unit test TS terkait module
 - Jika ubah `Python`:
@@ -78,8 +78,8 @@ Tanpa test evidence, phase dianggap belum selesai.
 - [ ] Scope perubahan mengikuti boundary module/submodule.
 - [ ] Tidak menambah hardcoded business rule di core.
 - [ ] Test baru/updated sudah ditambahkan untuk area yang diubah.
-- [ ] `gleam test` pass.
-- [ ] `gleam format --check src test` pass.
+- [ ] `node scripts/run-gleam-all.mjs test` pass.
+- [ ] `node scripts/run-gleam-all.mjs format-check` pass.
 - [ ] Docs terkait sudah diupdate (jika kontrak/flow berubah).
 
 ---

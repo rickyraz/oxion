@@ -48,47 +48,47 @@ Yang tidak dibahas detail di sini:
 
 ## 3. Letak Modul dan Submodule
 
-Module besar yang terlibat pada flow ini:
+Module besar yang terlibat pada flow ini (sesuai monorepo saat ini):
 
-1. `oxion/policy`
-2. `oxion/collection`
-3. `oxion/orchestration/collection`
-4. `oxion/radius/profile`
-5. `oxion/radius/vendor`
-6. `oxion/radius/dictionary`
-7. `oxion/radius/packet`
-8. `oxion/radius/coa`
-9. `oxion/radius/disconnect`
-10. `oxion/radius/registry`
-11. `oxion/radius/session`
-12. `oxion/radius/ops`
-13. `oxion/radius/udp`
-14. `oxion/radius/radsec`
-15. `oxion/radius/protocol`
-16. `oxion/platform/audit`
-17. `oxion/platform/dsr`
+1.  `packages/policy/src/oxion/policy`
+2.  `apps/oxcore/src/oxion/collection`
+3.  `apps/oxcore/src/oxion/orchestration/collection`
+4.  `apps/oxradius/src/oxion/radius/profile`
+5.  `apps/oxradius/src/oxion/radius/vendor`
+6.  `apps/oxradius/src/oxion/radius/dictionary`
+7.  `apps/oxradius/src/oxion/radius/packet.gleam`
+8.  `apps/oxradius/src/oxion/radius/coa`
+9.  `apps/oxradius/src/oxion/radius/disconnect`
+10. `apps/oxradius/src/oxion/radius/registry`
+11. `apps/oxradius/src/oxion/radius/session`
+12. `apps/oxradius/src/oxion/radius/ops`
+13. `apps/oxradius/src/oxion/radius/udp`
+14. `apps/oxradius/src/oxion/radius/radsec`
+15. `apps/oxradius/src/oxion/radius/protocol`
+16. `apps/oxnoc/src/oxion/platform/audit`
+17. `apps/oxnoc/src/oxion/platform/dsr`
 
 Submodule dan fungsinya saat ini:
 
 | Layer | Module / Submodule | Tanggung Jawab | Kenapa Dipisah |
 | --- | --- | --- | --- |
-| Policy | `src/oxion/policy/*` | validasi, evaluasi, simulasi, lifecycle policy | policy engine tidak boleh tahu wire protocol |
-| Collection | `src/oxion/collection/*` | scheduling, dispatch, idempotency action | runtime collection tidak boleh tahu detail vendor VSA |
-| Orchestration | `src/oxion/orchestration/collection/*` | route command ke AAA / OLT dan bentuk command domain | memisahkan intent bisnis dari adapter teknis |
-| Profile | `src/oxion/radius/profile/*` | resolve target profile dan diff dengan state aktif | perubahan profile harus deterministic dan testable |
-| Vendor | `src/oxion/radius/vendor/*` | mapping semantic profile ke logical attr vendor | vendor semantics tidak boleh bocor ke packet codec |
-| Dictionary | `src/oxion/radius/dictionary/*` | registry logical attr, prefix/value transform, FreeRADIUS naming | wire-format knowledge dikonsolidasikan di satu tempat |
-| Packet | `src/oxion/radius/packet.gleam` | code family, authenticator, AVP/VSA encoding, response verification | RFC-specific packet rules jangan menyebar ke renderer |
-| CoA | `src/oxion/radius/coa/*` | request/response/result/retry/execution/transport CoA | family `CoA` punya behavior sendiri |
-| Disconnect | `src/oxion/radius/disconnect/*` | request/response/result/execution/transport Disconnect | `Disconnect` punya constraints RFC 5176 yang lebih sempit |
-| Registry | `src/oxion/radius/registry/*` | resolve NAS endpoint dan capability | secret dan endpoint tidak boleh hardcoded di call site |
-| Session | `src/oxion/radius/session/*` | source of truth session aktif / accounting materialization | targeting session harus datang dari runtime state, bukan tebakan caller |
-| Ops | `src/oxion/radius/ops/*` | healthcheck, `Status-Server`, radclient tooling | tooling operasional tidak boleh bercampur dengan business path |
-| UDP | `src/oxion/radius/udp/*` | worker/socket reuse, socket handle lifecycle, outstanding request tracking | reuse socket adalah concern transport, bukan packet |
-| RadSec | `src/oxion/radius/radsec/*` | TLS transport future path | jangan campur UDP logic dengan TLS lifecycle |
-| Protocol | `src/oxion/radius/protocol/*` | tracking future protocol evolution | roadmap `RADIUS/1.1` tidak boleh mengotori path MVP |
-| Platform Audit | `src/oxion/platform/audit/{types,adapter,persistence,service}.gleam` | ubah runtime outcome menjadi audit envelope redacted lalu simpan ke `audit_log`/`audit_private_context` shaped store | kontrak audit platform tidak boleh bocor ke orchestration kecil atau packet path |
-| Platform DSR | `src/oxion/platform/dsr/{types,workflow,executor}.gleam` + `src/oxion/platform/dsr/adapters/*` | state machine request privasi, inventory resolution, per-store execution planning, dan routing ke store adapter `oxRADIUS`/`oxBill`/`oxCore`/`oxNOC` | DSR workflow bukan endpoint destruktif tunggal dan tidak boleh digantung di controller tipis |
+| Policy | `packages/policy/src/oxion/policy/*` | validasi, evaluasi, simulasi, lifecycle policy | policy engine tidak boleh tahu wire protocol |
+| Collection | `apps/oxcore/src/oxion/collection/*` | scheduling, dispatch, idempotency action | runtime collection tidak boleh tahu detail vendor VSA |
+| Orchestration | `apps/oxcore/src/oxion/orchestration/collection/*` | route command ke AAA / OLT dan bentuk command domain | memisahkan intent bisnis dari adapter teknis |
+| Profile | `apps/oxradius/src/oxion/radius/profile/*` | resolve target profile dan diff dengan state aktif | perubahan profile harus deterministic dan testable |
+| Vendor | `apps/oxradius/src/oxion/radius/vendor/*` | mapping semantic profile ke logical attr vendor | vendor semantics tidak boleh bocor ke packet codec |
+| Dictionary | `apps/oxradius/src/oxion/radius/dictionary/*` | registry logical attr, prefix/value transform, FreeRADIUS naming | wire-format knowledge dikonsolidasikan di satu tempat |
+| Packet | `apps/oxradius/src/oxion/radius/packet.gleam` | code family, authenticator, AVP/VSA encoding, response verification | RFC-specific packet rules jangan menyebar ke renderer |
+| CoA | `apps/oxradius/src/oxion/radius/coa/*` | request/response/result/retry/execution/transport CoA | family `CoA` punya behavior sendiri |
+| Disconnect | `apps/oxradius/src/oxion/radius/disconnect/*` | request/response/result/execution/transport Disconnect | `Disconnect` punya constraints RFC 5176 yang lebih sempit |
+| Registry | `apps/oxradius/src/oxion/radius/registry/*` | resolve NAS endpoint dan capability | secret dan endpoint tidak boleh hardcoded di call site |
+| Session | `apps/oxradius/src/oxion/radius/session/*` | source of truth session aktif / accounting materialization | targeting session harus datang dari runtime state, bukan tebakan caller |
+| Ops | `apps/oxradius/src/oxion/radius/ops/*` | healthcheck, `Status-Server`, radclient tooling | tooling operasional tidak boleh bercampur dengan business path |
+| UDP | `apps/oxradius/src/oxion/radius/udp/*` | worker/socket reuse, socket handle lifecycle, outstanding request tracking | reuse socket adalah concern transport, bukan packet |
+| RadSec | `apps/oxradius/src/oxion/radius/radsec/*` | TLS transport future path | jangan campur UDP logic dengan TLS lifecycle |
+| Protocol | `apps/oxradius/src/oxion/radius/protocol/*` | tracking future protocol evolution | roadmap `RADIUS/1.1` tidak boleh mengotori path MVP |
+| Platform Audit | `apps/oxnoc/src/oxion/platform/audit/{types,adapter,persistence,service}.gleam` | ubah runtime outcome menjadi audit envelope redacted lalu simpan ke `audit_log`/`audit_private_context` shaped store | kontrak audit platform tidak boleh bocor ke orchestration kecil atau packet path |
+| Platform DSR | `apps/oxnoc/src/oxion/platform/dsr/{types,workflow,executor}.gleam` + `apps/oxnoc/src/oxion/platform/dsr/adapters/*` | state machine request privasi, inventory resolution, per-store execution planning, dan routing ke store adapter `oxRADIUS`/`oxBill`/`oxCore`/`oxNOC` | DSR workflow bukan endpoint destruktif tunggal dan tidak boleh digantung di controller tipis |
 
 ---
 
@@ -100,21 +100,21 @@ Submodule dan fungsinya saat ini:
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                           COLLECTION POLICY                              │
 │  docs/policies/*                                                         │
-│  src/oxion/policy/{types,validator,evaluator,simulator,lifecycle}.gleam │
+│  packages/policy/src/oxion/policy/{types,validator,evaluator,simulator,lifecycle}.gleam │
 └───────────────────────────────────────────────────────────────────────────┘
                                    │
                                    │ evaluated policy + matched stage
                                    v
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                        COLLECTION RUNTIME                                │
-│  src/oxion/collection/{scheduler,dispatcher,idempotency}.gleam           │
+│  apps/oxcore/src/oxion/collection/{scheduler,dispatcher,idempotency}.gleam           │
 └───────────────────────────────────────────────────────────────────────────┘
                                    │
                                    │ dispatched action
                                    v
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                     COLLECTION ORCHESTRATION                             │
-│  src/oxion/orchestration/collection/{commands,orchestrator,olt_guard,    │
+│  apps/oxcore/src/oxion/orchestration/collection/{commands,orchestrator,olt_guard,    │
 │  outcome,audit}.gleam                                                    │
 └───────────────────────────────────────────────────────────────────────────┘
                                    │
@@ -123,8 +123,8 @@ Submodule dan fungsinya saat ini:
                                    v
                  ┌───────────────────────────────────────┐
                  │     MANAGED RUNTIME SIDE INPUTS       │
-                 │  src/oxion/radius/session/*           │
-                 │  src/oxion/radius/registry/*          │
+                 │  apps/oxradius/src/oxion/radius/session/*           │
+                 │  apps/oxradius/src/oxion/radius/registry/*          │
                  └───────────────────────────────────────┘
                          │                      │
                          │ active session       │ NAS endpoint + capability
@@ -132,16 +132,16 @@ Submodule dan fungsinya saat ini:
                                     v
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                      PROFILE AND VENDOR RESOLUTION                       │
-│  src/oxion/radius/profile/{resolver,diff,normalizer,types}.gleam        │
-│  src/oxion/radius/vendor/{cisco,juniper,vbng,types}.gleam               │
+│  apps/oxradius/src/oxion/radius/profile/{resolver,diff,normalizer,types}.gleam        │
+│  apps/oxradius/src/oxion/radius/vendor/{cisco,juniper,vbng,types}.gleam               │
 └───────────────────────────────────────────────────────────────────────────┘
                                    │
                                    │ logical vendor attributes
                                    v
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                     DICTIONARY AND PACKET LAYER                          │
-│  src/oxion/radius/dictionary/{types,registry,encoder,freeradius}.gleam  │
-│  src/oxion/radius/packet.gleam                                           │
+│  apps/oxradius/src/oxion/radius/dictionary/{types,registry,encoder,freeradius}.gleam  │
+│  apps/oxradius/src/oxion/radius/packet.gleam                                           │
 └───────────────────────────────────────────────────────────────────────────┘
                                    │
                       family == CoA / Disconnect
@@ -149,9 +149,9 @@ Submodule dan fungsinya saat ini:
                                    v
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                     FAMILY EXECUTION AND TRANSPORT                       │
-│  src/oxion/radius/coa/*                                                  │
-│  src/oxion/radius/disconnect/*                                           │
-│  src/oxion_radius_transport_ffi.erl                                      │
+│  apps/oxradius/src/oxion/radius/coa/*                                                  │
+│  apps/oxradius/src/oxion/radius/disconnect/*                                           │
+│  apps/oxradius/src/oxion_radius_transport_ffi.erl                                      │
 └───────────────────────────────────────────────────────────────────────────┘
                                    │
                                    │ UDP packet
@@ -258,7 +258,7 @@ Ini lebih baik karena:
 
 ### 5.3 Dictionary Menjadi Single Source of Encoding Truth
 
-`src/oxion/radius/dictionary/*` adalah tempat yang paling benar untuk menyimpan:
+`apps/oxradius/src/oxion/radius/dictionary/*` adalah tempat yang paling benar untuk menyimpan:
 
 - logical name,
 - vendor id,
@@ -463,9 +463,9 @@ Model target untuk kebutuhan ini sekarang dijahit di:
 
 Runtime foundation yang sekarang sudah ada:
 
-- `src/oxion/platform/audit/*` untuk redacted audit envelope dan append-only persistence adapter,
-- `src/oxion/platform/dsr/*` untuk workflow state machine, store-level planning, dan executor,
-- `src/oxion/platform/dsr/adapters/*` untuk bounded-context adapters `oxRADIUS`, `oxBill`, `oxCore`, dan `oxNOC`.
+- `apps/oxnoc/src/oxion/platform/audit/*` untuk redacted audit envelope dan append-only persistence adapter,
+- `apps/oxnoc/src/oxion/platform/dsr/*` untuk workflow state machine, store-level planning, dan executor,
+- `apps/oxnoc/src/oxion/platform/dsr/adapters/*` untuk bounded-context adapters `oxRADIUS`, `oxBill`, `oxCore`, dan `oxNOC`.
 
 ### 8.5 Hal Penting dari Sumber Resmi
 

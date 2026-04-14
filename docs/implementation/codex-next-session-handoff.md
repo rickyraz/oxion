@@ -34,10 +34,10 @@ Kalau sesi berikutnya ingin review dengan cepat, baca diff mulai dari `ac99671` 
 
 File utama:
 
-- `src/oxion/platform/audit/types.gleam`
-- `src/oxion/platform/audit/adapter.gleam`
-- `src/oxion/platform/audit/persistence.gleam`
-- `src/oxion/platform/audit/service.gleam`
+- `apps/oxnoc/src/oxion/platform/audit/types.gleam`
+- `apps/oxnoc/src/oxion/platform/audit/adapter.gleam`
+- `apps/oxnoc/src/oxion/platform/audit/persistence.gleam`
+- `apps/oxnoc/src/oxion/platform/audit/service.gleam`
 
 Status sekarang:
 
@@ -57,13 +57,13 @@ Yang masih belum nyata:
 
 File utama:
 
-- `src/oxion/platform/dsr/types.gleam`
-- `src/oxion/platform/dsr/workflow.gleam`
-- `src/oxion/platform/dsr/executor.gleam`
-- `src/oxion/platform/dsr/adapters/oxradius.gleam`
-- `src/oxion/platform/dsr/adapters/oxbill.gleam`
-- `src/oxion/platform/dsr/adapters/oxcore.gleam`
-- `src/oxion/platform/dsr/adapters/oxnoc.gleam`
+- `apps/oxnoc/src/oxion/platform/dsr/types.gleam`
+- `apps/oxnoc/src/oxion/platform/dsr/workflow.gleam`
+- `apps/oxnoc/src/oxion/platform/dsr/executor.gleam`
+- `apps/oxnoc/src/oxion/platform/dsr/adapters/oxradius.gleam`
+- `apps/oxnoc/src/oxion/platform/dsr/adapters/oxbill.gleam`
+- `apps/oxnoc/src/oxion/platform/dsr/adapters/oxcore.gleam`
+- `apps/oxnoc/src/oxion/platform/dsr/adapters/oxnoc.gleam`
 
 Status sekarang:
 
@@ -87,13 +87,13 @@ Yang masih belum nyata:
 
 ### Audit
 
-- `test/oxion/platform/audit/adapter_test.gleam`
-- `test/oxion/platform/audit/persistence_test.gleam`
+- `apps/oxnoc/test/oxion/platform/audit/adapter_test.gleam`
+- `apps/oxnoc/test/oxion/platform/audit/persistence_test.gleam`
 
 ### DSR
 
-- `test/oxion/platform/dsr/workflow_test.gleam`
-- `test/oxion/platform/dsr/executor_test.gleam`
+- `apps/oxnoc/test/oxion/platform/dsr/workflow_test.gleam`
+- `apps/oxnoc/test/oxion/platform/dsr/executor_test.gleam`
 
 ### Full repo baseline saat handoff ini dibuat
 

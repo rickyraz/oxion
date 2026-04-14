@@ -59,7 +59,7 @@ Semua item di luar jalur ini boleh paralel hanya jika tidak mengubah kontrak int
 
 ## 5. Phase Detail per Module/Submodule
 
-## Phase A — Contract and Determinism Baseline
+## Phase A - Contract and Determinism Baseline
 
 ### A1. Module: `oxBill.policy_contract`
 
@@ -90,7 +90,7 @@ Artefak phase:
 
 ---
 
-## Phase B — Policy Engine Core
+## Phase B - Policy Engine Core
 
 ### B1. Module: `oxBill.policy_validator`
 
@@ -121,15 +121,15 @@ Exit criteria:
 
 Artefak phase:
 
-- `src/oxion/policy/types.gleam`
-- `src/oxion/policy/validator.gleam`
-- `src/oxion/policy/evaluator.gleam`
-- `src/oxion/policy/simulator.gleam`
+- `packages/policy/src/oxion/policy/types.gleam`
+- `packages/policy/src/oxion/policy/validator.gleam`
+- `packages/policy/src/oxion/policy/evaluator.gleam`
+- `packages/policy/src/oxion/policy/simulator.gleam`
 - `../conformance-checklist/phase-b-conformance-checklist.md`
 
 ---
 
-## Phase C — Enforcement Runtime and Idempotency
+## Phase C - Enforcement Runtime and Idempotency
 
 ### C1. Module: `oxBill.collection_scheduler`
 
@@ -163,14 +163,14 @@ Exit criteria:
 
 Artefak phase:
 
-- `src/oxion/collection/idempotency.gleam`
-- `src/oxion/collection/dispatcher.gleam`
-- `src/oxion/collection/scheduler.gleam`
+- `apps/oxcore/src/oxion/collection/idempotency.gleam`
+- `apps/oxcore/src/oxion/collection/dispatcher.gleam`
+- `apps/oxcore/src/oxion/collection/scheduler.gleam`
 - `../conformance-checklist/phase-c-conformance-checklist.md`
 
 ---
 
-## Phase D — RADIUS Path (Default `radius_only`)
+## Phase D - RADIUS Path (Default `radius_only`)
 
 ### D1. Module: `oxCore.collection_orchestrator`
 
@@ -206,33 +206,33 @@ Companion breakdown:
 
 Artefak phase:
 
-- `src/oxion/orchestration/collection/commands.gleam`
-- `src/oxion/orchestration/collection/orchestrator.gleam`
-- `src/oxion/orchestration/collection/outcome.gleam`
-- `src/oxion/orchestration/collection/audit.gleam`
-- `src/oxion/orchestration/collection/olt_guard.gleam`
-- `src/oxion/radius/packet.gleam`
-- `src/oxion/radius/profile/types.gleam`
-- `src/oxion/radius/profile/resolver.gleam`
-- `src/oxion/radius/profile/snapshot.gleam`
-- `src/oxion/radius/profile/normalizer.gleam`
-- `src/oxion/radius/profile/diff.gleam`
-- `src/oxion/radius/vendor/types.gleam`
-- `src/oxion/radius/vendor/cisco.gleam`
-- `src/oxion/radius/vendor/juniper.gleam`
-- `src/oxion/radius/vendor/vbng.gleam`
-- `src/oxion/radius/coa/request.gleam`
-- `src/oxion/radius/coa/response.gleam`
-- `src/oxion/radius/coa/result.gleam`
-- `src/oxion/radius/coa/retry.gleam`
-- `src/oxion/radius/coa/execution.gleam`
-- `src/oxion/radius/coa/transport.gleam`
-- `src/oxion_radius_transport_ffi.erl`
+- `apps/oxcore/src/oxion/orchestration/collection/commands.gleam`
+- `apps/oxcore/src/oxion/orchestration/collection/orchestrator.gleam`
+- `apps/oxcore/src/oxion/orchestration/collection/outcome.gleam`
+- `apps/oxcore/src/oxion/orchestration/collection/audit.gleam`
+- `apps/oxcore/src/oxion/orchestration/collection/olt_guard.gleam`
+- `apps/oxradius/src/oxion/radius/packet.gleam`
+- `apps/oxradius/src/oxion/radius/profile/types.gleam`
+- `apps/oxradius/src/oxion/radius/profile/resolver.gleam`
+- `apps/oxradius/src/oxion/radius/profile/snapshot.gleam`
+- `apps/oxradius/src/oxion/radius/profile/normalizer.gleam`
+- `apps/oxradius/src/oxion/radius/profile/diff.gleam`
+- `apps/oxradius/src/oxion/radius/vendor/types.gleam`
+- `apps/oxradius/src/oxion/radius/vendor/cisco.gleam`
+- `apps/oxradius/src/oxion/radius/vendor/juniper.gleam`
+- `apps/oxradius/src/oxion/radius/vendor/vbng.gleam`
+- `apps/oxradius/src/oxion/radius/coa/request.gleam`
+- `apps/oxradius/src/oxion/radius/coa/response.gleam`
+- `packages/interop/src/oxion/radius/coa/result.gleam`
+- `apps/oxradius/src/oxion/radius/coa/retry.gleam`
+- `apps/oxradius/src/oxion/radius/coa/execution.gleam`
+- `apps/oxradius/src/oxion/radius/coa/transport.gleam`
+- `apps/oxradius/src/oxion_radius_transport_ffi.erl`
 - `../conformance-checklist/phase-d-conformance-checklist.md`
 
 ---
 
-## Phase E — Notification and Payment Recovery
+## Phase E - Notification and Payment Recovery
 
 ### E1. Module: `notification_engine.collection_templates`
 
@@ -262,7 +262,7 @@ Exit criteria:
 
 ---
 
-## Phase F — UI Builder Minimum Viable
+## Phase F - UI Builder Minimum Viable
 
 ### F1. Module: `web.collection_policy_builder`
 
@@ -281,7 +281,7 @@ Exit criteria:
 
 ---
 
-## Phase G — UAT, Hardening, and Operational Readiness
+## Phase G - UAT, Hardening, and Operational Readiness
 
 ### G1. Module: `oxNOC.collection_observability`
 
@@ -315,7 +315,7 @@ Exit criteria:
 
 ---
 
-## Phase H — oxBill Operator Layer (Dalo-Inspired, Platform-Grade)
+## Phase H - oxBill Operator Layer (Dalo-Inspired, Platform-Grade)
 
 ### H1. Module: `oxBill.billing_plan_registry`
 

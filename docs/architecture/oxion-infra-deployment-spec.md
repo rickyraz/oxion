@@ -1,4 +1,4 @@
-# oxion — Infrastructure, Deployment & Roadmap
+# oxion  Infrastructure, Deployment & Roadmap
 
 **Cakupan:** Stack Teknologi, Struktur Monorepo, Data Model PostgreSQL Lengkap, Kontrak API Lengkap, Keamanan & Transport, High Availability & Kubernetes, UI Layer, Roadmap Implementasi, Feature Coverage Matrix
 
@@ -18,6 +18,7 @@
 - [Collection Policy EBNF](../policies/collection-policy-ebnf.md)
 - [Tier-1 Broadband Interop Profile](../interoperability/oxion-tier1-broadband-interoperability-profile.md)
 - [dalo Migration Runbook](../operations/oxion-dalo-migration-runbook.md)
+- [Connect BEAM Adapter Roadmap](../implementation/connect-beam-adapter-roadmap.md)
 
 ---
 
@@ -28,6 +29,7 @@
 | RADIUS Server       | **FreeRADIUS (hybrid) + Gleam logic**          | FreeRADIUS difokuskan sebagai UDP front-end + `rlm_rest`; seluruh logic utama berjalan di BEAM |
 | Policy Engine       | **Gleam** + gleam_otp                          | 1.x, berjalan di BEAM VM                                                                       |
 | HTTP Server         | **Wisp** + Mist (Gleam)                        | REST + SSE                                                                                     |
+| Future Typed API    | **connect-beam** + connect-es + connect-query  | Planned Connect-style RPC adapter untuk operator/internal UI; REST tetap baseline              |
 | GraphQL             | **Absinthe** via Erlang interop                | Subscription melalui WebSocket                                                                 |
 | WebSocket           | **Bandit** + Phoenix.Channels interop          | real-time events                                                                               |
 | Cache In-Process    | **ETS** via Nebulex local adapter              | TTL 30 detik                                                                                   |
@@ -35,7 +37,7 @@
 | Message Broker      | **NATS JetStream**                             | event sourcing, accounting, notif                                                              |
 | Database Primary    | **PostgreSQL 18** via pgo                      | subscriber, billing, config                                                                    |
 | Database TimeSeries | **TimescaleDB** (PostgreSQL ext)               | traffic stats, accounting                                                                      |
-| Object Storage      | **Gleam bucket → Cloudflare R2 / Backblaze**   | Invoice PDF, firmware, export CSV; **Garage** sebagai opsi self-hosted                         |
+| Object Storage      | **Gleam bucket   Cloudflare R2 / Backblaze**   | Invoice PDF, firmware, export CSV; **Garage** sebagai opsi self-hosted                         |
 | Notification        | **Gleam** notification_engine                  | WhatsApp/Telegram/SMS/Email/Push                                                               |
 | SSO / Identity      | **ZITADEL**                                    | Mendukung OIDC, SAML 2.0, OAuth2; lebih ringan untuk operasional                               |
 | AI/ML               | **Nx + Scholar (Elixir)** atau Python fallback | Anomaly detection, termasuk inference Isolation Forest                                         |
@@ -80,266 +82,45 @@ Strategi database:
 
 ## 3. Struktur Monorepo
 
-```
+### Struktur Aktual (April 2026)
+
+```text
 oxion/
-│
-├── apps/                              # Gleam OTP Applications (oxRADIUS core)
-│   │
-│   ├── radius_gateway/
-│   │   └── src/
-│   │       ├── radius_gateway.gleam
-│   │       ├── radius_packet.gleam
-│   │       ├── coa_dispatcher.gleam       # RFC 5176 CoA/PoD
-│   │       └── realm_router.gleam
-│   │
-│   ├── policy_engine/
-│   │   └── src/
-│   │       ├── policy_engine.gleam
-│   │       ├── policy_types.gleam
-│   │       ├── rule_evaluator.gleam
-│   │       ├── quota_checker.gleam
-│   │       ├── vlan_assigner.gleam
-│   │       ├── time_policy.gleam
-│   │       ├── fraud_scorer.gleam
-│   │       └── device_fingerprint.gleam
-│   │
-│   ├── api_gateway/
-│   │   └── src/
-│   │       ├── api_gateway.gleam
-│   │       ├── graphql_router.gleam
-│   │       ├── ws_router.gleam
-│   │       ├── routes/
-│   │       │   ├── aaa_routes.gleam
-│   │       │   ├── billing_routes.gleam
-│   │       │   ├── subscriber_routes.gleam
-│   │       │   ├── inventory_routes.gleam
-│   │       │   ├── olt_routes.gleam
-│   │       │   ├── notification_routes.gleam
-│   │       │   ├── report_routes.gleam
-│   │       │   └── health_routes.gleam
-│   │       └── middleware/
-│   │           ├── auth_middleware.gleam
-│   │           ├── tenant_middleware.gleam
-│   │           ├── rate_limit.gleam
-│   │           └── tracing.gleam
-│   │
-│   ├── aaa_api/
-│   │   └── src/
-│   │       ├── authorize_handler.gleam
-│   │       ├── accounting_handler.gleam
-│   │       ├── coa_handler.gleam
-│   │       └── package_handler.gleam
-│   │
-│   ├── subscriber_api/
-│   │   └── src/
-│   │       ├── subscriber_handler.gleam
-│   │       ├── reseller_handler.gleam
-│   │       └── tenant_handler.gleam
-│   │
-│   ├── billing_api/
-│   │   └── src/
-│   │       ├── billing_handler.gleam
-│   │       ├── payment_handler.gleam
-│   │       └── voucher_handler.gleam
-│   │
-│   ├── ops_api/
-│   │   └── src/
-│   │       ├── nas_handler.gleam
-│   │       ├── gis_handler.gleam
-│   │       ├── report_handler.gleam
-│   │       ├── notification_handler.gleam
-│   │       ├── firmware_handler.gleam
-│   │       ├── audit_handler.gleam
-│   │       └── health_handler.gleam
-│   │
-│   ├── accounting_pipeline/
-│   │   └── src/
-│   │       ├── accounting_pipeline.gleam
-│   │       ├── event_classifier.gleam
-│   │       ├── session_tracker.gleam
-│   │       ├── quota_updater.gleam
-│   │       ├── fup_evaluator.gleam
-│   │       ├── traffic_aggregator.gleam
-│   │       └── billing_emitter.gleam
-│   │
-│   ├── billing_engine/
-│   │   └── src/
-│   │       ├── billing_engine.gleam
-│   │       ├── invoice_generator.gleam
-│   │       ├── prepaid_manager.gleam
-│   │       ├── postpaid_manager.gleam
-│   │       ├── payment_adapters/
-│   │       │   ├── midtrans.gleam
-│   │       │   ├── xendit.gleam
-│   │       │   ├── stripe.gleam
-│   │       │   ├── paypal.gleam
-│   │       │   └── crypto_payment.gleam
-│   │       └── auto_topup.gleam
-│   │
-│   ├── voucher_engine/
-│   │   └── src/
-│   │       ├── voucher_engine.gleam
-│   │       ├── voucher_generator.gleam
-│   │       ├── voucher_redeemer.gleam
-│   │       └── refill_card.gleam
-│   │
-│   ├── notification_engine/
-│   │   └── src/
-│   │       ├── notification_engine.gleam
-│   │       ├── template_renderer.gleam
-│   │       ├── channels/
-│   │       │   ├── whatsapp_channel.gleam
-│   │       │   ├── telegram_channel.gleam
-│   │       │   ├── sms_channel.gleam
-│   │       │   ├── email_channel.gleam
-│   │       │   └── push_channel.gleam
-│   │       └── scheduler.gleam
-│   │
-│   ├── nas_provisioner/
-│   │   └── src/
-│   │       ├── nas_provisioner.gleam
-│   │       ├── discovery/
-│   │       │   ├── mdns_scanner.gleam
-│   │       │   ├── snmp_walker.gleam
-│   │       │   └── lldp_listener.gleam
-│   │       ├── vendors/
-│   │       │   ├── mikrotik_api.gleam
-│   │       │   ├── cisco_ios.gleam
-│   │       │   ├── pfsense_api.gleam
-│   │       │   ├── openwrt_uci.gleam
-│   │       │   └── docsis_cmts.gleam
-│   │       └── ota_scheduler.gleam
-│   │
-│   ├── ai_fraud_client/
-│   │   └── src/
-│   │       ├── ai_fraud_client.gleam
-│   │       └── anomaly_types.gleam
-│   │
-│   ├── gis_engine/
-│   │   └── src/
-│   │       ├── gis_engine.gleam
-│   │       ├── location_resolver.gleam
-│   │       └── coverage_mapper.gleam
-│   │
-│   ├── cache_layer/
-│   ├── otp_supervisor/
-│   └── audit_engine/
-│       └── src/
-│           ├── audit_engine.gleam
-│           ├── gdpr_exporter.gleam
-│           └── consent_manager.gleam
-│
-├── modules/                           # oxCore + oxOLT (TypeScript/Node.js)
-│   ├── service/                       # Service Inventory
-│   │   ├── _service/
-│   │   ├── types/
-│   │   └── repository/
-│   ├── orchestrator/                  # Orchestrator
-│   │   ├── commands/
-│   │   ├── planner/
-│   │   └── executor/
-│   ├── reconciliation/                # Reconciliation Engine
-│   │   ├── _service/
-│   │   ├── scheduler/
-│   │   └── rules/
-│   ├── aaa-adapter/                   # Façade ke oxRADIUS
-│   │   ├── _service/
-│   │   └── providers/
-│   ├── olt-adapter/                   # Façade ke oxOLT
-│   │   ├── _service/
-│   │   └── providers/
-│   ├── olt/                           # OLT domain
-│   │   ├── _type/
-│   │   ├── _core/
-│   │   ├── _service/
-│   │   ├── service_profile/
-│   │   ├── line_profile/
-│   │   ├── vlan/
-│   │   ├── lacp/
-│   │   └── _scheduler/
-│   ├── onu/                           # ONU domain
-│   │   ├── power-n-status/
-│   │   ├── _type/
-│   │   ├── configured/
-│   │   ├── conflict/
-│   │   ├── uncofigure/
-│   │   └── inventory/
-│   ├── snmp/                          # SNMP worker
-│   │   ├── infrastructure/
-│   │   └── _service/
-│   ├── remote-access/                 # Telnet/SSH worker
-│   │   ├── infrastructure/
-│   │   ├── effect/
-│   │   └── promise/
-│   ├── dashboard/
-│   ├── activity-log/
-│   ├── rbac/
-│   ├── notification/
-│   ├── auth/
-│   ├── export/
-│   ├── graph/
-│   ├── partners/
-│   ├── access-group/
-│   └── external/
-│
-├── services/
-│   └── ai_anomaly/                    # Python FastAPI microservice
-│       ├── main.py
-│       ├── models/
-│       │   ├── fraud_detector.py
-│       │   └── quota_abuse.py
-│       ├── requirements.txt
-│       └── Dockerfile
-│
-├── ui/                                # TanStack Start + SolidJS
-│   ├── src/
-│   │   ├── routes/
-│   │   ├── components/
-│   │   │   ├── charts/
-│   │   │   ├── maps/
-│   │   │   └── realtime/
-│   │   └── api/
-│   └── package.json
-│
-├── mobile/                            # React Native + Expo
-│   ├── src/
-│   │   ├── screens/
-│   │   └── notifications/
-│   └── package.json
-│
-├── infra/
-│   ├── freeradius/
-│   │   ├── mods-enabled/
-│   │   │   └── rest
-│   │   └── sites-enabled/
-│   │       └── default
-│   ├── k8s/
-│   │   └── helm/
-│   │       ├── oxradius/
-│   │       ├── freeradius/
-│   │       ├── oxcore/
-│   │       ├── oxolt/
-│   │       ├── oxnoc/
-│   │       ├── oxbill/
-│   │       ├── postgres/
-│   │       ├── nebulex-cluster/
-│   │       ├── nats/
-│   │       ├── zitadel/
-│   │       ├── object-storage/
-│   │       ├── monitoring/
-│   │       └── ai-anomaly/
-│   └── docker/
-│       └── docker-compose.yml
-└── docs/
-    ├── architecture/
-    ├── modules/
-    ├── policies/
-    ├── implementation/
-    ├── interoperability/
-    ├── plugins/
-    ├── operations/
-    └── conformance-checklist/
+|-- apps/
+|   |-- oxradius/
+|   |-- oxcore/
+|   |-- oxnoc/
+|   |-- oxbill/
+|   `-- oxolt/
+|-- packages/
+|   |-- policy/
+|   `-- interop/
+|-- frontend/
+|   `-- platform/
+|-- schema/
+|-- generated/
+|-- scripts/
+|-- tools/
+|-- docs/
+|-- package.json
+|-- pnpm-workspace.yaml
+`-- turbo.json
 ```
+
+### Boundary Lintas Package
+
+- `packages/policy` memegang kontrak policy (`types`, `validator`, `evaluator`, `simulator`, `lifecycle`) dan harus tetap deterministic.
+- `apps/oxcore` memegang runtime collection + orchestration (`collection`, `orchestration/collection`).
+- `apps/oxradius` memegang transport/protocol RADIUS (`packet`, `coa`, `disconnect`, `dictionary`, `registry`, `session`, `udp`, `radsec`).
+- `apps/oxnoc` memegang audit + DSR workflow (`platform/audit`, `platform/dsr`).
+- `packages/interop` dipakai untuk contract lintas app (misalnya `oxion/radius/coa/result.gleam`).
+- `frontend/platform` adalah UI TanStack Start untuk operator dashboard saat ini.
+
+### Ekspansi Terencana (Belum Aktif di Repo)
+
+- `frontend/mobile/` untuk React Native + Expo.
+- `infra/` untuk helm chart, compose profile, dan manifest deployment.
+- `services/` untuk microservice eksternal (contoh AI anomaly) bila dipisah dari BEAM apps.
 
 Catatan boundary API (do one thing well):
 
@@ -352,15 +133,15 @@ Catatan boundary API (do one thing well):
 ## 4. Data Model Lengkap PostgreSQL
 
 ```sql
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- EXTENSIONS
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- MULTI-TENANT
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE tenants (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -376,9 +157,9 @@ CREATE TABLE tenants (
   created_at      TIMESTAMPTZ DEFAULT now()
 );
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- OPERATORS / RESELLERS
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE resellers (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -409,9 +190,9 @@ CREATE TABLE operators (
   created_at    TIMESTAMPTZ DEFAULT now()
 );
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- PACKAGES
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE packages (
   id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -433,9 +214,9 @@ CREATE TABLE packages (
   UNIQUE(tenant_id, name)
 );
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- SUBSCRIBERS
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE subscribers (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -477,9 +258,9 @@ CREATE INDEX ON subscribers(tenant_id, package_id);
 CREATE INDEX ON subscribers USING gin(mac_addresses);
 CREATE INDEX ON subscribers USING gin(tags);
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- QUOTA
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE quota_states (
   subscriber_id    UUID REFERENCES subscribers(id),
@@ -491,9 +272,9 @@ CREATE TABLE quota_states (
   PRIMARY KEY (subscriber_id, period_start)
 );
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- NAS DEVICES
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE nas_devices (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -504,7 +285,7 @@ CREATE TABLE nas_devices (
   nas_type            TEXT NOT NULL,
   shared_secret       TEXT NOT NULL,
   management_protocol JSONB DEFAULT '{}',
-  management_creds    JSONB DEFAULT '{}',
+  management_creds    JSONB DEFAULT '{}',   -- MUST be encrypted AES-256-GCM before insert; see Section 6
   location            GEOMETRY(Point, 4326),
   location_name       TEXT,
   firmware_version    TEXT,
@@ -519,9 +300,9 @@ CREATE TABLE nas_devices (
 );
 CREATE INDEX ON nas_devices USING GIST(location);
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- SESSIONS + ACCOUNTING
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE active_sessions (
   session_id    TEXT PRIMARY KEY,
@@ -592,9 +373,9 @@ SELECT time_bucket('1 day', time) AS bucket,
 FROM traffic_stats
 GROUP BY bucket, subscriber_id;
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- ISP CORE SERVICE INVENTORY
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE customers (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -614,9 +395,20 @@ CREATE TABLE services (
   package_id             UUID REFERENCES packages(id),
   external_odoo_order_id TEXT,
   service_number         TEXT UNIQUE NOT NULL,
-  status                 TEXT NOT NULL,
-  desired_state          TEXT NOT NULL,
-  actual_state           TEXT NOT NULL DEFAULT 'unknown',
+  status                 TEXT NOT NULL CHECK (
+    status IN (
+      'draft',
+      'pending_activation',
+      'active',
+      'throttled_due_overdue',
+      'suspended',
+      'terminating',
+      'terminated',
+      'inconsistent'
+    )
+  ),
+  desired_state          TEXT NOT NULL CHECK (desired_state IN ('active', 'suspended', 'terminated')),
+  actual_state           TEXT NOT NULL DEFAULT 'unknown' CHECK (actual_state IN ('active', 'suspended', 'terminated', 'partial', 'unknown')),
   activation_date        TIMESTAMPTZ,
   suspension_reason      TEXT,
   termination_reason     TEXT,
@@ -626,7 +418,7 @@ CREATE TABLE services (
 
 CREATE TABLE network_attachments (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  service_id       UUID NOT NULL UNIQUE,
+  service_id       UUID NOT NULL UNIQUE REFERENCES services(id),
   olt_id           UUID REFERENCES nas_devices(id),
   olt_vendor       TEXT,
   pon_fsp          TEXT,
@@ -649,7 +441,7 @@ CREATE TABLE workflow_jobs (
   service_id    UUID REFERENCES services(id),
   tenant_id     UUID REFERENCES tenants(id),
   job_type      TEXT NOT NULL,
-  status        TEXT NOT NULL,
+  status        TEXT NOT NULL CHECK (status IN ('pending', 'running', 'success', 'failed', 'partial')),
   requested_by  TEXT,
   source        TEXT NOT NULL,
   payload       JSONB DEFAULT '{}',
@@ -665,7 +457,7 @@ CREATE TABLE workflow_steps (
   job_id        UUID NOT NULL REFERENCES workflow_jobs(id),
   step_order    INTEGER NOT NULL,
   step_name     TEXT NOT NULL,
-  status        TEXT NOT NULL,
+  status        TEXT NOT NULL CHECK (status IN ('pending', 'running', 'success', 'failed', 'skipped')),
   payload       JSONB DEFAULT '{}',
   result        JSONB,
   error_message TEXT,
@@ -681,9 +473,64 @@ CREATE TABLE service_state_snapshots (
   collected_at TIMESTAMPTZ DEFAULT now()
 );
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""""""""""
+-- PLUGIN RUNTIME (Platform Mode)
+-- Detail kontrak/lifecycle: docs/plugins/oxion-plugin-architecture.md
+-- """""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+CREATE TABLE plugin_manifests (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plugin_id         TEXT NOT NULL,
+  name              TEXT NOT NULL,
+  version           TEXT NOT NULL,
+  api_version       TEXT NOT NULL,
+  plugin_type       TEXT NOT NULL CHECK (plugin_type IN ('flow', 'policy', 'billing', 'ui', 'integration')),
+  runtime_language  TEXT NOT NULL CHECK (runtime_language IN ('typescript', 'python', 'elixir')),
+  runtime_version   TEXT,
+  hooks             JSONB NOT NULL DEFAULT '[]',
+  permissions       JSONB NOT NULL DEFAULT '[]',
+  signature         TEXT,
+  manifest          JSONB NOT NULL,
+  lifecycle_state   TEXT NOT NULL CHECK (lifecycle_state IN ('draft', 'verified', 'enabled_staging', 'enabled_production', 'disabled')),
+  uploaded_by       TEXT,
+  verified_at       TIMESTAMPTZ,
+  created_at        TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(plugin_id, version)
+);
+
+CREATE TABLE plugin_activations (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  manifest_id     UUID NOT NULL REFERENCES plugin_manifests(id),
+  scope           TEXT NOT NULL CHECK (scope IN ('global', 'tenant', 'reseller')),
+  tenant_id       UUID REFERENCES tenants(id),
+  reseller_id     UUID REFERENCES resellers(id),
+  status          TEXT NOT NULL CHECK (status IN ('enabled', 'disabled')),
+  config          JSONB NOT NULL DEFAULT '{}',
+  activated_by    TEXT,
+  activated_at    TIMESTAMPTZ DEFAULT now(),
+  disabled_at     TIMESTAMPTZ,
+  UNIQUE(manifest_id, scope, tenant_id, reseller_id)
+);
+
+CREATE TABLE plugin_audit_log (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  activation_id    UUID REFERENCES plugin_activations(id),
+  tenant_id        UUID REFERENCES tenants(id),
+  subscriber_id    UUID REFERENCES subscribers(id),
+  hook_name        TEXT NOT NULL,
+  decision         TEXT,
+  success          BOOLEAN NOT NULL DEFAULT true,
+  latency_ms       INTEGER,
+  error_message    TEXT,
+  emitted_event_id TEXT,
+  created_at       TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX ON plugin_audit_log(tenant_id, created_at DESC);
+CREATE INDEX ON plugin_audit_log(activation_id, created_at DESC);
+
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- VOUCHERS
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE voucher_batches (
   id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -723,14 +570,14 @@ CREATE TABLE vouchers (
 CREATE INDEX ON vouchers(tenant_id, status);
 CREATE INDEX ON vouchers(code);
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- BILLING
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE invoices (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id         UUID REFERENCES tenants(id) NOT NULL,
-  subscriber_id     UUID NOT NULL,
+  subscriber_id     UUID NOT NULL REFERENCES subscribers(id),
   reseller_id       UUID REFERENCES resellers(id),
   invoice_number    TEXT UNIQUE NOT NULL,
   period_start      DATE,
@@ -753,7 +600,7 @@ CREATE INDEX ON invoices(status);
 
 CREATE TABLE payment_methods_on_file (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  subscriber_id  UUID NOT NULL,
+  subscriber_id  UUID NOT NULL REFERENCES subscribers(id),
   type           TEXT NOT NULL,
   provider_token TEXT NOT NULL,
   is_default     BOOLEAN DEFAULT false,
@@ -761,22 +608,22 @@ CREATE TABLE payment_methods_on_file (
   created_at     TIMESTAMPTZ DEFAULT now()
 );
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- PUSH TOKENS
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE push_tokens (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  subscriber_id UUID NOT NULL,
+  subscriber_id UUID NOT NULL REFERENCES subscribers(id),
   token         TEXT NOT NULL,
   platform      TEXT NOT NULL,
   registered_at TIMESTAMPTZ DEFAULT now(),
   UNIQUE(subscriber_id, token)
 );
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- AUDIT LOG (append-only, redacted, long-retention)
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE audit_log (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -811,9 +658,9 @@ CREATE TABLE audit_private_context (
 );
 CREATE INDEX ON audit_private_context(expires_at);
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- CONSENT (GDPR)
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE consent_records (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -851,9 +698,9 @@ CREATE TABLE data_subject_request_items (
 );
 CREATE INDEX ON data_subject_request_items(dsr_id, store_name);
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- FIRMWARE
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE firmware_repository (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -884,9 +731,9 @@ CREATE TABLE firmware_upgrades (
   created_at      TIMESTAMPTZ DEFAULT now()
 );
 
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 -- LOGIN PAGES
--- ═══════════════════════════════════════════════
+-- """""""""""""""""""""""""""""""""""""""""""""""
 
 CREATE TABLE login_pages (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -909,24 +756,33 @@ CREATE TABLE login_pages (
 
 ## 5. Kontrak API Lengkap
 
+Kontrak REST di bawah ini adalah baseline saat ini. Ke depan, Oxion akan menambahkan **connect-beam** sebagai adapter Connect-style RPC untuk API operator/internal yang butuh typed request/response, error model konsisten, dan integrasi lebih natural dengan TanStack Start via `connect-es` + `connect-query`.
+
+Strategi evolusi:
+
+- REST tetap dipakai untuk health, metrics, webhooks, endpoint publik sederhana, file export/download, dan kompatibilitas eksternal.
+- Connect RPC dipakai bertahap untuk domain action/query yang kompleks: subscribers, services, NAS/ONU, billing, reports.
+- `api_gateway` tetap tipis: auth, tenant resolution, rate limit, tracing, decode/encode; business rule tetap di domain Gleam/BEAM.
+- Detail roadmap: [Connect BEAM Adapter Roadmap](../implementation/connect-beam-adapter-roadmap.md).
+
 ```
-# ── RADIUS (internal, dari FreeRADIUS) ──────────────────
+#  RADIUS (internal, dari FreeRADIUS) 
 POST /v1/policy/authorize
 POST /v1/policy/accounting
 POST /v1/policy/post-auth
 
-# ── HEALTH ───────────────────────────────────────────────
+#  HEALTH 
 GET  /health
 GET  /health/ready
 GET  /metrics                    (Prometheus, internal only)
 
-# ── AUTH ─────────────────────────────────────────────────
+#  AUTH 
 GET  /auth/login
 GET  /auth/callback
 POST /auth/logout
 POST /auth/token/refresh
 
-# ── SELF-SERVICE (publik / UCP + mobile) ─────────────────
+#  SELF-SERVICE (publik / UCP + mobile) 
 POST /v1/self/register
 POST /v1/self/verify/sms
 POST /v1/self/verify/email
@@ -940,12 +796,12 @@ GET  /v1/self/invoices
 POST /v1/self/topup
 POST /v1/self/push-token
 
-# ── SUBSCRIBERS (oxRADIUS) ────────────────────────────────
+#  SUBSCRIBERS (oxRADIUS) 
 GET    /v1/subscribers
 POST   /v1/subscribers
 POST   /v1/subscribers/import
 GET    /v1/subscribers/export
-POST   /v1/subscribers/generate
+POST   /v1/subscribers/bulk-generate
 GET    /v1/subscribers/:id
 PATCH  /v1/subscribers/:id
 DELETE /v1/subscribers/:id
@@ -958,17 +814,15 @@ POST   /v1/subscribers/:id/disconnect
 GET    /v1/subscribers/:id/sessions
 GET    /v1/subscribers/:id/accounting
 GET    /v1/subscribers/:id/invoices
-GET    /v1/subscribers/:id/gdpr/export
-POST   /v1/subscribers/:id/gdpr/erasure-requests
 
-# ── PACKAGES ─────────────────────────────────────────────
+#  PACKAGES 
 GET    /v1/packages
 POST   /v1/packages
 GET    /v1/packages/:id
 PUT    /v1/packages/:id
 DELETE /v1/packages/:id
 
-# ── VOUCHERS (oxBill) ─────────────────────────────────────
+#  VOUCHERS (oxBill) 
 GET    /v1/voucher-batches
 POST   /v1/voucher-batches
 GET    /v1/voucher-batches/:id
@@ -978,7 +832,7 @@ POST   /v1/vouchers/redeem
 GET    /v1/vouchers/:code
 DELETE /v1/vouchers/:id
 
-# ── BILLING (oxBill) ──────────────────────────────────────
+#  BILLING (oxBill) 
 GET    /v1/invoices
 POST   /v1/invoices
 GET    /v1/invoices/:id
@@ -997,7 +851,7 @@ POST   /v1/payments/webhook/xendit
 POST   /v1/payments/webhook/stripe
 POST   /v1/payments/webhook/nowpayments
 
-# ── NAS DEVICES (oxOLT) ───────────────────────────────────
+#  NAS DEVICES (oxOLT) 
 GET    /v1/nas
 POST   /v1/nas
 GET    /v1/nas/:id
@@ -1010,7 +864,7 @@ GET    /v1/nas/:id/sessions
 GET    /v1/nas/:id/signal
 POST   /v1/nas/:id/firmware/upgrade
 
-# ── ONU (oxOLT) ───────────────────────────────────────────
+#  ONU (oxOLT) 
 GET    /v1/onu
 GET    /v1/onu/:id
 GET    /v1/onu/unconfigured
@@ -1018,10 +872,10 @@ POST   /v1/onu/:id/configure
 POST   /v1/onu/:id/reset
 DELETE /v1/onu/:id
 
-# ── COA / POD (oxRADIUS) ──────────────────────────────────
+#  COA / POD (oxRADIUS) 
 POST /v1/coa/send
 
-# ── SERVICES (oxCore) ─────────────────────────────────────
+#  SERVICES (oxCore) 
 GET    /v1/services
 GET    /v1/services/:id
 GET    /v1/services/:id/state
@@ -1035,14 +889,14 @@ GET    /v1/customers
 GET    /v1/customers/:id
 GET    /v1/customers/:id/services
 
-# ── ODOO WEBHOOKS (oxCore) ────────────────────────────────
+#  ODOO WEBHOOKS (oxCore) 
 POST   /v1/webhooks/odoo/payment-received
 POST   /v1/webhooks/odoo/invoice-overdue
 POST   /v1/webhooks/odoo/terminate-request
 POST   /v1/webhooks/odoo/service-created
 POST   /v1/webhooks/odoo/package-changed
 
-# ── RESELLERS ─────────────────────────────────────────────
+#  RESELLERS 
 GET    /v1/resellers
 POST   /v1/resellers
 GET    /v1/resellers/:id
@@ -1051,17 +905,17 @@ GET    /v1/resellers/:id/subscribers
 GET    /v1/resellers/:id/stats
 GET    /v1/resellers/:id/commissions
 
-# ── TENANTS (superadmin only) ─────────────────────────────
+#  TENANTS (superadmin only) 
 GET    /v1/tenants
 POST   /v1/tenants
 GET    /v1/tenants/:id
 PUT    /v1/tenants/:id
 
-# ── GIS (oxOLT + oxNOC) ───────────────────────────────────
+#  GIS (oxOLT + oxNOC) 
 GET    /v1/gis/nas            (GeoJSON FeatureCollection)
 GET    /v1/gis/coverage       (coverage polygons)
 
-# ── REPORTS (oxNOC) ───────────────────────────────────────
+#  REPORTS (oxNOC) 
 GET    /v1/reports/overview
 GET    /v1/reports/traffic/subscriber/:id
 GET    /v1/reports/top-users
@@ -1071,27 +925,27 @@ GET    /v1/reports/signal/:nas_id
 GET    /v1/reports/workflow-summary
 GET    /v1/reports/export
 
-# ── NOTIFICATIONS ─────────────────────────────────────────
+#  NOTIFICATIONS 
 GET    /v1/notifications/templates
 POST   /v1/notifications/send
 POST   /v1/notifications/bulk
 GET    /v1/notifications/history
 
-# ── LOGIN PAGES ───────────────────────────────────────────
+#  LOGIN PAGES 
 GET    /v1/login-pages
 POST   /v1/login-pages
 GET    /v1/login-pages/:id
 PUT    /v1/login-pages/:id
 DELETE /v1/login-pages/:id
 
-# ── FIRMWARE (oxOLT) ──────────────────────────────────────
+#  FIRMWARE (oxOLT) 
 GET    /v1/firmware
 POST   /v1/firmware
 GET    /v1/firmware/upgrades
 POST   /v1/firmware/upgrades/:id/schedule
 GET    /v1/firmware/upgrades/:id
 
-# ── AUDIT (oxNOC) ─────────────────────────────────────────
+#  AUDIT (oxNOC) 
 GET    /v1/audit-log
 POST   /v1/data-subject-requests
 GET    /v1/data-subject-requests/:id
@@ -1103,7 +957,7 @@ GET    /v1/subscribers/:id/consent
 POST   /v1/subscribers/:id/consent
 DELETE /v1/subscribers/:id/consent/:type
 
-# ── GRAPHQL ───────────────────────────────────────────────
+#  GRAPHQL 
 POST   /graphql
 GET    /graphql/subscriptions    (WebSocket upgrade)
 ```
@@ -1120,16 +974,16 @@ GET    /graphql/subscriptions    (WebSocket upgrade)
 
 ### API Security
 
-- **mTLS** antara FreeRADIUS ↔ oxRADIUS API
-- **JWT (ZITADEL PKCE)** untuk semua web/mobile client — tidak ada client_secret di browser
+- **mTLS** antara FreeRADIUS -> oxRADIUS API
+- **JWT (ZITADEL PKCE)** untuk semua web/mobile client - tidak ada client_secret di browser
 - **API Key** untuk komunikasi internal service-to-service
 - Rate limiting per tenant via Nebulex distributed cache sliding window
 - Request signing untuk webhook callbacks (HMAC-SHA256 per provider)
 
 ### Data Security
 
-- `management_credentials` NAS diencrypt AES-256-GCM sebelum disimpan ke DB
-- Payment provider tokens tersimpan sebagai tokenized reference — tidak ada raw card number
+- `management_creds` NAS diencrypt AES-256-GCM sebelum disimpan ke DB
+- Payment provider tokens tersimpan sebagai tokenized reference - tidak ada raw card number
 - Password subscriber: bcrypt (cost 12) atau PBKDF2
 - PDF invoice di Cloudflare R2 / Backblaze menggunakan signed URL dengan TTL 1 jam
 - DSR diproses via workflow request dengan identity verification, legal-hold check, dan store-level execution
@@ -1156,6 +1010,8 @@ data:
 ---
 
 ## 7. High Availability & Kubernetes
+
+Catatan repositori: contoh path `infra/...` pada section ini adalah target struktur deployment manifest ketika folder infra diaktifkan kembali di monorepo.
 
 ### oxRADIUS API (Gleam)
 
@@ -1297,75 +1153,75 @@ autoscaling:
 
 ---
 
-## 8. UI Layer — TanStack Start + SolidJS
+## 8. UI Layer  TanStack Start + SolidJS
 
 ### Routing Lengkap
 
 ```
-ui/src/routes/
-├── index.tsx                    # Dashboard: stats, live sessions, revenue
-├── subscribers/
-│   ├── index.tsx                # List + search + filter
-│   ├── $id/
-│   │   ├── index.tsx            # Detail: quota gauge, sessions, history
-│   │   ├── billing.tsx
-│   │   ├── sessions.tsx
-│   │   └── audit.tsx
-│   └── new.tsx
-├── vouchers/
-│   ├── index.tsx
-│   ├── $batchId.tsx
-│   └── new.tsx
-├── billing/
-│   ├── index.tsx
-│   ├── $id.tsx
-│   └── payments.tsx
-├── packages/
-│   ├── index.tsx
-│   └── $id.tsx
-├── services/                    # oxCore service inventory
-│   ├── index.tsx                # List + filter by state
-│   ├── $id/
-│   │   ├── index.tsx            # Service detail: 3 state dimensions
-│   │   └── workflow.tsx         # Workflow job history + step detail
-│   └── new.tsx
-├── nas/
-│   ├── index.tsx
-│   ├── $id/
-│   │   ├── index.tsx
-│   │   ├── sessions.tsx
-│   │   ├── signal.tsx
-│   │   └── firmware.tsx
-│   └── new.tsx
-├── gis/
-│   └── index.tsx                # Leaflet map: NAS + coverage
-├── resellers/
-│   ├── index.tsx
-│   └── $id.tsx
-├── reports/
-│   ├── index.tsx
-│   ├── traffic.tsx
-│   ├── revenue.tsx
-│   └── top-users.tsx
-├── notifications/
-│   ├── index.tsx
-│   └── bulk.tsx
-├── sessions/
-│   └── index.tsx                # Real-time active sessions (WebSocket)
-├── firmware/
-│   └── index.tsx
-├── audit/
-│   └── index.tsx
-└── system/
-    ├── health.tsx
-    ├── metrics.tsx              # Embedded Grafana iframe
-    └── settings.tsx
+frontend/platform/src/routes/
+S index.tsx                    # Dashboard: stats, live sessions, revenue
+S subscribers/
+   S index.tsx                # List + search + filter
+   S $id/
+      S index.tsx            # Detail: quota gauge, sessions, history
+      S billing.tsx
+      S sessions.tsx
+       audit.tsx
+    new.tsx
+S vouchers/
+   S index.tsx
+   S $batchId.tsx
+    new.tsx
+S billing/
+   S index.tsx
+   S $id.tsx
+    payments.tsx
+S packages/
+   S index.tsx
+    $id.tsx
+S services/                    # oxCore service inventory
+   S index.tsx                # List + filter by state
+   S $id/
+      S index.tsx            # Service detail: 3 state dimensions
+       workflow.tsx         # Workflow job history + step detail
+    new.tsx
+S nas/
+   S index.tsx
+   S $id/
+      S index.tsx
+      S sessions.tsx
+      S signal.tsx
+       firmware.tsx
+    new.tsx
+S gis/
+    index.tsx                # Leaflet map: NAS + coverage
+S resellers/
+   S index.tsx
+    $id.tsx
+S reports/
+   S index.tsx
+   S traffic.tsx
+   S revenue.tsx
+    top-users.tsx
+S notifications/
+   S index.tsx
+    bulk.tsx
+S sessions/
+    index.tsx                # Real-time active sessions (WebSocket)
+S firmware/
+    index.tsx
+S audit/
+    index.tsx
+ system/
+    S health.tsx
+    S metrics.tsx              # Embedded Grafana iframe
+     settings.tsx
 ```
 
 ### Real-time Live Session Table
 
 ```tsx
-// ui/src/components/realtime/LiveSessionTable.tsx
+// frontend/platform/src/components/realtime/LiveSessionTable.tsx
 import { createSignal, onCleanup, For } from "solid-js";
 import type { Session } from "~/api/types";
 
@@ -1400,7 +1256,7 @@ export function LiveSessionTable(props: { tenantId: string }) {
       <thead>
         <tr>
           <th>Username</th><th>NAS</th><th>IP</th>
-          <th>↓ Download</th><th>↑ Upload</th><th>Duration</th>
+          <th>  Download</th><th>  Upload</th><th>Duration</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -1427,7 +1283,7 @@ export function LiveSessionTable(props: { tenantId: string }) {
 ### GIS Map Component (Leaflet)
 
 ```tsx
-// ui/src/components/maps/NasMap.tsx
+// frontend/platform/src/components/maps/NasMap.tsx
 import { onMount, createResource, createEffect } from "solid-js";
 import L from "leaflet";
 import { api } from "~/api";
@@ -1442,7 +1298,7 @@ export function NasMap(props: { tenantId: string }) {
   onMount(() => {
     const map = L.map(mapEl).setView([-2.5, 118], 5);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors"
+      attribution: " OpenStreetMap contributors"
     }).addTo(map);
 
     createEffect(() => {
@@ -1472,7 +1328,7 @@ export function NasMap(props: { tenantId: string }) {
 
 ## 9. Roadmap Implementasi
 
-### Fase 0 — Lite Mode & dalo Compatibility (Minggu 0–1)
+### Fase 0 - Lite Mode & dalo Compatibility (Minggu 0-1)
 
 - [ ] Profil deploy `oxion-lite` (Docker Compose, single VM)
 - [ ] UI Simple Mode (menu inti: users, NAS, profiles, sessions, accounting, vouchers)
@@ -1481,18 +1337,18 @@ export function NasMap(props: { tenantId: string }) {
 - [ ] Snapshot/rollback sebelum cutover
 - [ ] Panduan upgrade Lite Mode -> Platform Mode tanpa reinstall
 
-### Fase 1 — Core AAA / oxRADIUS (Minggu 1–3)
+### Fase 1 - Core AAA / oxRADIUS (Minggu 1-3)
 
 - [ ] Monorepo setup, semua gleam.toml, test harness
 - [ ] `policy_types.gleam` v2 (tenant_id, fraud_score, anomaly_flags)
-- [ ] `policy_engine.gleam` — evaluate_policy + semua guard + unit tests
-- [ ] `api_gateway` Wisp + domain APIs — /v1/policy/authorize, /v1/policy/accounting, /health
+- [ ] `policy_engine.gleam`  evaluate_policy + semua guard + unit tests
+- [ ] `api_gateway` Wisp + domain APIs  /v1/policy/authorize, /v1/policy/accounting, /health
 - [ ] FreeRADIUS `rlm_rest` integration test (dev Docker)
 - [ ] `cache_layer` ETS + Nebulex
 - [ ] CoA idempotency guard (skip jika profile enforcement sudah aktif)
 - [ ] `otp_supervisor` supervision tree
 
-### Fase 2 — User Management & Multi-Tenant (Minggu 4–5)
+### Fase 2 - User Management & Multi-Tenant (Minggu 4-5)
 
 - [ ] Subscriber CRUD + bulk import/export/generate
 - [ ] Multi-tenant middleware (X-Tenant-Id + subdomain resolver)
@@ -1501,20 +1357,20 @@ export function NasMap(props: { tenantId: string }) {
 - [ ] Self-registration + SMS/Email OTP verification
 - [ ] ZITADEL integration (JWT verify + PKCE flow)
 
-### Fase 3 — oxBill: Billing & Voucher (Minggu 6–7)
+### Fase 3 - oxBill: Billing & Voucher (Minggu 6-7)
 
-- [ ] `billing_engine` — prepaid + postpaid
+- [ ] `billing_engine` - prepaid + postpaid
 - [ ] Invoice PDF generator (Typst/wkhtmltopdf + Cloudflare R2/Backblaze)
 - [ ] Payment adapter: Midtrans + Xendit
-- [ ] `voucher_engine` — bulk generate, redeem, refill
+- [ ] `voucher_engine` - bulk generate, redeem, refill
 - [ ] Collection policy engine (UI builder + JSON stages/actions, tanpa hardcoded day/speed)
 - [ ] Policy simulator + publish workflow (draft -> simulated -> published)
 - [ ] Notifikasi collection berbasis stage/template (dynamic payment link)
-- [ ] Voucher PDF kartu print (5cm×8cm)
+- [ ] Voucher PDF kartu print (5cm x 8cm)
 - [ ] Auto top-up & renewal logic
 - [ ] Payment webhook handlers
 
-### Fase 4 — oxOLT: NAS & Accounting (Minggu 8–9)
+### Fase 4 - oxOLT: NAS & Accounting (Minggu 8-9)
 
 - [ ] NAS CRUD + `nas_provisioner` MikroTik auto-config
 - [ ] `accounting_pipeline` FUP + quota update + disconnect trigger
@@ -1523,20 +1379,20 @@ export function NasMap(props: { tenantId: string }) {
 - [ ] Signal monitoring SNMP poller
 - [ ] Firmware OTA scheduler (MikroTik + OpenWRT)
 
-### Fase 5 — oxCore: Orchestrator & Inventory (Minggu 10–11)
+### Fase 5 - oxCore: Orchestrator & Inventory (Minggu 10-11)
 
 - [ ] Module `service` + `customers` + `packages` schema
 - [ ] Orchestrator: ActivateService, SuspendService, TerminateService
 - [ ] WorkflowJob + WorkflowStep dengan retry idempotent
 - [ ] AAA Adapter formal
-- [ ] OLT Adapter formal (façade di atas modul OLT yang ada)
+- [ ] OLT Adapter formal (facade di atas modul OLT yang ada)
 - [ ] Odoo webhook handlers
 - [ ] Service Inventory API
 - [ ] Flow plugin hooks (`before_step`, `after_step`, `on_error`, `on_compensate`)
 
-### Fase 6 — Superior Features (Minggu 12–14)
+### Fase 6 - Superior Features (Minggu 12-14)
 
-- [ ] `notification_engine` — WhatsApp + Telegram + SMS + Email + Push
+- [ ] `notification_engine`  WhatsApp + Telegram + SMS + Email + Push
 - [ ] Python AI anomaly microservice + `ai_fraud_client` Gleam
 - [ ] GraphQL schema + WebSocket subscriptions (NATS-backed)
 - [ ] Crypto payment (NOWPayments + QRIS)
@@ -1546,20 +1402,21 @@ export function NasMap(props: { tenantId: string }) {
 - [ ] Plugin runner service + manifest validator + signature verification
 - [ ] Tenant-scoped plugin activation + rollback controls
 
-### Fase 7 — Reconciliation + GDPR (Minggu 15–16)
+### Fase 7 - Reconciliation + GDPR (Minggu 15-16)
 
 - [ ] Reconciliation scheduler (5 menit / 1 jam / 6 jam)
 - [ ] Auto-heal: create reconcile_service job jika mismatch
-- [ ] `audit_engine` — emit + query audit log
+- [ ] `audit_engine`  emit + query audit log
 - [ ] GDPR export + erase + consent management
 - [ ] OpenTelemetry tracing semua handler
 - [ ] Prometheus metrics lengkap (semua kategori)
 - [ ] Grafana dashboard template (JSON provisioning)
 - [ ] Loki + Tempo integration
 
-### Fase 8 — oxNOC + UI Dashboard (Minggu 17–20)
+### Fase 8 - oxNOC + UI Dashboard (Minggu 17-20)
 
 - [ ] TanStack Start + SolidJS setup
+- [ ] connect-es + connect-query client scaffold untuk operator/internal API
 - [ ] Dashboard utama (stats + live sessions WebSocket)
 - [ ] Subscriber management CRUD + bulk
 - [ ] Service detail page (3 dimensi state + workflow panel)
@@ -1572,7 +1429,7 @@ export function NasMap(props: { tenantId: string }) {
 - [ ] Audit log viewer
 - [ ] Tenant/reseller admin panel
 
-### Fase 9 — Mobile App (Minggu 21–23)
+### Fase 9 - Mobile App (Minggu 21-23)
 
 - [ ] React Native + Expo project setup
 - [ ] Dashboard screen (quota gauge + status)
@@ -1581,13 +1438,14 @@ export function NasMap(props: { tenantId: string }) {
 - [ ] Push notification (FCM + APNs)
 - [ ] Profile + change password
 
-### Fase 10 — Hardening & Produksi (Minggu 24–26)
+### Fase 10 - Hardening & Produksi (Minggu 24-26)
 
 - [ ] Helm charts semua komponen
 - [ ] ArgoCD GitOps setup
-- [ ] mTLS FreeRADIUS ↔ oxRADIUS API
+- [ ] connect-beam adapter production readiness untuk typed internal/operator API
+- [ ] mTLS FreeRADIUS -> oxRADIUS API
 - [ ] RadSec untuk lintas-domain
-- [ ] Load test: target ≥ 10.000 auth/s (2 node Gleam)
+- [ ] Load test: target >= 10.000 auth/s (2 node Gleam)
 - [ ] Disaster recovery drill
 - [ ] SLA baseline: p99 authorize < 30ms
 - [ ] Security audit + penetration test
@@ -1599,33 +1457,33 @@ export function NasMap(props: { tenantId: string }) {
 
 | Fitur | RADIUSdesk | OpenWISP | DMA | daloRADIUS | **Oxion** |
 |---|:-:|:-:|:-:|:-:|:-:|
-| User management + bulk | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Voucher / prepaid | ✅ | ❌ | ✅ | ✅ | ✅ |
-| Lite mode panel FreeRADIUS-style | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Billing + invoicing | ❌ | ❌ | ✅ | ⚠️ | ✅ |
-| Payment gateway | ❌ | ❌ | ✅ | ❌ | ✅ |
-| Multi-tenant | ⚠️ | ⚠️ | ❌ | ❌ | ✅ **SUPERIOR** |
-| White label reseller portal | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| GraphQL + WebSocket | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| AI anomaly detection | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| WhatsApp/Telegram notif | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| Mobile app UCP | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| Zero-touch NAS provisioning | ⚠️ | ✅ | ❌ | ❌ | ✅ **SUPERIOR** |
-| Crypto payment + QRIS | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| Hotspot 2.0 / Passpoint | ⚠️ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| SSO SAML / OAuth2 | ⚠️ | ⚠️ | ❌ | ❌ | ✅ **SUPERIOR** |
-| GDPR compliance tools | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| Firmware OTA scheduler | ❌ | ✅ | ❌ | ❌ | ✅ **SUPERIOR** |
-| GIS map | ⚠️ | ❌ | ❌ | ✅ | ✅ |
-| Prometheus + Grafana native | ❌ | ⚠️ | ❌ | ❌ | ✅ **SUPERIOR** |
-| Kubernetes ready + HPA | ❌ | ⚠️ | ❌ | ❌ | ✅ **SUPERIOR** |
-| ISP Orchestrator + oxCore | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| Service Inventory | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| Reconciliation engine | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| BEAM fault isolation | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
-| Static type safety (compile) | ❌ | ❌ | ❌ | ❌ | ✅ **SUPERIOR** |
+| User management + bulk | Y | Y | Y | Y | Y |
+| Voucher / prepaid | Y | N | Y | Y | Y |
+| Lite mode panel FreeRADIUS-style | N | N | N | Y | Y |
+| Billing + invoicing | N | N | Y | P | Y |
+| Payment gateway | N | N | Y | N | Y |
+| Multi-tenant | P | P | N | N | Y **SUPERIOR** |
+| White label reseller portal | N | N | N | N | Y **SUPERIOR** |
+| GraphQL + WebSocket | N | N | N | N | Y **SUPERIOR** |
+| AI anomaly detection | N | N | N | N | Y **SUPERIOR** |
+| WhatsApp/Telegram notif | N | N | N | N | Y **SUPERIOR** |
+| Mobile app UCP | N | N | N | N | Y **SUPERIOR** |
+| Zero-touch NAS provisioning | P | Y | N | N | Y **SUPERIOR** |
+| Crypto payment + QRIS | N | N | N | N | Y **SUPERIOR** |
+| Hotspot 2.0 / Passpoint | P | N | N | N | Y **SUPERIOR** |
+| SSO SAML / OAuth2 | P | P | N | N | Y **SUPERIOR** |
+| GDPR compliance tools | N | N | N | N | Y **SUPERIOR** |
+| Firmware OTA scheduler | N | Y | N | N | Y **SUPERIOR** |
+| GIS map | P | N | N | Y | Y |
+| Prometheus + Grafana native | N | P | N | N | Y **SUPERIOR** |
+| Kubernetes ready + HPA | N | P | N | N | Y **SUPERIOR** |
+| ISP Orchestrator + oxCore | N | N | N | N | Y **SUPERIOR** |
+| Service Inventory | N | N | N | N | Y **SUPERIOR** |
+| Reconciliation engine | N | N | N | N | Y **SUPERIOR** |
+| BEAM fault isolation | N | N | N | N | Y **SUPERIOR** |
+| Static type safety (compile) | N | N | N | N | Y **SUPERIOR** |
 
-✅ = lengkap | ⚠️ = parsial | ❌ = tidak ada
+Y = lengkap | P = parsial | N = tidak ada
 
 ---
 

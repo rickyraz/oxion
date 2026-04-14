@@ -39,37 +39,33 @@ Exit criteria phase ini:
 
 ## 3. Baseline yang Sudah Ada
 
-Sebelum Phase D, baseline implementasi Gleam yang sudah dirapikan adalah:
+Sebelum Phase D, baseline implementasi Gleam yang sudah dirapikan di monorepo adalah:
 
 ```text
-src/
-├── oxion.gleam
-└── oxion/
-    ├── collection/
-    │   ├── dispatcher.gleam
-    │   ├── idempotency.gleam
-    │   └── scheduler.gleam
-    └── policy/
-        ├── evaluator.gleam
-        ├── lifecycle.gleam
-        ├── simulator.gleam
-        ├── types.gleam
-        └── validator.gleam
+packages/policy/
+  src/oxion/policy/
+    evaluator.gleam
+    lifecycle.gleam
+    simulator.gleam
+    types.gleam
+    validator.gleam
+  test/oxion/policy/
+    lifecycle_test.gleam
+    phase_b_test.gleam
 
-test/
-├── oxion_test.gleam
-└── oxion/
-    ├── collection/
-    │   └── phase_c_test.gleam
-    └── policy/
-        ├── lifecycle_test.gleam
-        └── phase_b_test.gleam
+apps/oxcore/
+  src/oxion/collection/
+    dispatcher.gleam
+    idempotency.gleam
+    scheduler.gleam
+  test/oxion/collection/
+    phase_c_test.gleam
 ```
 
 Implikasinya:
 
-- `oxion/policy/*` adalah pure policy core.
-- `oxion/collection/*` adalah runtime enforcement core yang masih side-effect agnostic.
+- `packages/policy/src/oxion/policy/*` adalah pure policy core.
+- `apps/oxcore/src/oxion/collection/*` adalah runtime enforcement core yang masih side-effect agnostic.
 - Phase D tidak boleh mencampur packet handling ke evaluator atau scheduler.
 
 Kalau boundary ini bocor, codebase akan cepat busuk: policy logic jadi tergantung vendor, dan runtime effect akan sulit dites deterministik.
@@ -78,75 +74,30 @@ Kalau boundary ini bocor, codebase akan cepat busuk: policy logic jadi tergantun
 
 ## 4. Organisasi Folder yang Disarankan untuk Phase D
 
-Untuk menjaga boundary tetap jelas, folder target sebaiknya dipisah begini:
+Untuk menjaga boundary tetap jelas, target folder pada monorepo sebaiknya dipisah begini:
 
 ```text
-src/
-├── oxion.gleam
-└── oxion/
-    ├── collection/
-    │   ├── dispatcher.gleam
-    │   ├── idempotency.gleam
-    │   └── scheduler.gleam
-    ├── orchestration/
-    │   └── collection/
-    │       ├── commands.gleam
-    │       ├── orchestrator.gleam
-    │       ├── outcome.gleam
-    │       ├── audit.gleam
-    │       └── olt_guard.gleam
-    ├── policy/
-    │   ├── evaluator.gleam
-    │   ├── lifecycle.gleam
-    │   ├── simulator.gleam
-    │   ├── types.gleam
-    │   └── validator.gleam
-    └── radius/
-        ├── packet.gleam
-        ├── coa/
-        │   ├── request.gleam
-        │   ├── response.gleam
-        │   ├── execution.gleam
-        │   ├── retry.gleam
-        │   ├── result.gleam
-        │   └── transport.gleam
-        ├── profile/
-        │   ├── types.gleam
-        │   ├── resolver.gleam
-        │   ├── snapshot.gleam
-        │   ├── diff.gleam
-        │   └── normalizer.gleam
-        └── vendor/
-            ├── types.gleam
-            ├── cisco.gleam
-            ├── juniper.gleam
-            └── vbng.gleam
+packages/policy/
+  src/oxion/policy/{evaluator,lifecycle,simulator,types,validator}.gleam
+  test/oxion/policy/{lifecycle_test,phase_b_test}.gleam
 
-src/
-├── oxion_radius_transport_ffi.erl
-└── oxion_radius_mock_transport_ffi.erl
+packages/interop/
+  src/oxion/radius/coa/result.gleam
 
-test/
-├── oxion_test.gleam
-└── oxion/
-    ├── collection/
-    │   └── phase_c_test.gleam
-    ├── orchestration/
-    │   └── collection/
-    │       ├── orchestrator_test.gleam
-    │       └── olt_guard_test.gleam
-    ├── policy/
-    │   ├── lifecycle_test.gleam
-    │   └── phase_b_test.gleam
-    └── radius/
-        ├── coa/
-        │   ├── execution_test.gleam
-        │   ├── retry_test.gleam
-        │   └── result_test.gleam
-        └── profile/
-            ├── diff_test.gleam
-            ├── normalizer_test.gleam
-            └── resolver_test.gleam
+apps/oxcore/
+  src/oxion/collection/{dispatcher,idempotency,scheduler}.gleam
+  src/oxion/orchestration/collection/{commands,orchestrator,outcome,audit,olt_guard}.gleam
+  test/oxion/collection/phase_c_test.gleam
+  test/oxion/orchestration/collection/{orchestrator_test,olt_guard_test}.gleam
+
+apps/oxradius/
+  src/oxion/radius/packet.gleam
+  src/oxion/radius/coa/{request,response,retry,replay,execution,transport}.gleam
+  src/oxion/radius/profile/{types,resolver,snapshot,normalizer,diff}.gleam
+  src/oxion/radius/vendor/{types,cisco,juniper,vbng}.gleam
+  src/oxion_radius_transport_ffi.erl
+  src/oxion_radius_mock_transport_ffi.erl
+  test/oxion/radius/...
 ```
 
 Catatan:
@@ -187,17 +138,17 @@ Output:
 
 ### 5.2 File yang Disarankan
 
-1. `src/oxion/orchestration/collection/commands.gleam`
+1. `apps/oxcore/src/oxion/orchestration/collection/commands.gleam`
    - type command domain
    - mapping target (`ChangePackage`, `SuspendService`, `RestoreService`)
    - metadata minimum untuk audit
-2. `src/oxion/orchestration/collection/orchestrator.gleam`
+2. `apps/oxcore/src/oxion/orchestration/collection/orchestrator.gleam`
    - entry point utama phase D dari sisi core orchestration
    - mapping dispatched action -> command plan
-3. `src/oxion/orchestration/collection/outcome.gleam`
+3. `apps/oxcore/src/oxion/orchestration/collection/outcome.gleam`
    - normalized success/fail/skip result
    - result untuk bridge ke audit table / event bus
-4. `src/oxion/orchestration/collection/audit.gleam`
+4. `apps/oxcore/src/oxion/orchestration/collection/audit.gleam`
    - format audit payload yang konsisten
    - fingerprint, reason, vendor response ringkas, duration, retry count
 
@@ -321,8 +272,8 @@ Fungsi nyatanya bukan sekadar "send packet":
 
 File:
 
-- `src/oxion/radius/profile/resolver.gleam`
-- `src/oxion/radius/profile/normalizer.gleam`
+- `apps/oxradius/src/oxion/radius/profile/resolver.gleam`
+- `apps/oxradius/src/oxion/radius/profile/normalizer.gleam`
 
 Tanggung jawab:
 
@@ -341,7 +292,7 @@ Masalah yang harus ditangani:
 
 File:
 
-- `src/oxion/radius/profile/snapshot.gleam`
+- `apps/oxradius/src/oxion/radius/profile/snapshot.gleam`
 
 Tanggung jawab:
 
@@ -360,7 +311,7 @@ Masalah yang harus ditangani:
 
 File:
 
-- `src/oxion/radius/profile/diff.gleam`
+- `apps/oxradius/src/oxion/radius/profile/diff.gleam`
 
 Tanggung jawab:
 
@@ -378,7 +329,7 @@ Masalah yang harus ditangani:
 
 File:
 
-- `src/oxion/radius/coa/request.gleam`
+- `apps/oxradius/src/oxion/radius/coa/request.gleam`
 
 Tanggung jawab:
 
@@ -396,8 +347,8 @@ Masalah yang harus ditangani:
 
 File:
 
-- `src/oxion/radius/coa/response.gleam`
-- `src/oxion/radius/coa/result.gleam`
+- `apps/oxradius/src/oxion/radius/coa/response.gleam`
+- `packages/interop/src/oxion/radius/coa/result.gleam`
 
 Tanggung jawab:
 
@@ -415,7 +366,7 @@ Masalah yang harus ditangani:
 
 File:
 
-- `src/oxion/radius/coa/retry.gleam`
+- `apps/oxradius/src/oxion/radius/coa/retry.gleam`
 
 Tanggung jawab:
 
@@ -433,7 +384,7 @@ Masalah yang harus ditangani:
 
 File:
 
-- `src/oxion/radius/coa/execution.gleam`
+- `apps/oxradius/src/oxion/radius/coa/execution.gleam`
 
 Tanggung jawab:
 
@@ -574,7 +525,7 @@ Ini kelihatan kecil, tapi sifatnya safety rail. Kalau guard ini longgar, satu bu
 
 ### 7.2 File yang Disarankan
 
-- `src/oxion/orchestration/collection/olt_guard.gleam`
+- `apps/oxcore/src/oxion/orchestration/collection/olt_guard.gleam`
 
 ### 7.3 Rule Minimum
 
@@ -734,7 +685,7 @@ Interpretasi:
 ## 11. Perangkap Scope yang Harus Dihindari
 
 1. Menaruh vendor-specific logic di `policy` atau `collection` core.
-2. Menyamakan `ACK` dengan “service state pasti sudah berubah”.
+2. Menyamakan `ACK` dengan "service state pasti sudah berubah".
 3. Menyamakan `timeout` dengan `NAK`.
 4. Menaruh retry loop langsung di file orchestrator.
 5. Menganggap `profile_id` compare cukup tanpa normalisasi effective attributes.

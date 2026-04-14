@@ -660,6 +660,8 @@ POST /v1/self/push-token        (register device token dari mobile app)
 
 ## 7. Mobile App UCP
 
+Catatan repositori: package mobile belum aktif di monorepo saat ini. Path pada contoh di bawah adalah target saat `frontend/mobile` dibuat.
+
 ### Stack
 
 - **React Native + Expo** — Android + iOS dari satu codebase
@@ -671,7 +673,7 @@ POST /v1/self/push-token        (register device token dari mobile app)
 ### Screen Architecture
 
 ```typescript
-// mobile/src/App.tsx
+// frontend/mobile/src/App.tsx (planned)
 
 // Routes:
 // /login          → LoginScreen (username/pass + social login)
@@ -712,7 +714,7 @@ function DashboardScreen() {
 ### Push Notification Handler
 
 ```typescript
-// mobile/src/notifications/handler.ts
+// frontend/mobile/src/notifications/handler.ts (planned)
 import * as Notifications from 'expo-notifications';
 
 Notifications.setNotificationHandler({
@@ -959,9 +961,9 @@ Hak privasi tidak lagi dimodelkan sebagai aksi destruktif instan seperti `DELETE
 
 Runtime foundation yang sekarang disarankan untuk model ini:
 
-- `src/oxion/platform/audit/{types,adapter,persistence,service}.gleam`
-- `src/oxion/platform/dsr/{types,workflow,executor}.gleam`
-- `src/oxion/platform/dsr/adapters/*`
+- `apps/oxnoc/src/oxion/platform/audit/{types,adapter,persistence,service}.gleam`
+- `apps/oxnoc/src/oxion/platform/dsr/{types,workflow,executor}.gleam`
+- `apps/oxnoc/src/oxion/platform/dsr/adapters/*`
 
 Target workflow:
 

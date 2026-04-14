@@ -296,8 +296,8 @@ Urutan ini sengaja risk-driven. Tujuannya bukan mengejar checklist paling panjan
    - menutup risk `2`
    - menjadi prasyarat nyata untuk `replay cache`, `Disconnect live path`, dan `managed CoA`
    - artefak:
-     - `src/oxion/radius/session/*`
-     - `src/oxion/radius/registry/*`
+     - `apps/oxradius/src/oxion/radius/session/*`
+     - `apps/oxradius/src/oxion/radius/registry/*`
      - adapter pembacaan session runtime dari accounting source
 
 2. `Workflow saga / compensation model untuk lintas AAA dan OLT`

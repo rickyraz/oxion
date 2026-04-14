@@ -10,11 +10,11 @@ Referensi: `../policies/oxion-mvp-fasttrack-plan.md`.
 
 ## Implemented Artifacts
 
-- `src/oxion/policy/types.gleam`
-- `src/oxion/policy/validator.gleam`
-- `src/oxion/policy/evaluator.gleam`
-- `src/oxion/policy/simulator.gleam`
-- `test/oxion/policy/phase_b_test.gleam`
+- `packages/policy/src/oxion/policy/types.gleam`
+- `packages/policy/src/oxion/policy/validator.gleam`
+- `packages/policy/src/oxion/policy/evaluator.gleam`
+- `packages/policy/src/oxion/policy/simulator.gleam`
+- `packages/policy/test/oxion/policy/phase_b_test.gleam`
 
 ---
 

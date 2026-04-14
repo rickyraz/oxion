@@ -1,0 +1,10 @@
+name = "oxcore"
+version = "1.0.0"
+
+[dependencies]
+gleam_stdlib = ">= 0.44.0 and < 2.0.0"
+oxion_policy = { path = "../../packages/policy" }
+oxion_interop = { path = "../../packages/interop" }
+
+[dev_dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"
