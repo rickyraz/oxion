@@ -6,3 +6,7 @@ erl_crash.dump
 node_modules/
 .pnpm-store/
 .turbo/
+
+skills-lock.json
+/docs
+.agents
