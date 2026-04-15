@@ -81,6 +81,7 @@ Without test evidence, the phase is considered incomplete.
 - [ ] `node scripts/run-gleam-all.mjs test` pass.
 - [ ] `node scripts/run-gleam-all.mjs format-check` pass.
 - [ ] Related documentation workspace content is updated (if contract/flow changes).
+- [ ] If billing contract is touched, synchronize public docs with EE private implementation notes.
 
 ---
 

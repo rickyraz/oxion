@@ -56,6 +56,11 @@ Notes:
 Documentation is maintained outside this repository (separate docs workspace/repo).
 Open Core legal and architecture boundary references should be updated in that docs workspace.
 
+## EE Integration
+
+- Private EE billing runtime repository: `https://github.com/rickyraz/oxion-ee-oxbill`
+- Public contract changes must be synchronized with EE implementation notes.
+
 ## License and Trademark
 
 - Code in this repository is licensed under [Apache License 2.0](LICENSE).
