@@ -1,0 +1,4 @@
+User-Name := "sub_1"
+Acct-Session-Id := "sess-1"
+Message-Authenticator := 0x00
+Mikrotik-Rate-Limit := "4M/4M"
