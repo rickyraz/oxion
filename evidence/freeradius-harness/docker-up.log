@@ -1,6 +1,0 @@
-=== docker compose up ===
-2026-04-18T19:47:35+07:00
-
-=== docker ps filter oxion-freeradius-harness ===
-CONTAINER ID   IMAGE                                COMMAND                  CREATED        STATUS        PORTS                                                                                                          NAMES
-e807ad841f80   freeradius/freeradius-server:3.2.3   "/docker-entrypoint.…"   1 second ago   Up 1 second   0.0.0.0:1812-1813->1812-1813/udp, [::]:1812-1813->1812-1813/udp, 0.0.0.0:3799->3799/udp, [::]:3799->3799/udp   oxion-freeradius-harness

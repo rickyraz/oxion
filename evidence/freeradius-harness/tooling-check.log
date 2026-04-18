@@ -1,9 +1,0 @@
-=== Timestamp ===
-2026-04-18T19:47:31+07:00
-
-=== Tool Versions ===
-Docker version 29.1.2, build 890dcca
-Docker Compose version v5.0.0
-radclient: /usr/bin/radclient
-radclient version 3.2.5, built on Mar 28 2025 at 17:03:23
-radtest: /usr/bin/radtest

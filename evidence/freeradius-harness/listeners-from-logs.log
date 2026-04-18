@@ -1,8 +1,0 @@
-=== listening ports from freeradius startup logs ===
-Listening on auth address 127.0.0.1 port 18120 bound to server inner-tunnel
-Listening on auth address * port 1812 bound to server default
-Listening on acct address * port 1813 bound to server default
-Listening on auth address :: port 1812 bound to server default
-Listening on acct address :: port 1813 bound to server default
-Listening on proxy address * port 57105
-Listening on proxy address :: port 38870

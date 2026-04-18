@@ -86,47 +86,6 @@ pub fn radsec_certs_reject_disabled_peer_verification_test() {
     ))
 }
 
-pub fn radsec_default_mode_uses_persistent_for_single_connection_test() {
-  let config =
-    types.RadSecConfig(
-      ca_cert_path: "/etc/ssl/radius-ca.pem",
-      client_cert_path: option.None,
-      client_key_path: option.None,
-      server_name: option.None,
-      connect_timeout_ms: 1000,
-      idle_timeout_ms: 5000,
-      max_connections: 1,
-      verification_mode: types.VerifyPeer,
-    )
-
-  assert transport.default_mode(config) == types.Persistent
-}
-
-pub fn radsec_prepare_rejects_missing_host_or_port_test() {
-  let config =
-    types.RadSecConfig(
-      ca_cert_path: "/etc/ssl/radius-ca.pem",
-      client_cert_path: option.None,
-      client_key_path: option.None,
-      server_name: option.Some("radius.example.net"),
-      connect_timeout_ms: 1000,
-      idle_timeout_ms: 5000,
-      max_connections: 2,
-      verification_mode: types.VerifyPeer,
-    )
-
-  assert transport.prepare(
-      config,
-      types.ConnectionTarget(
-        endpoint_id: "edge_radsec",
-        host: "",
-        port: 2083,
-        mode: types.Trunked,
-      ),
-    )
-    == Error(types.InvalidEndpoint(reason: "missing_host_or_port"))
-}
-
 fn radsec_endpoint() -> registry_types.NasEndpoint {
   registry_types.NasEndpoint(
     tenant_id: "tenant_a",

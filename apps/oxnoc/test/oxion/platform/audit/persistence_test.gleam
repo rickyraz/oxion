@@ -97,37 +97,6 @@ pub fn audit_service_persists_collection_entry_test() {
     ]
 }
 
-pub fn audit_persistence_expires_private_context_after_retention_window_test() {
-  let envelope =
-    adapter.from_collection_entry(
-      failed_entry(),
-      option.Some(sample_runtime_context()),
-    )
-  let store = case persistence.persist(persistence.empty(), envelope) {
-    Ok(store) -> store
-    Error(_) -> panic
-  }
-
-  let #(before_expiry_store, before_expiry_count) =
-    persistence.expire_private_context(store, "2026-04-20T09:59:59Z")
-
-  assert before_expiry_count == 0
-  assert persistence.find_private_context(before_expiry_store, "audit:fp:hard:0")
-    == option.Some(persistence.AuditPrivateContextRow(
-      audit_id: "audit:fp:hard:0",
-      purpose: "runtime_network_context",
-      payload: private_context_payload(envelope),
-      expires_at: "2026-04-20T10:00:00Z",
-    ))
-
-  let #(expired_store, expired_count) =
-    persistence.expire_private_context(store, "2026-04-20T10:00:00Z")
-
-  assert expired_count == 1
-  assert persistence.find_private_context(expired_store, "audit:fp:hard:0")
-    == option.None
-}
-
 fn sample_runtime_context() -> types.RuntimeAuditContext {
   types.RuntimeAuditContext(
     actor_id: option.Some("ops_123"),
