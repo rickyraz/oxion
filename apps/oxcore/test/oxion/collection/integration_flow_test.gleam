@@ -1,3 +1,4 @@
+import gleam/list
 import gleam/option
 import oxion/collection/scheduler as collection_scheduler
 import oxion/orchestration/collection/audit as collection_audit
@@ -141,6 +142,69 @@ pub fn collection_flow_policy_to_audit_is_deterministic_and_idempotent_test() {
       ),
     ] -> Nil
     _ -> panic
+  }
+}
+
+pub fn collection_flow_rerun_keeps_notification_side_effect_idempotent_test() {
+  let candidate =
+    collection_scheduler.OverdueCandidate(
+      tenant_id: "tnt_a",
+      subscriber_id: "sub_1",
+      invoice_id: "inv_1",
+      days_past_due: 8,
+      invoice_status: "Overdue",
+      operational_state: "normal",
+      billing_plan: "postpaid",
+      total_due_amount: 100_000,
+      is_paid: False,
+    )
+
+  let first_run = collection_scheduler.run(sample_policy(), [candidate], [])
+  let second_run =
+    collection_scheduler.run(
+      sample_policy(),
+      [candidate],
+      first_run.fingerprints,
+    )
+
+  case first_run.results, second_run.results {
+    [
+      collection_scheduler.CandidateExecutionResult(
+        executed_actions: first_executed_actions,
+        skipped_actions: _first_skipped_actions,
+        ..
+      ),
+    ],
+    [
+      collection_scheduler.CandidateExecutionResult(
+        executed_actions: [],
+        skipped_actions: second_skipped_actions,
+        ..
+      ),
+    ] -> {
+      let first_notification = case
+        list.filter(first_executed_actions, fn(action) {
+          action.action_name == "send_notification"
+        })
+      {
+        [item] -> item
+        _ -> panic
+      }
+
+      let second_notification = case
+        list.filter(second_skipped_actions, fn(action) {
+          action.action_name == "send_notification"
+        })
+      {
+        [item] -> item
+        _ -> panic
+      }
+
+      assert first_notification.fingerprint == second_notification.fingerprint
+      assert second_run.executed_total == 0
+      assert second_run.skipped_total == 2
+    }
+    _, _ -> panic
   }
 }
 

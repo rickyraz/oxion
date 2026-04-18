@@ -1,5 +1,7 @@
 import gleam/list
 import gleam/option
+import gleam/order
+import gleam/string
 import oxion/platform/audit/types
 import oxion/policy/types as policy_types
 
@@ -86,6 +88,17 @@ pub fn find_private_context(
   }
 }
 
+pub fn expire_private_context(
+  store: AuditStore,
+  now_iso8601: String,
+) -> #(AuditStore, Int) {
+  let AuditStore(audit_log: audit_log, private_context: private_context) = store
+  let #(remaining, expired_count) =
+    partition_expired_private_context(private_context, now_iso8601, [], 0)
+
+  #(AuditStore(audit_log: audit_log, private_context: remaining), expired_count)
+}
+
 fn insert_envelope(
   store: AuditStore,
   event: types.AuditEvent,
@@ -121,6 +134,42 @@ fn has_private_context(
         store
 
       list.any(private_rows, fn(row) { row.audit_id == context.audit_id })
+    }
+  }
+}
+
+fn partition_expired_private_context(
+  remaining: List(AuditPrivateContextRow),
+  now_iso8601: String,
+  kept_acc: List(AuditPrivateContextRow),
+  expired_count: Int,
+) -> #(List(AuditPrivateContextRow), Int) {
+  case remaining {
+    [] -> #(list.reverse(kept_acc), expired_count)
+    [row, ..rest] -> {
+      let AuditPrivateContextRow(
+        audit_id: _audit_id,
+        purpose: _purpose,
+        payload: _payload,
+        expires_at: expires_at,
+      ) = row
+
+      case string.compare(expires_at, now_iso8601) {
+        order.Lt | order.Eq ->
+          partition_expired_private_context(
+            rest,
+            now_iso8601,
+            kept_acc,
+            expired_count + 1,
+          )
+        order.Gt ->
+          partition_expired_private_context(
+            rest,
+            now_iso8601,
+            [row, ..kept_acc],
+            expired_count,
+          )
+      }
     }
   }
 }
