@@ -257,6 +257,333 @@ pub fn policy_evaluator_stop_on_match_test() {
   }
 }
 
+pub fn policy_evaluator_ignores_disabled_stage_test() {
+  let disabled_stage =
+    policy_types.Stage(
+      id: "disabled_stage",
+      priority: 10,
+      condition: policy_types.Rule(
+        field: policy_types.DaysPastDue,
+        op: policy_types.Gte,
+        value: policy_types.ScalarValue(policy_types.IntValue(6)),
+        enabled: True,
+      ),
+      actions: [
+        policy_types.EmitEvent(
+          topic: "collection.disabled",
+          payload: option.None,
+        ),
+      ],
+      stop_on_match: False,
+      notification_template: option.None,
+      enabled: False,
+    )
+
+  let enabled_stage =
+    policy_types.Stage(
+      id: "enabled_stage",
+      priority: 20,
+      condition: policy_types.Rule(
+        field: policy_types.DaysPastDue,
+        op: policy_types.Gte,
+        value: policy_types.ScalarValue(policy_types.IntValue(6)),
+        enabled: True,
+      ),
+      actions: [
+        policy_types.EmitEvent(
+          topic: "collection.enabled",
+          payload: option.None,
+        ),
+      ],
+      stop_on_match: False,
+      notification_template: option.None,
+      enabled: True,
+    )
+
+  let policy =
+    policy_types.Policy(
+      name: "disabled_stage_test",
+      description: option.None,
+      grace_days: 0,
+      timezone: "Asia/Jakarta",
+      context: option.None,
+      stages: [disabled_stage, enabled_stage],
+    )
+
+  assert policy_evaluator.evaluate(policy, sample_context(10))
+    == Ok(
+      policy_evaluator.EvaluationResult(matches: [
+        policy_evaluator.StageMatch(stage_id: "enabled_stage", actions: [
+          policy_types.EmitEvent(
+            topic: "collection.enabled",
+            payload: option.None,
+          ),
+        ]),
+      ]),
+    )
+}
+
+pub fn policy_evaluator_handles_nested_any_all_tree_test() {
+  let nested_stage =
+    policy_types.Stage(
+      id: "nested_stage",
+      priority: 10,
+      condition: policy_types.All([
+        policy_types.Rule(
+          field: policy_types.DaysPastDue,
+          op: policy_types.Gte,
+          value: policy_types.ScalarValue(policy_types.IntValue(6)),
+          enabled: True,
+        ),
+        policy_types.Any([
+          policy_types.Rule(
+            field: policy_types.BillingPlan,
+            op: policy_types.Eq,
+            value: policy_types.ScalarValue(policy_types.StringValue("postpaid")),
+            enabled: True,
+          ),
+          policy_types.Rule(
+            field: policy_types.OperationalState,
+            op: policy_types.Eq,
+            value: policy_types.ScalarValue(policy_types.StringValue(
+              "suspended_due_overdue",
+            )),
+            enabled: True,
+          ),
+        ]),
+      ]),
+      actions: [
+        policy_types.EmitEvent(topic: "collection.nested", payload: option.None),
+      ],
+      stop_on_match: True,
+      notification_template: option.None,
+      enabled: True,
+    )
+
+  let policy =
+    policy_types.Policy(
+      name: "nested_condition_test",
+      description: option.None,
+      grace_days: 0,
+      timezone: "Asia/Jakarta",
+      context: option.None,
+      stages: [nested_stage],
+    )
+
+  assert policy_evaluator.evaluate(policy, sample_context(8))
+    == Ok(
+      policy_evaluator.EvaluationResult(matches: [
+        policy_evaluator.StageMatch(stage_id: "nested_stage", actions: [
+          policy_types.EmitEvent(
+            topic: "collection.nested",
+            payload: option.None,
+          ),
+        ]),
+      ]),
+    )
+}
+
+pub fn policy_evaluator_field_domain_matrix_test() {
+  let days_stage =
+    policy_types.Stage(
+      id: "days_rule",
+      priority: 10,
+      condition: policy_types.Rule(
+        field: policy_types.DaysPastDue,
+        op: policy_types.Gte,
+        value: policy_types.ScalarValue(policy_types.IntValue(10)),
+        enabled: True,
+      ),
+      actions: [
+        policy_types.EmitEvent(topic: "matrix.days", payload: option.None),
+      ],
+      stop_on_match: False,
+      notification_template: option.None,
+      enabled: True,
+    )
+
+  let total_due_stage =
+    policy_types.Stage(
+      id: "total_due_rule",
+      priority: 20,
+      condition: policy_types.Rule(
+        field: policy_types.TotalDueAmount,
+        op: policy_types.Between,
+        value: policy_types.BetweenValue(min: 100_000, max: 200_000),
+        enabled: True,
+      ),
+      actions: [
+        policy_types.EmitEvent(topic: "matrix.total_due", payload: option.None),
+      ],
+      stop_on_match: False,
+      notification_template: option.None,
+      enabled: True,
+    )
+
+  let is_paid_stage =
+    policy_types.Stage(
+      id: "is_paid_rule",
+      priority: 30,
+      condition: policy_types.Rule(
+        field: policy_types.IsPaid,
+        op: policy_types.IsFalse,
+        value: policy_types.NoValue,
+        enabled: True,
+      ),
+      actions: [
+        policy_types.EmitEvent(topic: "matrix.is_paid", payload: option.None),
+      ],
+      stop_on_match: False,
+      notification_template: option.None,
+      enabled: True,
+    )
+
+  let billing_plan_stage =
+    policy_types.Stage(
+      id: "billing_plan_rule",
+      priority: 40,
+      condition: policy_types.Rule(
+        field: policy_types.BillingPlan,
+        op: policy_types.In,
+        value: policy_types.ListValue([
+          policy_types.StringValue("postpaid"),
+          policy_types.StringValue("hybrid"),
+        ]),
+        enabled: True,
+      ),
+      actions: [
+        policy_types.EmitEvent(
+          topic: "matrix.billing_plan",
+          payload: option.None,
+        ),
+      ],
+      stop_on_match: False,
+      notification_template: option.None,
+      enabled: True,
+    )
+
+  let operational_stage =
+    policy_types.Stage(
+      id: "operational_state_rule",
+      priority: 50,
+      condition: policy_types.Rule(
+        field: policy_types.OperationalState,
+        op: policy_types.Eq,
+        value: policy_types.ScalarValue(policy_types.StringValue("normal")),
+        enabled: True,
+      ),
+      actions: [
+        policy_types.EmitEvent(
+          topic: "matrix.operational",
+          payload: option.None,
+        ),
+      ],
+      stop_on_match: False,
+      notification_template: option.None,
+      enabled: True,
+    )
+
+  let policy =
+    policy_types.Policy(
+      name: "field_matrix_test",
+      description: option.None,
+      grace_days: 0,
+      timezone: "Asia/Jakarta",
+      context: option.None,
+      stages: [
+        operational_stage,
+        billing_plan_stage,
+        total_due_stage,
+        days_stage,
+        is_paid_stage,
+      ],
+    )
+
+  let context =
+    policy_types.Context(
+      days_past_due: 12,
+      invoice_status: "Overdue",
+      operational_state: "normal",
+      billing_plan: "postpaid",
+      total_due_amount: 150_000,
+      is_paid: False,
+    )
+
+  assert policy_evaluator.evaluate(policy, context)
+    == Ok(
+      policy_evaluator.EvaluationResult(matches: [
+        policy_evaluator.StageMatch(stage_id: "days_rule", actions: [
+          policy_types.EmitEvent(topic: "matrix.days", payload: option.None),
+        ]),
+        policy_evaluator.StageMatch(stage_id: "total_due_rule", actions: [
+          policy_types.EmitEvent(
+            topic: "matrix.total_due",
+            payload: option.None,
+          ),
+        ]),
+        policy_evaluator.StageMatch(stage_id: "is_paid_rule", actions: [
+          policy_types.EmitEvent(topic: "matrix.is_paid", payload: option.None),
+        ]),
+        policy_evaluator.StageMatch(stage_id: "billing_plan_rule", actions: [
+          policy_types.EmitEvent(
+            topic: "matrix.billing_plan",
+            payload: option.None,
+          ),
+        ]),
+        policy_evaluator.StageMatch(
+          stage_id: "operational_state_rule",
+          actions: [
+            policy_types.EmitEvent(
+              topic: "matrix.operational",
+              payload: option.None,
+            ),
+          ],
+        ),
+      ]),
+    )
+}
+
+pub fn policy_evaluator_returns_structured_error_for_type_mismatch_test() {
+  let invalid_stage =
+    policy_types.Stage(
+      id: "invalid_type",
+      priority: 10,
+      condition: policy_types.Rule(
+        field: policy_types.IsPaid,
+        op: policy_types.Eq,
+        value: policy_types.ScalarValue(policy_types.StringValue("false")),
+        enabled: True,
+      ),
+      actions: [
+        policy_types.EmitEvent(
+          topic: "collection.invalid",
+          payload: option.None,
+        ),
+      ],
+      stop_on_match: True,
+      notification_template: option.None,
+      enabled: True,
+    )
+
+  let policy =
+    policy_types.Policy(
+      name: "invalid_type",
+      description: option.None,
+      grace_days: 0,
+      timezone: "Asia/Jakarta",
+      context: option.None,
+      stages: [invalid_stage],
+    )
+
+  assert policy_evaluator.evaluate(policy, sample_context(10))
+    == Error(policy_evaluator.EvaluationError(
+      code: "INVALID_WHEN_CONDITION",
+      stage_id: "invalid_type",
+      path: "stages[0].when.value",
+      reason: "boolean_field_requires_bool_value",
+    ))
+}
+
 pub fn policy_evaluator_returns_structured_error_for_invalid_when_test() {
   let invalid_stage =
     policy_types.Stage(

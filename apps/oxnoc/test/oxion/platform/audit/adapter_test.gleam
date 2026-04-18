@@ -1,3 +1,4 @@
+import gleam/list
 import gleam/option
 import oxion/orchestration/collection/audit as collection_audit
 import oxion/platform/audit/adapter
@@ -94,6 +95,37 @@ pub fn audit_adapter_moves_runtime_network_context_to_private_store_test() {
     )
 }
 
+pub fn audit_adapter_keeps_append_only_log_redacted_test() {
+  let runtime_context =
+    types.RuntimeAuditContext(
+      actor_id: option.Some("ops_123"),
+      actor_role: "operator",
+      ip_address: option.Some("10.10.10.10"),
+      user_agent: option.Some("Mozilla/5.0"),
+      recorded_at: "2026-03-21T10:00:00Z",
+      private_context_expires_at: "2026-04-20T10:00:00Z",
+    )
+  let envelope =
+    adapter.from_collection_entry(failed_entry(), option.Some(runtime_context))
+  let types.AuditEnvelope(event: event, private_context: private_context) =
+    envelope
+
+  let change_summary_entries = json_object_entries(event.change_summary)
+
+  assert has_key(change_summary_entries, "ip_address") == False
+  assert has_key(change_summary_entries, "user_agent") == False
+
+  case private_context {
+    option.None -> panic
+    option.Some(types.AuditPrivateContext(payload: payload, ..)) -> {
+      let payload_entries = json_object_entries(payload)
+
+      assert has_key(payload_entries, "ip_address")
+      assert has_key(payload_entries, "user_agent")
+    }
+  }
+}
+
 fn sample_entry() -> collection_audit.AuditEntry {
   collection_audit.AuditEntry(
     tenant_id: "tenant_a",
@@ -126,4 +158,23 @@ fn failed_entry() -> collection_audit.AuditEntry {
     reason: option.Some("timeout"),
     retry_count: 2,
   )
+}
+
+fn json_object_entries(
+  value: policy_types.JsonValue,
+) -> List(#(String, policy_types.JsonValue)) {
+  case value {
+    policy_types.JsonObject(entries) -> entries
+    _ -> panic
+  }
+}
+
+fn has_key(
+  entries: List(#(String, policy_types.JsonValue)),
+  key: String,
+) -> Bool {
+  list.any(entries, fn(entry) {
+    let #(name, _value) = entry
+    name == key
+  })
 }

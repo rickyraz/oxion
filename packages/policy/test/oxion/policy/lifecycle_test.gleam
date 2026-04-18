@@ -77,3 +77,34 @@ pub fn activation_rejects_non_published_and_archived_test() {
   assert policy_lifecycle.activate(archived, False)
     == Error(policy_lifecycle.PolicyImmutableArchived)
 }
+
+pub fn lifecycle_transition_success_and_failure_paths_test() {
+  assert policy_lifecycle.transition(
+      policy_lifecycle.Draft,
+      policy_lifecycle.Simulated,
+    )
+    == Ok(policy_lifecycle.Simulated)
+
+  assert policy_lifecycle.transition(
+      policy_lifecycle.Draft,
+      policy_lifecycle.Published,
+    )
+    == Error(policy_lifecycle.InvalidTransition(
+      from: policy_lifecycle.Draft,
+      to: policy_lifecycle.Published,
+    ))
+}
+
+pub fn lifecycle_deactivate_clears_active_flag_test() {
+  let active_published =
+    policy_lifecycle.ActivationState(
+      status: policy_lifecycle.Published,
+      is_active: True,
+    )
+
+  assert policy_lifecycle.deactivate(active_published)
+    == policy_lifecycle.ActivationState(
+      status: policy_lifecycle.Published,
+      is_active: False,
+    )
+}
