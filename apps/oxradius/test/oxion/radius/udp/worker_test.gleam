@@ -126,3 +126,91 @@ pub fn udp_worker_roundtrip_reuses_socket_handle_test() {
   let _closed = worker.close(state_after_second)
   Nil
 }
+
+pub fn udp_worker_roundtrip_rejects_duplicate_identifier_while_inflight_test() {
+  let seeded_state = case
+    worker.register(
+      worker.init(types.UdpWorkerConfig(
+        local_bind: "0.0.0.0",
+        max_inflight: 4,
+        reuse_socket: False,
+      )),
+      types.OutstandingRequest(
+        endpoint_id: "edge_1",
+        identifier: 90,
+        started_at_ms: 10_000,
+        timeout_ms: 1000,
+      ),
+    )
+  {
+    Ok(state) -> state
+    Error(_) -> panic
+  }
+
+  let #(result, next_state) =
+    worker.roundtrip(
+      seeded_state,
+      types.OutstandingRequest(
+        endpoint_id: "edge_1",
+        identifier: 90,
+        started_at_ms: 10_050,
+        timeout_ms: 1000,
+      ),
+      "127.0.0.1",
+      9,
+      <<"payload">>,
+      10_050,
+    )
+
+  assert result == Error("duplicate_identifier:edge_1:90")
+  assert worker.snapshot(next_state)
+    == types.UdpWorkerSnapshot(
+      inflight_count: 1,
+      socket_handle: option.None,
+      reuse_socket: False,
+    )
+}
+
+pub fn udp_worker_roundtrip_rejects_when_inflight_limit_reached_test() {
+  let seeded_state = case
+    worker.register(
+      worker.init(types.UdpWorkerConfig(
+        local_bind: "0.0.0.0",
+        max_inflight: 1,
+        reuse_socket: False,
+      )),
+      types.OutstandingRequest(
+        endpoint_id: "edge_1",
+        identifier: 7,
+        started_at_ms: 50_000,
+        timeout_ms: 1000,
+      ),
+    )
+  {
+    Ok(state) -> state
+    Error(_) -> panic
+  }
+
+  let #(result, next_state) =
+    worker.roundtrip(
+      seeded_state,
+      types.OutstandingRequest(
+        endpoint_id: "edge_1",
+        identifier: 8,
+        started_at_ms: 50_010,
+        timeout_ms: 1000,
+      ),
+      "127.0.0.1",
+      9,
+      <<"payload">>,
+      50_010,
+    )
+
+  assert result == Error("inflight_limit_exceeded")
+  assert worker.snapshot(next_state)
+    == types.UdpWorkerSnapshot(
+      inflight_count: 1,
+      socket_handle: option.None,
+      reuse_socket: False,
+    )
+}
