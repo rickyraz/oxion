@@ -172,16 +172,17 @@ pub fn collection_flow_rerun_keeps_notification_side_effect_idempotent_test() {
       collection_scheduler.CandidateExecutionResult(
         executed_actions: first_executed_actions,
         skipped_actions: _first_skipped_actions,
-        ..
+        ..,
       ),
     ],
-    [
-      collection_scheduler.CandidateExecutionResult(
-        executed_actions: [],
-        skipped_actions: second_skipped_actions,
-        ..
-      ),
-    ] -> {
+      [
+        collection_scheduler.CandidateExecutionResult(
+          executed_actions: [],
+          skipped_actions: second_skipped_actions,
+          ..,
+        ),
+      ]
+    -> {
       let first_notification = case
         list.filter(first_executed_actions, fn(action) {
           action.action_name == "send_notification"

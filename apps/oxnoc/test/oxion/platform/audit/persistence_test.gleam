@@ -112,7 +112,10 @@ pub fn audit_persistence_expires_private_context_after_retention_window_test() {
     persistence.expire_private_context(store, "2026-04-20T09:59:59Z")
 
   assert before_expiry_count == 0
-  assert persistence.find_private_context(before_expiry_store, "audit:fp:hard:0")
+  assert persistence.find_private_context(
+      before_expiry_store,
+      "audit:fp:hard:0",
+    )
     == option.Some(persistence.AuditPrivateContextRow(
       audit_id: "audit:fp:hard:0",
       purpose: "runtime_network_context",

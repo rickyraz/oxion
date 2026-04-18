@@ -103,10 +103,12 @@ pub fn dsr_executor_rerun_is_idempotent_by_rejecting_completed_request_test() {
   assert completed.status == types.Completed
 
   assert executor.execute(completed, first_bundle)
-    == Error(executor.WorkflowFailure(error: workflow.InvalidStatus(
-      expected: types.ExecutionPlanned,
-      actual: types.Completed,
-    )))
+    == Error(
+      executor.WorkflowFailure(error: workflow.InvalidStatus(
+        expected: types.ExecutionPlanned,
+        actual: types.Completed,
+      )),
+    )
 }
 
 fn planned_request(request_type: types.RequestType) -> types.DataSubjectRequest {
