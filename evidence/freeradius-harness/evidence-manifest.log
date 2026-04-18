@@ -1,0 +1,33 @@
+=== Evidence files ===
+docker-restart-after-mount-fix.log
+docker-restart.log
+docker-up.log
+evidence-manifest.log
+freeradius-container-after-retry.log
+freeradius-container-final.log
+freeradius-container.log
+harness-execute-after-fixes.log
+harness-execute-retry.log
+harness-execute.log
+listeners-from-logs.log
+listeners.log
+radclient-disconnect-manual.log
+run_started_at.txt
+tooling-check.log
+
+=== SHA256 ===
+0374ae431c73ada9106bb29936d2696ef0dc6656154a1033333128b111010fe7  evidence/freeradius-harness/docker-restart-after-mount-fix.log
+bf5b85dca080f695de0551704733035a2fcd579781ef93ca53f6c675f391b0b2  evidence/freeradius-harness/docker-restart.log
+427eed9a85227f2b373a8ce897ff969c2e7f1ba829fa4ad4749f025f0d28030a  evidence/freeradius-harness/docker-up.log
+3e6799295cd1c47c3b494872acf2ab2d4b08f830c404f00cc4a7e498d4111375  evidence/freeradius-harness/evidence-manifest.log
+a2c06edd0dc61511cadefce29ebc8f8be51487947c0500dc66107eccb6bc649b  evidence/freeradius-harness/freeradius-container-after-retry.log
+c13d5999c797fff52cb7a9d99fada8f8b2450e2770947659805032f559163ded  evidence/freeradius-harness/freeradius-container-final.log
+9895ccec99d386d4de82d23f2c6bd528d1e7b83b3b229a1bd01beea16fe78e23  evidence/freeradius-harness/freeradius-container.log
+a3ec98761120aa2f092723e04795b030777430196c1af14b2a47bd01b8c5acff  evidence/freeradius-harness/harness-execute-after-fixes.log
+a64e57d144d9970c5b004720baf1542aee09a57dda8af41dd7357bfa1ef997f2  evidence/freeradius-harness/harness-execute-retry.log
+a6f77dd87e4ce7de224d46bb38062dea7c4e63387cc30a6c8439237d2fb042ff  evidence/freeradius-harness/harness-execute.log
+4a63685018dbff46b6df2aca3ff54d975eb791273209354f85cc6445fe02158b  evidence/freeradius-harness/listeners-from-logs.log
+c384e9d745e53f9ff4a745319a11b3d7ff6818ef6dbdff4fa1570e5e545d6ac9  evidence/freeradius-harness/listeners.log
+7688a8c7fc00d1343f8a5ff8b64a5fdb4871190642c5a5fec70f283de3ad36ff  evidence/freeradius-harness/radclient-disconnect-manual.log
+a0f4620c9fc35df68fcb5c8093d3d4a55d24fa4f3c39ff44c1069e1a3d8ca6c0  evidence/freeradius-harness/run_started_at.txt
+d46ba3ef9e034c507b88c5a0f6951f1f6aa03910b7a4e64ee686fbf4c145de9a  evidence/freeradius-harness/tooling-check.log

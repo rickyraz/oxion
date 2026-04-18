@@ -91,6 +91,24 @@ pub fn dsr_executor_routes_access_exports_and_not_applicable_steps_test() {
     )
 }
 
+pub fn dsr_executor_rerun_is_idempotent_by_rejecting_completed_request_test() {
+  let request = planned_request(types.Erasure)
+  let #(completed, first_bundle) = case
+    executor.execute(request, executor.empty_bundle())
+  {
+    Ok(result) -> result
+    Error(_) -> panic
+  }
+
+  assert completed.status == types.Completed
+
+  assert executor.execute(completed, first_bundle)
+    == Error(executor.WorkflowFailure(error: workflow.InvalidStatus(
+      expected: types.ExecutionPlanned,
+      actual: types.Completed,
+    )))
+}
+
 fn planned_request(request_type: types.RequestType) -> types.DataSubjectRequest {
   workflow.submit_request(
     "dsr_executor",

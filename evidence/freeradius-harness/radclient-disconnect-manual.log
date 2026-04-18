@@ -1,0 +1,13 @@
+Sent Disconnect-Request Id 198 from 0.0.0.0:53455 to 127.0.0.1:3799 length 53
+	User-Name := "sub_1"
+	Acct-Session-Id := "sess-1"
+	Message-Authenticator := 0x00
+Sent Disconnect-Request Id 198 from 0.0.0.0:53455 to 127.0.0.1:3799 length 53
+	User-Name := "sub_1"
+	Acct-Session-Id := "sess-1"
+	Message-Authenticator := 0x00
+Sent Disconnect-Request Id 198 from 0.0.0.0:53455 to 127.0.0.1:3799 length 53
+	User-Name := "sub_1"
+	Acct-Session-Id := "sess-1"
+	Message-Authenticator := 0x00
+(0) No reply from server for ID 198 socket 3

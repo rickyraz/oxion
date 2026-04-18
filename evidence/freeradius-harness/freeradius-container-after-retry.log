@@ -1,0 +1,221 @@
+=== docker logs tail after retry ===
+reading pairlist file /etc/freeradius/mods-config/files/pre-proxy
+  # Instantiating module "pap" from file /etc/freeradius/mods-enabled/pap
+  # Instantiating module "eap" from file /etc/freeradius/mods-enabled/eap
+   # Linked to sub-module rlm_eap_md5
+   # Linked to sub-module rlm_eap_gtc
+   gtc {
+   	challenge = "Password: "
+   	auth_type = "PAP"
+   }
+   # Linked to sub-module rlm_eap_tls
+   tls {
+   	tls = "tls-common"
+   }
+   tls-config tls-common {
+   	verify_depth = 0
+   	ca_path = "/etc/freeradius/certs"
+   	pem_file_type = yes
+   	private_key_file = "/etc/freeradius/certs/server.pem"
+   	certificate_file = "/etc/freeradius/certs/server.pem"
+   	ca_file = "/etc/freeradius/certs/ca.pem"
+   	private_key_password = <<< secret >>>
+   	fragment_size = 1024
+   	include_length = yes
+   	auto_chain = yes
+   	check_crl = no
+   	check_all_crl = no
+   	ca_path_reload_interval = 0
+   	cipher_list = "DEFAULT"
+   	cipher_server_preference = no
+   	reject_unknown_intermediate_ca = no
+   	ecdh_curve = ""
+   	tls_max_version = "1.2"
+   	tls_min_version = "1.2"
+    cache {
+    	enable = no
+    	lifetime = 24
+    	max_entries = 255
+    }
+    verify {
+    	skip_if_ocsp_ok = no
+    }
+    ocsp {
+    	enable = no
+    	override_cert_url = yes
+    	url = "http://127.0.0.1/ocsp/"
+    	use_nonce = yes
+    	timeout = 0
+    	softfail = no
+    }
+   }
+   # Linked to sub-module rlm_eap_ttls
+   ttls {
+   	tls = "tls-common"
+   	default_eap_type = "md5"
+   	copy_request_to_tunnel = no
+   	use_tunneled_reply = no
+   	virtual_server = "inner-tunnel"
+   	include_length = yes
+   	require_client_cert = no
+   }
+tls: Using cached TLS configuration from previous invocation
+   # Linked to sub-module rlm_eap_peap
+   peap {
+   	tls = "tls-common"
+   	default_eap_type = "mschapv2"
+   	copy_request_to_tunnel = no
+   	use_tunneled_reply = no
+   	proxy_tunneled_request_as_eap = yes
+   	virtual_server = "inner-tunnel"
+   	soh = no
+   	require_client_cert = no
+   }
+tls: Using cached TLS configuration from previous invocation
+   # Linked to sub-module rlm_eap_mschapv2
+   mschapv2 {
+   	with_ntdomain_hack = no
+   	send_error = no
+   }
+  # Instantiating module "mschap" from file /etc/freeradius/mods-enabled/mschap
+rlm_mschap (mschap): using internal authentication
+  # Instantiating module "etc_passwd" from file /etc/freeradius/mods-enabled/passwd
+rlm_passwd: nfields: 3 keyfield 0(User-Name) listable: no
+  # Instantiating module "IPASS" from file /etc/freeradius/mods-enabled/realm
+  # Instantiating module "suffix" from file /etc/freeradius/mods-enabled/realm
+  # Instantiating module "bangpath" from file /etc/freeradius/mods-enabled/realm
+  # Instantiating module "realmpercent" from file /etc/freeradius/mods-enabled/realm
+  # Instantiating module "ntdomain" from file /etc/freeradius/mods-enabled/realm
+  # Instantiating module "logintime" from file /etc/freeradius/mods-enabled/logintime
+  # Instantiating module "attr_filter.post-proxy" from file /etc/freeradius/mods-enabled/attr_filter
+reading pairlist file /etc/freeradius/mods-config/attr_filter/post-proxy
+  # Instantiating module "attr_filter.pre-proxy" from file /etc/freeradius/mods-enabled/attr_filter
+reading pairlist file /etc/freeradius/mods-config/attr_filter/pre-proxy
+  # Instantiating module "attr_filter.access_reject" from file /etc/freeradius/mods-enabled/attr_filter
+reading pairlist file /etc/freeradius/mods-config/attr_filter/access_reject
+  # Instantiating module "attr_filter.access_challenge" from file /etc/freeradius/mods-enabled/attr_filter
+reading pairlist file /etc/freeradius/mods-config/attr_filter/access_challenge
+  # Instantiating module "attr_filter.accounting_response" from file /etc/freeradius/mods-enabled/attr_filter
+reading pairlist file /etc/freeradius/mods-config/attr_filter/accounting_response
+  # Instantiating module "attr_filter.coa" from file /etc/freeradius/mods-enabled/attr_filter
+reading pairlist file /etc/freeradius/mods-config/attr_filter/coa
+  # Instantiating module "expiration" from file /etc/freeradius/mods-enabled/expiration
+  # Instantiating module "auth_log" from file /etc/freeradius/mods-enabled/detail.log
+rlm_detail (auth_log): 'User-Password' suppressed, will not appear in detail output
+  # Instantiating module "reply_log" from file /etc/freeradius/mods-enabled/detail.log
+  # Instantiating module "pre_proxy_log" from file /etc/freeradius/mods-enabled/detail.log
+  # Instantiating module "post_proxy_log" from file /etc/freeradius/mods-enabled/detail.log
+  # Instantiating module "preprocess" from file /etc/freeradius/mods-enabled/preprocess
+reading pairlist file /etc/freeradius/mods-config/preprocess/huntgroups
+reading pairlist file /etc/freeradius/mods-config/preprocess/hints
+  # Instantiating module "detail" from file /etc/freeradius/mods-enabled/detail
+  # Instantiating module "reject" from file /etc/freeradius/mods-enabled/always
+  # Instantiating module "fail" from file /etc/freeradius/mods-enabled/always
+  # Instantiating module "ok" from file /etc/freeradius/mods-enabled/always
+  # Instantiating module "handled" from file /etc/freeradius/mods-enabled/always
+  # Instantiating module "invalid" from file /etc/freeradius/mods-enabled/always
+  # Instantiating module "userlock" from file /etc/freeradius/mods-enabled/always
+  # Instantiating module "notfound" from file /etc/freeradius/mods-enabled/always
+  # Instantiating module "noop" from file /etc/freeradius/mods-enabled/always
+  # Instantiating module "updated" from file /etc/freeradius/mods-enabled/always
+  # Instantiating module "linelog" from file /etc/freeradius/mods-enabled/linelog
+  # Instantiating module "log_accounting" from file /etc/freeradius/mods-enabled/linelog
+ } # modules
+radiusd: #### Loading Virtual Servers ####
+server { # from file /etc/freeradius/radiusd.conf
+} # server
+server inner-tunnel { # from file /etc/freeradius/sites-enabled/inner-tunnel
+ # Loading authenticate {...}
+Compiling Auth-Type PAP for attr Auth-Type
+Compiling Auth-Type CHAP for attr Auth-Type
+Compiling Auth-Type MS-CHAP for attr Auth-Type
+ # Loading authorize {...}
+Ignoring "sql" (see raddb/mods-available/README.rst)
+Ignoring "ldap" (see raddb/mods-available/README.rst)
+ # Loading session {...}
+ # Loading post-proxy {...}
+ # Loading post-auth {...}
+ # Skipping contents of 'if' as it is always 'false' -- /etc/freeradius/sites-enabled/inner-tunnel:366
+Compiling Post-Auth-Type REJECT for attr Post-Auth-Type
+} # server inner-tunnel
+server default { # from file /etc/freeradius/sites-enabled/default
+ # Loading authenticate {...}
+Compiling Auth-Type PAP for attr Auth-Type
+Compiling Auth-Type CHAP for attr Auth-Type
+Compiling Auth-Type MS-CHAP for attr Auth-Type
+ # Loading authorize {...}
+Compiling Autz-Type New-TLS-Connection for attr Autz-Type
+ # Loading preacct {...}
+ # Loading accounting {...}
+ # Loading post-proxy {...}
+ # Loading post-auth {...}
+Compiling Post-Auth-Type REJECT for attr Post-Auth-Type
+Compiling Post-Auth-Type Challenge for attr Post-Auth-Type
+Compiling Post-Auth-Type Client-Lost for attr Post-Auth-Type
+} # server default
+radiusd: #### Opening IP addresses and Ports ####
+listen {
+  	type = "auth"
+  	ipaddr = 127.0.0.1
+  	port = 18120
+}
+listen {
+  	type = "auth"
+  	ipaddr = *
+  	port = 0
+   limit {
+   	max_connections = 16
+   	lifetime = 0
+   	idle_timeout = 30
+   }
+}
+listen {
+  	type = "acct"
+  	ipaddr = *
+  	port = 0
+   limit {
+   	max_connections = 16
+   	lifetime = 0
+   	idle_timeout = 30
+   }
+}
+listen {
+  	type = "auth"
+  	ipv6addr = ::
+  	port = 0
+   limit {
+   	max_connections = 16
+   	lifetime = 0
+   	idle_timeout = 30
+   }
+}
+listen {
+  	type = "acct"
+  	ipv6addr = ::
+  	port = 0
+   limit {
+   	max_connections = 16
+   	lifetime = 0
+   	idle_timeout = 30
+   }
+}
+Listening on auth address 127.0.0.1 port 18120 bound to server inner-tunnel
+Listening on auth address * port 1812 bound to server default
+Listening on acct address * port 1813 bound to server default
+Listening on auth address :: port 1812 bound to server default
+Listening on acct address :: port 1813 bound to server default
+Listening on proxy address * port 36937
+Listening on proxy address :: port 43877
+Ready to process requests
+Ignoring request to auth address * port 1812 bound to server default from unknown client 172.23.0.1 port 40846 proto udp
+Ready to process requests
+Ignoring request to auth address * port 1812 bound to server default from unknown client 172.23.0.1 port 40846 proto udp
+Ready to process requests
+Ignoring request to auth address * port 1812 bound to server default from unknown client 172.23.0.1 port 40846 proto udp
+Ready to process requests
+Ignoring request to auth address * port 1812 bound to server default from unknown client 172.23.0.1 port 34977 proto udp
+Ready to process requests
+Ignoring request to auth address * port 1812 bound to server default from unknown client 172.23.0.1 port 34977 proto udp
+Ready to process requests
+Ignoring request to auth address * port 1812 bound to server default from unknown client 172.23.0.1 port 34977 proto udp
+Ready to process requests
