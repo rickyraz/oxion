@@ -7,6 +7,7 @@ import oxion/orchestration/collection/orchestrator
 import oxion/orchestration/collection/outcome
 import oxion/policy/types as policy_types
 import oxion/radius/coa/result as coa_result
+import oxion/radius/disconnect/result as disconnect_result
 
 pub fn orchestrator_maps_runtime_actions_to_commands_and_side_effects_test() {
   let service =
@@ -198,5 +199,48 @@ pub fn audit_entry_tracks_radius_outcome_test() {
       result_type: "success",
       reason: option.None,
       retry_count: 1,
+    )
+}
+
+pub fn outcome_maps_disconnect_execution_contract_test() {
+  let plan =
+    commands.CommandPlan(
+      action_fingerprint: "fp:hard:0",
+      stage_id: "hard_suspend",
+      action_name: "suspend_service",
+      route: commands.RadiusRoute,
+      command: commands.SuspendService(
+        service_id: "svc_1",
+        reason: "overdue_collection",
+      ),
+      target_state: "suspended_due_overdue",
+    )
+
+  assert outcome.from_disconnect_execution(
+      plan,
+      disconnect_result.Ack(retries: 1),
+    )
+    == outcome.CommandOutcome(
+      action_fingerprint: "fp:hard:0",
+      stage_id: "hard_suspend",
+      action_name: "suspend_service",
+      target_state: "suspended_due_overdue",
+      status: outcome.Succeeded,
+      reason: option.None,
+      retry_count: 1,
+    )
+
+  assert outcome.from_disconnect_execution(
+      plan,
+      disconnect_result.Nak("503", "session context missing", 0),
+    )
+    == outcome.CommandOutcome(
+      action_fingerprint: "fp:hard:0",
+      stage_id: "hard_suspend",
+      action_name: "suspend_service",
+      target_state: "suspended_due_overdue",
+      status: outcome.Failed,
+      reason: option.Some("503:session context missing"),
+      retry_count: 0,
     )
 }

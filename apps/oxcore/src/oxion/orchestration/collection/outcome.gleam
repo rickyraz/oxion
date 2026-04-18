@@ -1,6 +1,7 @@
 import gleam/option
 import oxion/orchestration/collection/commands
 import oxion/radius/coa/result as coa_result
+import oxion/radius/disconnect/result as disconnect_result
 
 pub type ExecutionStatus {
   Succeeded
@@ -44,10 +45,43 @@ pub fn from_radius_execution(
   )
 }
 
+pub fn from_disconnect_execution(
+  plan: commands.CommandPlan,
+  result: disconnect_result.DisconnectExecutionResult,
+) -> CommandOutcome {
+  let commands.CommandPlan(
+    action_fingerprint: action_fingerprint,
+    stage_id: stage_id,
+    action_name: action_name,
+    route: _route,
+    command: _command,
+    target_state: target_state,
+  ) = plan
+
+  CommandOutcome(
+    action_fingerprint: action_fingerprint,
+    stage_id: stage_id,
+    action_name: action_name,
+    target_state: target_state,
+    status: map_disconnect_status(result),
+    reason: disconnect_result.reason(result),
+    retry_count: disconnect_result.retry_count(result),
+  )
+}
+
 fn map_status(result: coa_result.CoaExecutionResult) -> ExecutionStatus {
   case result {
     coa_result.IdempotentSkip(_) -> SkippedIdempotent
     coa_result.Ack(_, _) -> Succeeded
+    _ -> Failed
+  }
+}
+
+fn map_disconnect_status(
+  result: disconnect_result.DisconnectExecutionResult,
+) -> ExecutionStatus {
+  case result {
+    disconnect_result.Ack(_) -> Succeeded
     _ -> Failed
   }
 }
