@@ -1,0 +1,6 @@
+=== restart freeradius ===
+2026-04-18T19:49:28+07:00
+
+=== container status ===
+NAME                       IMAGE                                COMMAND                  SERVICE      CREATED        STATUS        PORTS
+oxion-freeradius-harness   freeradius/freeradius-server:3.2.3   "/docker-entrypoint.…"   freeradius   1 second ago   Up 1 second   0.0.0.0:1812-1813->1812-1813/udp, [::]:1812-1813->1812-1813/udp, 0.0.0.0:3799->3799/udp, [::]:3799->3799/udp

@@ -1,0 +1,33 @@
+oxRADIUS FreeRADIUS harness
+mode: execute
+target: 127.0.0.1, auth-port=1812, coa-port=3799
+
+[radtest-access-request] radtest sub_1 test123 127.0.0.1 0 sharedsecret
+Sent Access-Request Id 206 from 0.0.0.0:60039 to 127.0.0.1:1812 length 75
+	User-Name = "sub_1"
+	User-Password = "test123"
+	NAS-IP-Address = 127.0.1.1
+	NAS-Port = 0
+	Message-Authenticator = 0x00
+	Cleartext-Password = "test123"
+Sent Access-Request Id 206 from 0.0.0.0:60039 to 127.0.0.1:1812 length 75
+	User-Name = "sub_1"
+	User-Password = "test123"
+	NAS-IP-Address = 127.0.1.1
+	NAS-Port = 0
+	Message-Authenticator = 0x00
+	Cleartext-Password = "test123"
+Sent Access-Request Id 206 from 0.0.0.0:60039 to 127.0.0.1:1812 length 75
+	User-Name = "sub_1"
+	User-Password = "test123"
+	NAS-IP-Address = 127.0.1.1
+	NAS-Port = 0
+	Message-Authenticator = 0x00
+	Cleartext-Password = "test123"
+(0) No reply from server for ID 206 socket 3
+[radtest-access-request] skipped/failed (optional), continuing with remaining commands
+[radclient-status-server] radclient 127.0.0.1:1812 status sharedsecret < /home/rickyraz/my_dream/oxion/apps/oxradius/test/harness/freeradius/requests/status-request.txt
+Sent Status-Server Id 0 from 0.0.0.0:41262 to 127.0.0.1:1812 length 44
+Sent Status-Server Id 0 from 0.0.0.0:41262 to 127.0.0.1:1812 length 44
+Sent Status-Server Id 0 from 0.0.0.0:41262 to 127.0.0.1:1812 length 44
+[radclient-status-server] failed with exit code 1

@@ -1,0 +1,23 @@
+oxRADIUS FreeRADIUS harness
+mode: execute
+target: 127.0.0.1, auth-port=1812, coa-port=3799
+
+[radtest-access-request] radtest sub_1 test123 127.0.0.1 0 sharedsecret
+(0) -: Expected Access-Accept got Access-Reject
+Sent Access-Request Id 62 from 0.0.0.0:51061 to 127.0.0.1:1812 length 75
+	User-Name = "sub_1"
+	User-Password = "test123"
+	NAS-IP-Address = 127.0.1.1
+	NAS-Port = 0
+	Message-Authenticator = 0x00
+	Cleartext-Password = "test123"
+Received Access-Reject Id 62 from 127.0.0.1:1812 to 127.0.0.1:51061 length 20
+[radtest-access-request] skipped/failed (optional), continuing with remaining commands
+[radclient-status-server] radclient 127.0.0.1:1812 status sharedsecret < /home/rickyraz/my_dream/oxion/apps/oxradius/test/harness/freeradius/requests/status-request.txt
+Sent Status-Server Id 40 from 0.0.0.0:55274 to 127.0.0.1:1812 length 44
+Received Access-Accept Id 40 from 127.0.0.1:1812 to 127.0.0.1:55274 length 20
+[radclient-coa] radclient 127.0.0.1:3799 coa sharedsecret < /home/rickyraz/my_dream/oxion/apps/oxradius/test/harness/freeradius/requests/coa-request.txt
+Sent CoA-Request Id 61 from 0.0.0.0:39852 to 127.0.0.1:3799 length 66
+Sent CoA-Request Id 61 from 0.0.0.0:39852 to 127.0.0.1:3799 length 66
+Sent CoA-Request Id 61 from 0.0.0.0:39852 to 127.0.0.1:3799 length 66
+[radclient-coa] failed with exit code 1

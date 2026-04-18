@@ -1,0 +1,26 @@
+reading from file evidence/freeradius-harness/harness-execute-2026-04-18.pcap, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144
+Warning: interface names might be incorrect
+19:56:15.373210 lo    In  IP 127.0.0.1.46146 > 127.0.0.1.1812: RADIUS, Access-Request (1), id: 0xad length: 75
+19:56:15.373722 br-9d1161d8e2f7 Out IP 172.23.0.1.47163 > 172.23.0.2.1812: RADIUS, Access-Request (1), id: 0xad length: 75
+19:56:15.373730 veth635e83b Out IP 172.23.0.1.47163 > 172.23.0.2.1812: RADIUS, Access-Request (1), id: 0xad length: 75
+19:56:16.375759 veth635e83b P   IP 172.23.0.2.1812 > 172.23.0.1.47163: RADIUS, Access-Reject (3), id: 0xad length: 20
+19:56:16.375773 br-9d1161d8e2f7 In  IP 172.23.0.2.1812 > 172.23.0.1.47163: RADIUS, Access-Reject (3), id: 0xad length: 20
+19:56:16.375945 lo    In  IP 127.0.0.1.1812 > 127.0.0.1.46146: RADIUS, Access-Reject (3), id: 0xad length: 20
+19:56:16.432088 lo    In  IP 127.0.0.1.45144 > 127.0.0.1.1812: RADIUS, Status-Server (12), id: 0x80 length: 44
+19:56:16.432486 br-9d1161d8e2f7 Out IP 172.23.0.1.48248 > 172.23.0.2.1812: RADIUS, Status-Server (12), id: 0x80 length: 44
+19:56:16.432494 veth635e83b Out IP 172.23.0.1.48248 > 172.23.0.2.1812: RADIUS, Status-Server (12), id: 0x80 length: 44
+19:56:16.432738 veth635e83b P   IP 172.23.0.2.1812 > 172.23.0.1.48248: RADIUS, Access-Accept (2), id: 0x80 length: 20
+19:56:16.432748 br-9d1161d8e2f7 In  IP 172.23.0.2.1812 > 172.23.0.1.48248: RADIUS, Access-Accept (2), id: 0x80 length: 20
+19:56:16.432915 lo    In  IP 127.0.0.1.1812 > 127.0.0.1.45144: RADIUS, Access-Accept (2), id: 0x80 length: 20
+19:56:16.488562 lo    In  IP 127.0.0.1.35191 > 127.0.0.1.3799: RADIUS, CoA-Request (43), id: 0x26 length: 66
+19:56:16.488901 br-9d1161d8e2f7 Out IP 172.23.0.1.42328 > 172.23.0.2.3799: RADIUS, CoA-Request (43), id: 0x26 length: 66
+19:56:16.488910 veth635e83b Out IP 172.23.0.1.42328 > 172.23.0.2.3799: RADIUS, CoA-Request (43), id: 0x26 length: 66
+19:56:16.489227 veth635e83b P   IP 172.23.0.2.3799 > 172.23.0.1.42328: RADIUS, CoA-ACK (44), id: 0x26 length: 20
+19:56:16.489235 br-9d1161d8e2f7 In  IP 172.23.0.2.3799 > 172.23.0.1.42328: RADIUS, CoA-ACK (44), id: 0x26 length: 20
+19:56:16.489367 lo    In  IP 127.0.0.1.3799 > 127.0.0.1.35191: RADIUS, CoA-ACK (44), id: 0x26 length: 20
+19:56:16.546157 lo    In  IP 127.0.0.1.39663 > 127.0.0.1.3799: RADIUS, Disconnect-Request (40), id: 0x0f length: 53
+19:56:16.546449 br-9d1161d8e2f7 Out IP 172.23.0.1.47690 > 172.23.0.2.3799: RADIUS, Disconnect-Request (40), id: 0x0f length: 53
+19:56:16.546458 veth635e83b Out IP 172.23.0.1.47690 > 172.23.0.2.3799: RADIUS, Disconnect-Request (40), id: 0x0f length: 53
+19:56:16.546834 veth635e83b P   IP 172.23.0.2.3799 > 172.23.0.1.47690: RADIUS, Disconnect-ACK (41), id: 0x0f length: 20
+19:56:16.546844 br-9d1161d8e2f7 In  IP 172.23.0.2.3799 > 172.23.0.1.47690: RADIUS, Disconnect-ACK (41), id: 0x0f length: 20
+19:56:16.546955 lo    In  IP 127.0.0.1.3799 > 127.0.0.1.39663: RADIUS, Disconnect-ACK (41), id: 0x0f length: 20
