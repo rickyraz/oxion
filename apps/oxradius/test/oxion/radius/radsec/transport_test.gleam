@@ -6,6 +6,14 @@ import oxion/radius/registry/capability
 import oxion/radius/registry/types as registry_types
 import oxion/radius/vendor/types as vendor_types
 
+@external(erlang, "oxion_radius_radsec_test_ffi", "probe_local_tls_handshake")
+fn probe_local_tls_handshake(
+  cert_path: String,
+  key_path: String,
+  ca_path: String,
+  timeout_ms: Int,
+) -> Result(Nil, String)
+
 pub fn radsec_prepare_from_endpoint_accepts_radsec_target_test() {
   let config =
     types.RadSecConfig(
@@ -125,6 +133,30 @@ pub fn radsec_prepare_rejects_missing_host_or_port_test() {
       ),
     )
     == Error(types.InvalidEndpoint(reason: "missing_host_or_port"))
+}
+
+pub fn radsec_tls_local_handshake_succeeds_with_valid_ca_test() {
+  assert probe_local_tls_handshake(
+      "test/fixtures/radsec/server.pem",
+      "test/fixtures/radsec/server.key",
+      "test/fixtures/radsec/ca.pem",
+      3000,
+    )
+    == Ok(Nil)
+}
+
+pub fn radsec_tls_local_handshake_fails_with_invalid_ca_test() {
+  case
+    probe_local_tls_handshake(
+      "test/fixtures/radsec/server.pem",
+      "test/fixtures/radsec/server.key",
+      "test/fixtures/radsec/wrong-ca.pem",
+      3000,
+    )
+  {
+    Ok(_) -> panic
+    Error(_) -> Nil
+  }
 }
 
 fn radsec_endpoint() -> registry_types.NasEndpoint {
