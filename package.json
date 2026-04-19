@@ -1,13 +1,14 @@
 {
   "name": "oxion-monorepo",
   "private": true,
+  "version": "0.0.1",
   "packageManager": "pnpm@10.0.0",
   "scripts": {
-    "dev": "nx run-many -t dev --all --parallel",
-    "build": "nx run-many -t build --all",
-    "test": "nx run-many -t test --all",
-    "lint": "nx run oxion-workspace:boundaries && nx run-many -t lint --all",
-    "typecheck": "nx run-many -t typecheck --all",
+    "dev": "nx run-many -t dev --all --parallel --exclude=oxion-workspace",
+    "build": "nx run-many -t build --all --exclude=oxion-workspace",
+    "test": "nx run-many -t test --all --exclude=oxion-workspace",
+    "lint": "nx run oxion-workspace:boundaries && nx run-many -t lint --all --exclude=oxion-workspace",
+    "typecheck": "nx run-many -t typecheck --all --exclude=oxion-workspace",
     "generate": "nx run oxion-workspace:generate && nx run-many -t generate --all --exclude=oxion-workspace",
     "generate:contracts": "node ./scripts/generate-contracts.mjs",
     "generate:zod": "node --experimental-strip-types ./scripts/generate-zod.ts",
@@ -19,9 +20,14 @@
     "typecheck:gleam": "nx run-many -t typecheck --projects=oxion_policy,oxion_interop,oxcore,oxradius,oxnoc,oxolt",
     "gleam:build": "pnpm run build:gleam",
     "gleam:test": "pnpm run test:gleam",
-    "gleam:format:check": "pnpm run lint:gleam"
+    "gleam:format:check": "pnpm run lint:gleam",
+    "changeset": "changeset",
+    "version:packages": "changeset version",
+    "release:check": "changeset status --verbose",
+    "release": "changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "nx": "^20.3.1"
   }
 }
