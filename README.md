@@ -2,6 +2,26 @@
 
 Oxion is a policy-driven repository using an Open Core model (Apache-2.0) with a private Enterprise Edition (EE) boundary.
 
+## What Is Oxion?
+
+Oxion is an **ISP Operating Platform**.
+
+In many ISP environments, AAA/RADIUS, OLT management, and billing are handled in separate tools, with manual handoffs between teams. Oxion acts as a unified control plane that coordinates those systems so service lifecycle operations become automated, auditable, and consistent.
+
+Core idea:
+
+- `oxCore` holds intent and service state (orchestrator + inventory)
+- `oxRADIUS` executes AAA and policy decisions
+- `oxOLT` executes fiber/OLT provisioning actions
+- `oxNOC` provides operational visibility
+- `oxBill (EE)` handles billing and payments
+
+Practical outcome:
+
+- fewer manual handoffs between billing, AAA, and network teams
+- faster activation/suspension flows
+- less state drift between business systems and network execution
+
 ## Current Layout
 
 - `apps/` -> public backend Gleam services (`oxradius`, `oxcore`, `oxolt`, `oxnoc`)
