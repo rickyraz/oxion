@@ -6,8 +6,23 @@ erl_crash.dump
 node_modules/
 .pnpm-store/
 .turbo/
+.nx/
 
 skills-lock.json
 /docs
 .agents
 AGENTS.md
+!frontend/platform/AGENTS.md
+
+# frontend/platform
+frontend/platform/.DS_Store
+frontend/platform/dist
+frontend/platform/dist-ssr
+frontend/platform/*.local
+frontend/platform/.env
+frontend/platform/.nitro
+frontend/platform/.tanstack
+frontend/platform/.wrangler
+frontend/platform/.output
+frontend/platform/.vinxi
+frontend/platform/__unconfig*
