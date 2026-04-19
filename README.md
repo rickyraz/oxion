@@ -51,6 +51,23 @@ Notes:
   via `gleam export package-interface`.
 - `generate:zod` maps `generated/interfaces/*.interface.json` to `generated/contracts.zod.ts`.
 
+## Versioning and Release
+
+This repository uses Changesets for versioning and GitHub integration.
+
+Local commands:
+
+```sh
+pnpm changeset            # create a changeset entry
+pnpm version:packages     # apply version bumps + changelog updates
+pnpm release              # publish releasable packages (when configured)
+```
+
+GitHub workflows:
+
+- `.github/workflows/test.yml` runs CI checks (`lint`, `typecheck`, `test`)
+- `.github/workflows/release.yml` runs Changesets automation to open/update a version PR on `main/master`, and publish when releasable packages exist
+
 ## Docs Entry
 
 Documentation is maintained outside this repository (separate docs workspace/repo).
