@@ -1,13 +1,37 @@
 {
   "name": "@oxion/frontend-platform",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
+  "type": "module",
   "scripts": {
-    "dev": "echo TODO: wire TanStack Start dev",
-    "build": "echo TODO: wire TanStack Start build",
-    "test": "echo TODO: add frontend tests",
-    "lint": "echo TODO: add frontend lint",
-    "typecheck": "echo TODO: add frontend typecheck",
-    "generate": "echo TODO: frontend package does not generate contracts"
+    "dev": "vite dev --port 3000",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run --passWithNoTests",
+    "format": "biome format",
+    "lint": "biome lint .",
+    "check": "biome check",
+    "typecheck": "tsc --noEmit",
+    "generate": "echo \"No code generation configured for frontend-platform\""
+  },
+  "dependencies": {
+    "@solidjs/web": "2.0.0-beta.5",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/solid-router": "2.0.0-beta.11",
+    "@tanstack/solid-router-devtools": "2.0.0-beta.8",
+    "@tanstack/solid-start": "2.0.0-beta.12",
+    "solid-js": "2.0.0-beta.5",
+    "tailwindcss": "^4.1.18",
+    "vite-tsconfig-paths": "^5.1.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.5",
+    "@tanstack/devtools-vite": "latest",
+    "@tanstack/router-plugin": "^1.133.21",
+    "jsdom": "^29.0.2",
+    "typescript": "^5.7.2",
+    "vite": "^7.3.1",
+    "vite-plugin-solid": "3.0.0-next.4",
+    "vitest": "^3.2.4"
   }
 }
