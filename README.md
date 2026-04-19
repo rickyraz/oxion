@@ -67,6 +67,14 @@ GitHub workflows:
 
 - `.github/workflows/test.yml` runs CI checks (`lint`, `typecheck`, `test`)
 - `.github/workflows/release.yml` runs Changesets automation to open/update a version PR on `main/master`, and publish when releasable packages exist
+- `.github/workflows/github-release-on-tag.yml` creates a GitHub Release whenever a `v*` tag is pushed
+
+Initial release example (`0.0.1`):
+
+```sh
+git tag -a v0.0.1 -m "initial release 0.0.1"
+git push origin v0.0.1
+```
 
 ## Docs Entry
 

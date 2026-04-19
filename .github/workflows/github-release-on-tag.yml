@@ -1,0 +1,35 @@
+name: github-release-on-tag
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Create GitHub Release from tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release for tag $tag already exists. Skipping."
+            exit 0
+          fi
+
+          gh release create "$tag" \
+            --verify-tag \
+            --generate-notes \
+            --latest \
+            --title "$tag"
