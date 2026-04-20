@@ -12,7 +12,9 @@ Core idea:
 
 - `oxCore` holds intent and service state (orchestrator + inventory)
 - `oxRADIUS` executes AAA and policy decisions
+- `oxBGP` controls internet path policy (baseline BGP + optimizer influence)
 - `oxOLT` executes fiber/OLT provisioning actions
+- `oxACS` manages CPE lifecycle (TR-069/TR-369 provisioning + firmware + config)
 - `oxNOC` provides operational visibility
 - `oxBill (EE)` handles billing and payments
 
@@ -22,9 +24,13 @@ Practical outcome:
 - faster activation/suspension flows
 - less state drift between business systems and network execution
 
+Note:
+
+- `oxACS` saat ini didokumentasikan sebagai bounded context spesifikasi, dan dapat diimplementasikan sebagai service terpisah terintegrasi dengan `oxCore`.
+
 ## Current Layout
 
-- `apps/` -> public backend Gleam services (`oxradius`, `oxcore`, `oxolt`, `oxnoc`)
+- `apps/` -> public backend Gleam services (`oxradius`, `oxcore`, `oxbgp`, `oxolt`, `oxnoc`)
 - documentation content -> ignored in this repository; maintained in a separate documentation workspace
 - `frontend/platform/` -> community/basic operator console for Platform Mode
 - `packages/policy/` -> extracted policy package (single source policy logic)
