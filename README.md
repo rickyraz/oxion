@@ -57,6 +57,18 @@ Reference matrix (context: medium-to-large ISP operations, up to `150K ONT`):
 | Engineering ownership required | Medium-to-high | High | Medium |
 | Unified observability potential | High | Medium | High |
 
+Comparison scope details:
+
+- `Best-of-Breed OSS + custom glue`:
+  `FreeRADIUS + FRR/BIRD + GenieACS + LibreNMS/Prometheus + custom integration services`.
+  Strength: very flexible and low license cost.
+  Tradeoff: integration ownership is fully on internal engineering teams (contract drift, retries, audit consistency, and lifecycle coordination must be built/maintained in-house).
+
+- `Commercial Vendor Suite`:
+  integrated OSS/BSS and access stack from one vendor or a tightly bundled partner ecosystem.
+  Strength: faster initial rollout with packaged workflows and vendor support/SLA.
+  Tradeoff: higher lock-in, limited architectural freedom, and higher long-term licensing + change-request cost.
+
 ## Current Layout
 
 - `apps/` -> public backend Gleam services (`oxradius`, `oxcore`, `oxbgp`, `oxacs`, `oxolt`, `oxnoc`)
