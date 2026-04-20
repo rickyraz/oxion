@@ -24,9 +24,38 @@ Practical outcome:
 - faster activation/suspension flows
 - less state drift between business systems and network execution
 
-Note:
+## Assumptions and Expectations
 
-- `oxACS` saat ini didokumentasikan sebagai bounded context spesifikasi, dan dapat diimplementasikan sebagai service terpisah terintegrasi dengan `oxCore`.
+This repository and architecture direction assume:
+
+- the target operator needs one orchestrated stack across AAA, OLT, BGP, ACS, and NOC
+- scale target is at least medium-to-large ISP operations (including scenarios around `150K ONT`)
+- operators prioritize vendor-agnostic control plane and low lock-in over vendor-suite convenience
+- engineering teams can run disciplined testing and observability in exchange for lower licensing cost
+- domain boundaries remain strict (`policy != execution adapter`, `routing != billing logic`, `ACS != OLT`)
+
+Expected tradeoffs versus alternative stacks:
+
+- higher integration ownership than commercial all-in-one suites
+- lower long-term lock-in and stronger architecture flexibility than fragmented glue-stack setups
+- better end-to-end orchestration and deterministic behavior when module contracts are followed
+- best results when each module keeps focused responsibilities:
+  `oxCore` (orchestration), `oxRADIUS` (AAA), `oxBGP` (routing intelligence), `oxOLT` (PON/OLT), `oxACS` (CPE), `oxNOC` (observability)
+
+Reference matrix (context: medium-to-large ISP operations, up to `150K ONT`):
+
+| Criteria | Oxion Stack | Best-of-Breed OSS + custom glue | Commercial Vendor Suite |
+|---|---|---|---|
+| Cross-domain orchestration | Strong | Weak-to-medium | Medium-to-strong |
+| Initial implementation speed | Medium | Slow | Fast |
+| Architecture flexibility | High | High | Low |
+| Vendor lock-in risk | Low | Low | High |
+| Deterministic/idempotent behavior by design | Strong | Varies | Varies |
+| Scale readiness (`~150K ONT` with strong ops discipline) | High | Medium | High |
+| Changeability (long-term) | High | Low-to-medium | Low |
+| License cost | Low | Low | High |
+| Engineering ownership required | Medium-to-high | High | Medium |
+| Unified observability potential | High | Medium | High |
 
 ## Current Layout
 
