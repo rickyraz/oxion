@@ -30,7 +30,7 @@ Note:
 
 ## Current Layout
 
-- `apps/` -> public backend Gleam services (`oxradius`, `oxcore`, `oxbgp`, `oxolt`, `oxnoc`)
+- `apps/` -> public backend Gleam services (`oxradius`, `oxcore`, `oxbgp`, `oxacs`, `oxolt`, `oxnoc`)
 - documentation content -> ignored in this repository; maintained in a separate documentation workspace
 - `frontend/platform/` -> community/basic operator console for Platform Mode
 - `packages/policy/` -> extracted policy package (single source policy logic)
