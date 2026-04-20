@@ -44,18 +44,24 @@ Expected tradeoffs versus alternative stacks:
 
 Reference matrix (context: medium-to-large ISP operations, up to `150K ONT`):
 
+Scoring legend:
+
+- `1` = poor / highest risk
+- `3` = acceptable / moderate tradeoff
+- `5` = best / lowest risk
+
 | Criteria | Oxion Stack | Best-of-Breed OSS + custom glue | Commercial Vendor Suite |
 |---|---|---|---|
-| Cross-domain orchestration | Strong | Weak-to-medium | Medium-to-strong |
-| Initial implementation speed | Medium | Slow | Fast |
-| Architecture flexibility | High | High | Low |
-| Vendor lock-in risk | Low | Low | High |
-| Deterministic/idempotent behavior by design | Strong | Varies | Varies |
-| Scale readiness (`~150K ONT` with strong ops discipline) | High | Medium | High |
-| Changeability (long-term) | High | Low-to-medium | Low |
-| License cost | Low | Low | High |
-| Engineering ownership required | Medium-to-high | High | Medium |
-| Unified observability potential | High | Medium | High |
+| Cross-domain orchestration | 5 | 2 | 4 |
+| Initial implementation speed | 3 | 2 | 4 |
+| Architecture flexibility | 5 | 5 | 2 |
+| Vendor lock-in risk (higher score = lower lock-in) | 5 | 5 | 1 |
+| Deterministic/idempotent behavior by design | 5 | 2 | 3 |
+| Scale readiness (`~150K ONT` with strong ops discipline) | 4 | 3 | 5 |
+| Changeability (long-term) | 5 | 2 | 2 |
+| License cost efficiency (higher score = lower cost) | 5 | 5 | 1 |
+| Engineering ownership requirement (higher score = lower internal burden) | 3 | 1 | 4 |
+| Unified observability potential | 5 | 3 | 4 |
 
 Comparison scope details:
 
