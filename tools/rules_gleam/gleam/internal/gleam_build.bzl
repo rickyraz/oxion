@@ -11,7 +11,7 @@ def _gleam_build_impl(ctx):
         command = """
             set -e
             export HOME=/tmp
-            cd /home/rickyraz/objectives/oxion/{package}
+            cd {package}
             gleam build
             mkdir -p {out}
             cp -r build/* {out}/ 2>/dev/null || true
