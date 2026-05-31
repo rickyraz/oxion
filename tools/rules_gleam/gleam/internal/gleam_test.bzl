@@ -10,7 +10,17 @@ def _gleam_test_impl(ctx):
         content = """#!/bin/bash
 set -e
 export HOME=/tmp
-cd /home/rickyraz/objectives/oxion/{package}
+SCRIPT_DIR="$(cd "$(dirname "${{BASH_SOURCE[0]}}")" && pwd)"
+# Find execroot by walking up to find WORKSPACE file
+EXECROOT="$SCRIPT_DIR"
+while [ ! -f "$EXECROOT/WORKSPACE" ] && [ "$EXECROOT" != "/" ]; do
+    EXECROOT="$(dirname "$EXECROOT")"
+done
+if [ -f "$EXECROOT/WORKSPACE" ]; then
+    cd "$EXECROOT/{package}"
+else
+    cd "{package}"
+fi
 gleam test
 """.format(package = ctx.label.package),
         is_executable = True,

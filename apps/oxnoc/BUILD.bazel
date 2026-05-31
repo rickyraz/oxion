@@ -22,6 +22,7 @@ gleam_test(
     srcs = glob(["src/**/*.gleam", "test/**/*.gleam"]) + [
         "//apps/oxcore:all_files",
         "//packages/policy:all_files",
+        "//packages/interop:all_files",
     ],
     deps = [
         "//apps/oxcore:oxcore",
