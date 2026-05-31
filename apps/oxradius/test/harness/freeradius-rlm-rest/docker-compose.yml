@@ -1,0 +1,19 @@
+services:
+  freeradius:
+    image: freeradius/freeradius-server:3.2.3
+    container_name: oxion-freeradius-rlm-rest-harness
+    command:
+      [
+        "sh",
+        "-lc",
+        "ln -sf ../mods-available/rest /etc/freeradius/mods-enabled/rest && exec freeradius -X"
+      ]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "18120:1812/udp"
+      - "18130:1813/udp"
+    volumes:
+      - ./config/clients.conf:/etc/freeradius/clients.conf:ro
+      - ./config/rest:/etc/freeradius/mods-available/rest:ro
+      - ./config/default:/etc/freeradius/sites-available/default:ro

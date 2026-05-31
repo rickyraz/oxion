@@ -34,7 +34,10 @@ fn insert_attribute(
   }
 }
 
-fn attribute_before(a: types.RadiusAttribute, b: types.RadiusAttribute) -> Bool {
+fn attribute_before(
+  a: types.RadiusAttribute,
+  b: types.RadiusAttribute,
+) -> Bool {
   let types.RadiusAttribute(name: a_name, value: a_value) = a
   let types.RadiusAttribute(name: b_name, value: b_value) = b
 

@@ -359,11 +359,15 @@ fn error_cause_loop(attributes: List(RadiusAttribute)) -> option.Option(Int) {
   }
 }
 
-pub fn reply_message(attributes: List(RadiusAttribute)) -> option.Option(String) {
+pub fn reply_message(
+  attributes: List(RadiusAttribute),
+) -> option.Option(String) {
   reply_message_loop(attributes)
 }
 
-pub fn event_timestamp(attributes: List(RadiusAttribute)) -> option.Option(Int) {
+pub fn event_timestamp(
+  attributes: List(RadiusAttribute),
+) -> option.Option(Int) {
   event_timestamp_loop(attributes)
 }
 
@@ -520,7 +524,9 @@ fn reply_message_loop(
   }
 }
 
-fn event_timestamp_loop(attributes: List(RadiusAttribute)) -> option.Option(Int) {
+fn event_timestamp_loop(
+  attributes: List(RadiusAttribute),
+) -> option.Option(Int) {
   case attributes {
     [] -> option.None
     [RadiusAttribute(type_id: 55, value: value), ..rest] ->
@@ -870,7 +876,11 @@ fn uint16_at(payload: BitArray, position: Int) -> Result(Int, PacketError) {
   }
 }
 
-fn slice(payload: BitArray, at: Int, take: Int) -> Result(BitArray, PacketError) {
+fn slice(
+  payload: BitArray,
+  at: Int,
+  take: Int,
+) -> Result(BitArray, PacketError) {
   case bit_array.slice(payload, at, take) {
     Ok(value) -> Ok(value)
     Error(_) -> Error(PacketTooShort)

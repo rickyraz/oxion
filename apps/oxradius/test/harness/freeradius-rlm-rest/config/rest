@@ -1,0 +1,31 @@
+rest {
+  connect_uri = "http://host.docker.internal:18088"
+  connect_timeout = 2.0
+
+  authorize {
+    uri = "${..connect_uri}/v1/policy/authorize"
+    method = "post"
+    body = "json"
+    data = '{"username":"%{User-Name}","password_present":"%{User-Password}","nas_ip_address":"%{NAS-IP-Address}","nas_port":"%{NAS-Port}","calling_station_id":"%{Calling-Station-Id}","called_station_id":"%{Called-Station-Id}","acct_session_id":"%{Acct-Session-Id}"}'
+    force_to = "json"
+    timeout = 2.0
+  }
+
+  accounting {
+    uri = "${..connect_uri}/v1/policy/accounting"
+    method = "post"
+    body = "json"
+    data = '{"username":"%{User-Name}","acct_status_type":"%{Acct-Status-Type}","acct_session_id":"%{Acct-Session-Id}","nas_ip_address":"%{NAS-IP-Address}"}'
+    force_to = "json"
+    timeout = 2.0
+  }
+
+  post-auth {
+    uri = "${..connect_uri}/v1/policy/post-auth"
+    method = "post"
+    body = "json"
+    data = '{"username":"%{User-Name}","reply_message":"%{reply:Reply-Message}","module_failure_message":"%{Module-Failure-Message}"}'
+    force_to = "json"
+    timeout = 2.0
+  }
+}

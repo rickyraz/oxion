@@ -74,7 +74,10 @@ pub fn encode(
   }
 }
 
-fn apply_value_prefix(spec: types.RadiusAttributeSpec, value: String) -> String {
+fn apply_value_prefix(
+  spec: types.RadiusAttributeSpec,
+  value: String,
+) -> String {
   case spec.value_prefix {
     option.Some(prefix) -> prefix <> value
     option.None -> value

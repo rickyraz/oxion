@@ -1,0 +1,43 @@
+server default {
+  listen {
+    type = auth
+    ipaddr = *
+    port = 0
+  }
+
+  listen {
+    type = acct
+    ipaddr = *
+    port = 0
+  }
+
+  authorize {
+    update control {
+      REST-HTTP-Header := "Authorization: Bearer test-token"
+    }
+
+    rest
+
+    if (ok || updated) {
+      accept
+    }
+
+    reject
+  }
+
+  accounting {
+    update control {
+      REST-HTTP-Header := "Authorization: Bearer test-token"
+    }
+
+    rest
+  }
+
+  post-auth {
+    update control {
+      REST-HTTP-Header := "Authorization: Bearer test-token"
+    }
+
+    rest
+  }
+}

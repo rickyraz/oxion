@@ -67,6 +67,19 @@ clean-all: clean
 harness-freeradius:
     node ./scripts/run-oxradius-freeradius-harness.mjs
 
+# Run remote FreeRADIUS test against the configured lab server.
+# Add --execute to run commands; default mode is dry-run.
+harness-freeradius-remote *ARGS:
+    node ./scripts/run-oxradius-remote-freeradius-test.mjs {{ARGS}}
+
+# Run local callback server for remote FreeRADIUS rlm_rest tunnel testing.
+rlm-rest-callback-server *ARGS:
+    node ./scripts/run-oxradius-rlm-rest-callback-server.mjs {{ARGS}}
+
+# Run local FreeRADIUS -> rlm_rest -> callback integration harness.
+rlm-rest-harness *ARGS:
+    node ./scripts/run-oxradius-rlm-rest-harness.mjs {{ARGS}}
+
 # Changeset commands
 changeset:
     pnpm changeset
