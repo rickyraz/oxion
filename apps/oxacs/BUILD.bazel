@@ -1,0 +1,32 @@
+load("//tools/rules_gleam/gleam:defs.bzl", "gleam_build", "gleam_test")
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["src/**/*.gleam", "test/**/*.gleam", "gleam.toml"]),
+    visibility = ["//visibility:public"],
+)
+
+gleam_build(
+    name = "oxacs",
+    srcs = glob(["src/**/*.gleam"]),
+    deps = [
+        "//apps/oxcore:oxcore",
+        "//packages/policy:oxion_policy",
+    ],
+    gleam_toml = "gleam.toml",
+    visibility = ["//visibility:public"],
+)
+
+gleam_test(
+    name = "oxacs_test",
+    srcs = glob(["src/**/*.gleam", "test/**/*.gleam"]) + [
+        "//apps/oxcore:all_files",
+        "//packages/policy:all_files",
+    ],
+    deps = [
+        "//apps/oxcore:oxcore",
+        "//packages/policy:oxion_policy",
+    ],
+    gleam_toml = "gleam.toml",
+    size = "small",
+)

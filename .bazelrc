@@ -1,0 +1,6 @@
+build --jobs=auto
+build --spawn_strategy=local
+test --test_output=errors
+test --test_verbose_timeout_warnings
+test --spawn_strategy=local
+build:ci --jobs=4

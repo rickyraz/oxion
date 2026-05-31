@@ -91,21 +91,31 @@ Comparison scope details:
 ## Monorepo Tooling
 
 - `pnpm-workspace.yaml` for workspace package discovery
-- `nx.json` + `project.json` for cross-workspace task pipelines
+- `WORKSPACE` + `BUILD.bazel` for hermetic builds with Bazel
+- `Justfile` for developer-friendly command interface
 - root `package.json` for command orchestration
 
 ## Development Commands
 
-Gleam:
+Primary interface (Just):
 
 ```sh
-node scripts/run-gleam-all.mjs format-check
-node scripts/run-gleam-all.mjs check
-node scripts/run-gleam-all.mjs test
-node scripts/run-gleam-all.mjs build
+just build              # build all Gleam packages and apps
+just test               # test all Gleam packages and apps
+just lint               # format check all Gleam code
+just typecheck          # typecheck all Gleam code
+just generate           # generate contracts from Gleam interfaces
+just check-generated    # verify generated files are up to date
+just dev                # start frontend dev server
+just build-frontend     # build frontend
+just test-frontend      # test frontend
+just lint-frontend      # lint frontend
+just typecheck-frontend # typecheck frontend
+just ci                 # full CI check (lint + typecheck + test)
+just clean              # clean Bazel cache
 ```
 
-Monorepo root (pnpm + Nx):
+Alternative (pnpm scripts):
 
 ```sh
 pnpm run dev
@@ -119,7 +129,7 @@ pnpm run check:generated
 
 Notes:
 
-- Root `build/test/lint/typecheck` runs through Nx targets across the workspace.
+- All commands are defined in `Justfile` and invoke Bazel or Gleam CLI directly.
 - `generate:contracts` pulls source from public Gleam APIs (`packages/policy` + `packages/interop`)
   via `gleam export package-interface`.
 - `generate:zod` maps `generated/interfaces/*.interface.json` to `generated/contracts.zod.ts`.

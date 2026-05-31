@@ -1,0 +1,55 @@
+genrule(
+    name = "frontend_platform_build",
+    srcs = glob([
+        "src/**/*",
+        "public/**/*",
+        "index.html",
+        "vite.config.ts",
+        "tsconfig.json",
+        "package.json",
+    ]),
+    outs = ["dist"],
+    cmd = """
+        export HOME=/tmp
+        cd frontend/platform
+        pnpm install --frozen-lockfile
+        pnpm run build
+        mkdir -p $(@D)/dist
+        cp -r dist/* $(@D)/dist/
+    """,
+    tags = ["manual"],
+)
+
+genrule(
+    name = "frontend_platform_test",
+    srcs = glob([
+        "src/**/*",
+        "package.json",
+    ]),
+    outs = ["test_output"],
+    cmd = """
+        export HOME=/tmp
+        cd frontend/platform
+        pnpm install --frozen-lockfile
+        pnpm run test
+        touch $(@D)/test_output
+    """,
+    tags = ["manual"],
+)
+
+genrule(
+    name = "frontend_platform_lint",
+    srcs = glob([
+        "src/**/*",
+        "biome.json",
+    ]),
+    outs = ["lint_output"],
+    cmd = """
+        export HOME=/tmp
+        cd frontend/platform
+        pnpm install --frozen-lockfile
+        pnpm run check
+        touch $(@D)/lint_output
+    """,
+    tags = ["manual"],
+)

@@ -10,30 +10,49 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       CI: true
-      NX_DAEMON: "false"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.9.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+      
       - uses: pnpm/action-setup@v6
         with:
           version: 10.17.1
+      
       - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: pnpm
+      
       - run: pnpm --version
+      
       - uses: erlef/setup-beam@v1
         with:
           otp-version: "28"
           gleam-version: "1.15.1"
           rebar3-version: "3"
-          # elixir-version: "1"
+      
+      - name: Install Just
+        uses: extractions/setup-just@v2
+      
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm nx run-many -t typecheck --all --exclude=oxion-workspace --output-style=stream --verbose
-      - run: pnpm test
+      
+      - name: Lint Gleam
+        run: just lint
+      
+      - name: Typecheck Gleam
+        run: just typecheck
+      
+      - name: Test Gleam
+        run: just test

@@ -1,28 +1,72 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Gleam / Erlang
 *.beam
 *.ez
 /build
 **/build/
 erl_crash.dump
-node_modules/
-.pnpm-store/
+gleam.js
+gleam.d.ts
+
+# Bazel
+bazel-*
+.bazelrc.user
+MODULE.bazel.lock
+
+# Nix
+result
+result-*
+.direnv/
+.envrc
+
+# Turbo (legacy)
 .turbo/
-.nx/
 
-skills-lock.json
-/docs
-.agents
-AGENTS.md
-!frontend/platform/AGENTS.md
+# OS
+.DS_Store
+Thumbs.db
 
-# frontend/platform
-frontend/platform/.DS_Store
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Frontend
 frontend/platform/dist
 frontend/platform/dist-ssr
 frontend/platform/*.local
 frontend/platform/.env
+frontend/platform/.env.local
 frontend/platform/.nitro
 frontend/platform/.tanstack
 frontend/platform/.wrangler
 frontend/platform/.output
 frontend/platform/.vinxi
 frontend/platform/__unconfig*
+frontend/platform/node_modules
+
+# AI / Agent configs
+.agents
+AGENTS.md
+!frontend/platform/AGENTS.md
+skills-lock.json
+
+# Documentation (external workspace)
+/docs
+
+# OpenCode
+.opencode/plans/
+
+# Keep these tracked
+!BAZEL.md

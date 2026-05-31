@@ -1,0 +1,29 @@
+# Root BUILD file for Oxion monorepo
+
+genrule(
+    name = "generate_contracts",
+    srcs = glob([
+        "packages/policy/src/**/*.gleam",
+        "packages/interop/src/**/*.gleam",
+    ]),
+    outs = ["generated/interfaces"],
+    cmd = """
+        export HOME=/tmp
+        node ./scripts/generate-contracts.mjs
+        mkdir -p $(@D)/generated/interfaces
+        cp -r generated/interfaces/* $(@D)/generated/interfaces/ 2>/dev/null || true
+    """,
+    tags = ["manual"],
+)
+
+genrule(
+    name = "generate_zod",
+    srcs = [":generate_contracts"],
+    outs = ["generated/contracts.zod.ts"],
+    cmd = """
+        export HOME=/tmp
+        node --experimental-strip-types ./scripts/generate-zod.ts
+        cp generated/contracts.zod.ts $(@D)/
+    """,
+    tags = ["manual"],
+)
