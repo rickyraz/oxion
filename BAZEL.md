@@ -5,7 +5,7 @@
 ### Option A: With Nix (Recommended — Hermetic)
 
 ```bash
-# Enter hermetic dev shell (Gleam, Erlang, Node, Bazel all pinned)
+# Enter hermetic dev shell (Gleam, Erlang, Rebar3, Node, Bazel all pinned)
 nix develop
 
 # Then use just normally
@@ -18,7 +18,7 @@ just typecheck
 ### Option B: Without Nix (Local tools)
 
 ```bash
-# Requires: gleam, erlang/otp, node, bazelisk, just installed locally
+# Requires: gleam, erlang/otp, rebar3, node, bazelisk, just installed locally
 just build
 just test
 ```
@@ -85,6 +85,7 @@ The `flake.nix` provides:
 
 - **Gleam** — pinned to nixpkgs version (currently 1.16.0)
 - **Erlang/OTP 28** — matching CI configuration
+- **Rebar3** — required by Erlang Hex dependencies such as `hpack_erl`
 - **Node.js 22** — for frontend and scripts
 - **Bazelisk** — auto-selects Bazel version from `.bazelversion`
 - **Just** — command runner

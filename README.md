@@ -130,6 +130,7 @@ pnpm run check:generated
 Notes:
 
 - All commands are defined in `Justfile` and invoke Bazel or Gleam CLI directly.
+- `just build` and `just test` require `rebar3` because `oxradius` depends on Erlang Hex packages with Rebar build steps; `nix develop` provides it.
 - `generate:contracts` pulls source from public Gleam APIs (`packages/policy` + `packages/interop`)
   via `gleam export package-interface`.
 - `generate:zod` maps `generated/interfaces/*.interface.json` to `generated/contracts.zod.ts`.

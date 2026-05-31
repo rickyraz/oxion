@@ -5,12 +5,16 @@ default:
     @just --list
 
 # Build all Gleam packages and apps
-build:
+build: _require-build-tools
     bazel build //packages/policy:oxion_policy //packages/interop:oxion_interop //apps/oxcore:oxcore //apps/oxradius:oxradius //apps/oxnoc:oxnoc //apps/oxolt:oxolt //apps/oxbgp:oxbgp //apps/oxacs:oxacs
 
 # Test all Gleam packages and apps
-test:
+test: _require-build-tools
     bazel test //packages/policy:oxion_policy_test //packages/interop:oxion_interop_test //apps/oxcore:oxcore_test //apps/oxradius:oxradius_test //apps/oxnoc:oxnoc_test //apps/oxolt:oxolt_test //apps/oxbgp:oxbgp_test //apps/oxacs:oxacs_test
+
+# Internal: verify tools required by Gleam dependencies with non-Gleam build steps
+_require-build-tools:
+    @command -v rebar3 >/dev/null || (echo "error: rebar3 is required to build oxradius dependency hpack_erl. Run 'nix develop' or install rebar3 locally." >&2; exit 127)
 
 # Format check for all Gleam code
 lint:
