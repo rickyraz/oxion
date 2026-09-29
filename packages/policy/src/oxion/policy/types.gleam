@@ -64,10 +64,21 @@ pub type Value {
   NoValue
 }
 
+// Condition = bisa berupa kumpulan aturan AND, kumpulan aturan OR, atau satu aturan tunggal.
+// Action = bisa berupa penerapan profil bandwidth, penangguhan layanan, pemulihan layanan, pengiriman notifikasi, emisi event, pengaturan status operasional, atau menjalankan plugin hook.
+// Stage = terdiri dari ID, prioritas, kondisi, daftar aksi, flag untuk menghentikan evaluasi jika cocok, template notifikasi opsional, dan flag enabled.
+// Policy = terdiri dari nama, deskripsi opsional, jumlah grace days, zona waktu, konfigurasi konteks opsional, dan daftar stage.
+// Context = terdiri dari hari keterlambatan, status faktur, status operasional, rencana penagihan, total jumlah yang harus dibayar, dan status pembayaran.
+// LifecycleStatus = bisa berupa Draft, Simulated, Published, atau Archived.
+// TransitionError = error yang terjadi saat mencoba melakukan transisi lifecycle yang tidak valid, dengan informasi status asal dan tujuan.
+// ActivationError = error yang terjadi saat mencoba mengaktifkan kebijakan yang tidak memenuhi prasyarat publikasi, konflik dengan kebijakan aktif lainnya, atau sudah diarsipkan dan tidak dapat diubah.
+// ActivationState = kombinasi dari status lifecycle dan apakah kebijakan saat ini aktif atau tidak, untuk memastikan invariants aktivasi yang benar dalam mesin status.
+// Why: modeling conditions and actions as explicit types with domain-specific fields allows the policy engine to perform validation, simulation, and execution with full visibility into the semantics of each
+// rule, instead of treating them as opaque data that can lead to errors or unintended consequences at runtime. This also enables better tooling and testing around policy definitions.
 pub type Condition {
-  All(List(Condition))
-  Any(List(Condition))
-  Rule(field: Field, op: Operator, value: Value, enabled: Bool)
+  All(List(Condition)) // semua kondisi di dalam list harus benar
+  Any(List(Condition)) // setidaknya satu kondisi di dalam list harus benar
+  Rule(field: Field, op: Operator, value: Value, enabled: Bool) // aturan tunggal dengan field, operator, dan nilai yang ditentukan
 }
 
 pub type NotificationChannel {
